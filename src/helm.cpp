@@ -22,9 +22,10 @@ void solve()
 
 	SphereLaplace lapl(nlat, nlon);
 
-	double * u = (double*)calloc(nlat * nlon, sizeof(double));
-	double * r = (double*)calloc(nlat * nlon, sizeof(double));
-	double nev = 0;
+	double * u  = (double*)calloc(nlat * nlon, sizeof(double));
+	double * v  = (double*)calloc(nlat * nlon, sizeof(double));
+	double * r  = (double*)calloc(nlat * nlon, sizeof(double));
+	double nev1 = 0;
 
 	for (j = 0; j < nlon; ++j) {
 		for (i = 0; i < nlat; ++i) {
@@ -53,14 +54,23 @@ void solve()
 
 			double ue = (1.+x*y)*exp(z);
 
-			nev = max(nev, fabs(u[j * nlat + i] - ue));
+			nev1 = max(nev1, fabs(u[j * nlat + i] - ue));
 		}
 	}
 
 
-	fprintf(stderr, "nev=%.16le \n", nev);
+	fprintf(stderr, "nev1=%.16le \n", nev1);
 
-	free(u); free(r);
+	nev1 = 0;
+	lapl.calc(v, u);
+	for (j = 0; j < nlon; ++j) {
+		for (i = 0; i < nlat; ++i) {
+			nev1 = max(nev1, fabs(v[j * nlat + i] - u[j * nlat + i] - r[j * nlat + i]));
+		}
+	}
+	fprintf(stderr, "nev2=%.16le \n", nev1);
+
+	free(u); free(v); free(r);
 }
 
 int main(int argc, char * argv[])

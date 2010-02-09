@@ -9,6 +9,11 @@ SphereLaplace::SphereLaplace (long nlat, long nlon) :
 		lshsec (lshaec), lwork(nlat*(2*nlon+3*(nlat+1)+2*nlat+1)), ldwork(nlat + 1),
 		wshaec(lshaec), wshsec(lshsec), work(lwork), dwork(ldwork)
 {
+	init();
+}
+
+void SphereLaplace::init()
+{
 	long ierror = 0;
 	shaeci_ (&nlat, &nlon, &wshaec[0], &lshaec, &dwork[0], &ldwork, &ierror);
 	if (ierror != 0) {
@@ -54,4 +59,33 @@ void SphereLaplace::solve (double * out, const double * in, double diag)
 		exit(1);
 	}
 }
+
+void SphereLaplace::calc(double * out, const double * in)
+{
+	long ierror = 0;
+	long nt = 0;
+	long isym = 0;
+
+	array_t a (nlat * nlat);
+	array_t b (nlat * nlat);
+
+	shaec_ (&nlat, &nlon, &isym, &nt, (double*)in,
+	        &nlat, &nlon, &a[0], &b[0],
+	        &nlat, &nlat,
+	        &wshaec[0], &lshaec,
+	        &work[0], &lwork, &ierror);
+	if (ierror != 0) {
+		fprintf(stderr, "shaec_ error %ld\n", ierror);
+		exit(1);
+	}
+	slapec_ (&nlat, &nlon, &isym, &nt, 
+	          out, &nlat, &nlon,
+	          &a[0], &b[0], &nlat, &nlat,
+	          &wshsec[0], &lshsec, &work[0], &lwork, &ierror);
+	if (ierror != 0) {
+		fprintf(stderr, "slapec_ error %ld\n", ierror);
+		exit(1);
+	}
+}
+
 

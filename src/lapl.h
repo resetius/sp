@@ -20,11 +20,14 @@ class SphereLaplace {
 	array_t work;
 	array_t dwork;
 
+	void init();
+
 public:
 	SphereLaplace(long nlat, long nlon);
 	~SphereLaplace();
 
 	void solve(double * out, const double * in, double diag);
+	void calc(double * out, const double * in);
 };
 
 #endif /* LAPL_H */
