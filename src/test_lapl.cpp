@@ -28,7 +28,7 @@ double ans(double x, double y) {
 
 void solve()
 {
-	long nlat=190, nlon=360;
+	long nlat=19, nlon=36;
 	double dlat = M_PI / (nlat-1);
 	double dlon = 2. * M_PI /nlon;
 	int i, j;

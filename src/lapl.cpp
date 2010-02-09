@@ -63,7 +63,7 @@ void SphereLaplace::solve (double * out, const double * in, double diag)
 void SphereLaplace::calc(double * out, const double * in)
 {
 	long ierror = 0;
-	long nt = 0;
+	long nt = 1;
 	long isym = 0;
 
 	array_t a (nlat * nlat);
