@@ -43,6 +43,6 @@ void SphereChafe::calc(double * out, const double * in)
 	}
 
 	// u'/dt - mu \Delta u' / 2 + \sigma u' / 2
-	lapl.solve(out, &delta_u[0], -0.5 * mu, 1.0 / tau + sigma);
+	lapl.solve(out, &delta_u[0], -0.5 * mu, 1.0 / tau + 0.5 * sigma);
 }
 
