@@ -2,15 +2,7 @@
 #include <stdlib.h>
 
 #include "lapl.h"
-
-static void transpose(double * out, const double * in, int n, int m)
-{
-	for (int i = 0; i < n; ++i) {
-		for (int j = 0; j < m; ++j) {
-			out[j * n + i] = in[i * m + j];
-		}
-	}
-}
+#include "utils.h"
 
 SphereLaplace::SphereLaplace (long nlat, long nlon) :
 		nlat (nlat), nlon (nlon),
@@ -39,18 +31,19 @@ void SphereLaplace::init()
 
 SphereLaplace::~SphereLaplace() {}
 
-void SphereLaplace::solve (double * out, const double * in, double diag)
+void SphereLaplace::solve (double * out, const double * in, double mult, double diag)
 {
 	long ierror = 0;
 	long nt   = 1;
 	long isym = 0;
 	double pertrb = 0;
+	double koef   = diag / mult;
 
 	array_t a (nlat * nlat);
 	array_t b (nlat * nlat);
 	array_t t (nlat * nlon);
 
-	transpose(&t[0], in, nlat, nlon);
+	transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
@@ -62,7 +55,7 @@ void SphereLaplace::solve (double * out, const double * in, double diag)
 		exit(1);
 	}
 
-	islapec_ (&nlat, &nlon, &isym, &nt, &diag,
+	islapec_ (&nlat, &nlon, &isym, &nt, &koef,
 	          &t[0], &nlat, &nlon,
 	          &a[0], &b[0], &nlat, &nlat,
 	          &wshsec[0], &lshsec, &work[0], &lwork, &pertrb, &ierror);

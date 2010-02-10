@@ -31,7 +31,7 @@ public:
 	 * i - latitude  (from the sourth pole to the north pole)
 	 * j - longitude
 	 **/
-	void solve(double * out, const double * in, double diag);
+	void solve(double * out, const double * in, double mult = 1.0, double diag = 0.0);
 	void calc(double * out, const double * in);
 };
 
