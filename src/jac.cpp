@@ -34,7 +34,7 @@ void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 
 	array_t u(nlat * nlon);
 	array_t v(nlat * nlon);
-	array_t 
+	array_t j(nlat * nlon);
 
 	transpose(&u[0], &u1[0], nlat, nlon);
 	transpose(&v[0], &v1[0], nlat, nlon);
@@ -54,6 +54,9 @@ void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 	        &vlsave, &work[0], &lwork, &ierror);
 
 	for (int i = 0; i < n; ++i) {
+		j[i] = dutheta[i] * dvphi[i] - dvtheta[i] * duphi[i];
 	}
+
+	transpose(out, &j[0], nlon, nlat);
 }
 

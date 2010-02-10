@@ -2,19 +2,26 @@ project(examples C)
 
 include_directories(../spherepack_c)
 
+
+if (NOT WIN32)
+set(MATH m)
+endif ()
+
 set(EXECUTABLE_OUTPUT_PATH "../bin")
 
+
+add_definitions(-D_USE_MATH_DEFINES)
 add_library(spherepack_ext lapl.cpp chafe.cpp jac.cpp utils.cpp)
 
 add_executable(helm helm.c)
-target_link_libraries(helm spherepack m)
+target_link_libraries(helm spherepack ${MATH})
 
 add_executable(helm2 helm.cpp)
-target_link_libraries(helm2 spherepack_ext spherepack m)
+target_link_libraries(helm2 spherepack_ext spherepack ${MATH})
 
 add_executable(test_lapl test_lapl.cpp)
-target_link_libraries(test_lapl spherepack_ext spherepack m)
+target_link_libraries(test_lapl spherepack_ext spherepack ${MATH})
 
 add_executable(test_chafe test_chafe.cpp)
-target_link_libraries(test_chafe spherepack_ext spherepack m)
+target_link_libraries(test_chafe spherepack_ext spherepack ${MATH})
 

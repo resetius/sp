@@ -85,7 +85,8 @@ void solve()
 					double phi    = -0.5 * M_PI + i * dlat;
 					double lambda = j * dlon;
 
-					nev1 = max (nev1, fabs (u[i * nlon + j] - ans (phi, lambda, t) ) );
+					v[i * nlon + j] = ans (phi, lambda, t);
+					nev1 = max (nev1, fabs (u[i * nlon + j] - v[i * nlon + j] ) );
 				}
 			}
 

@@ -8,7 +8,11 @@
 #undef max
 #endif
 
-static inline double max(double a, double b)
+#ifdef min
+#undef min
+#endif
+
+static double max(double a, double b)
 {
 	return (a > b) ? a : b;
 }
