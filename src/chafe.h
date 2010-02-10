@@ -3,7 +3,7 @@
 
 #include "lapl.h"
 
-typedef double (*rp_t)(double phi, double lambda);
+typedef double (*rp_t)(double phi, double lambda, double t, double mu, double sigma);
 
 struct SphereChafeConf
 {
@@ -26,7 +26,7 @@ class SphereChafe {
 public:
 	SphereChafe(const SphereChafeConf & conf);
 
-	void calc(double * out, const double * in);
+	void calc(double * out, const double * in, double t);
 };
 
 #endif /* CHAFE_H */

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "chafe.h"
+#include "utils.h"
 
 #ifdef max
 #undef max
@@ -12,18 +13,23 @@
 
 using namespace std;
 
-static inline double max(double a, double b)
+static inline double max (double a, double b)
 {
 	return (a > b) ? a : b;
 }
 
-
-double rp(double x, double y) {
-	return -6.0 * sin(y) * sin(2.0 * x);
+double ans (double x, double y, double t)
+{
+	return x*sin (y + t) *ipow (cos (x), 4);
 }
 
-double ans(double x, double y) {
-	return sin(y) * sin(2.0 * x);
+double f (double x, double y, double t,
+          double mu, double sigma)
+{
+	return ipow (cos (x), 2) *
+	       (x*cos (y + t) *ipow (cos (x), 2)
+	        + sigma*sin (y + t) *ipow (cos (x), 2) *x + 9*mu*sin (y + t) *sin (x) *cos (x)
+	        - 15*mu*sin (y + t) *x + 20*mu*sin (y + t) *x*ipow (cos (x), 2) );
 }
 
 void solve()
@@ -33,48 +39,63 @@ void solve()
 
 	SphereChafeConf conf;
 	conf.nlat  = nlat;
-       	conf.nlon  = nlon;
+	conf.nlon  = nlon;
 	conf.mu    = 1.0;
 	conf.sigma = -70;
 	conf.tau   = 0.01;
-	conf.rp    = rp;
+	conf.rp    = f;
 
-	double dlat = M_PI / (nlat-1);
-	double dlon = 2. * M_PI /nlon;
-	int i, j;
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+	double t = 0;
 
-	vector < double > u(nlat * nlon);
-	vector < double > v(nlat * nlon);
-	vector < double > r(nlat * nlon);
+	int i, j, it = 0;
 
-	SphereChafe chafe(conf);
+	vector < double > u (nlat * nlon);
+	vector < double > v (nlat * nlon);
+	vector < double > r (nlat * nlon);
+
+	SphereChafe chafe (conf);
 
 	double nev1 = 0;
 
-	for (i = 0; i < nlat; ++i) {
-		for (j = 0; j < nlon; ++j) {
+	for (i = 0; i < nlat; ++i)
+	{
+		for (j = 0; j < nlon; ++j)
+		{
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			r[i * nlon + j] = ans(phi, lambda);
+			r[i * nlon + j] = ans (phi, lambda, t);
 		}
 	}
 
-	chafe.calc(&u[0], &r[0]);
+	while (true)
+	{
+		chafe.calc (&u[0], &r[0], t);
+		t += conf.tau;
 
-	for (i = 0; i < nlat; ++i) {
-		for (j = 0; j < nlon; ++j) {
-			double phi    = -0.5 * M_PI + i * dlat;
-			double lambda = j * dlon;
+		if (it % 100 == 0)
+		{
+			nev1 = 0.0;
+			for (i = 0; i < nlat; ++i)
+			{
+				for (j = 0; j < nlon; ++j)
+				{
+					double phi    = -0.5 * M_PI + i * dlat;
+					double lambda = j * dlon;
 
-			nev1 = max(nev1, fabs(u[i * nlon + j] - rp(phi, lambda)));
+					nev1 = max (nev1, fabs (u[i * nlon + j] - ans (phi, lambda, t) ) );
+				}
+			}
+
+			fprintf (stderr, "nev1=%.16le \n", nev1);
 		}
+		it += 1;
 	}
-
-	fprintf(stderr, "nev1=%.16le \n", nev1);
 }
 
-int main(int argc, char * argv[])
+int main (int argc, char * argv[])
 {
 	solve();
 }

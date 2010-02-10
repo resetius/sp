@@ -8,7 +8,7 @@ SphereChafe::SphereChafe(const SphereChafeConf & conf)
 {
 }
 
-void SphereChafe::calc(double * out, const double * in)
+void SphereChafe::calc(double * out, const double * in, double t)
 {
 	double tau   = conf.tau;
 	double mu    = conf.mu;
@@ -37,7 +37,7 @@ void SphereChafe::calc(double * out, const double * in)
 		for (int j = 0; j < nlon; ++j) {
 			double lambda = j * dlon;
 			if (conf.rp) {
-				delta_u[i * nlon + j] += conf.rp(phi, lambda);
+				delta_u[i * nlon + j] += conf.rp(phi, lambda, t, mu, sigma);
 			}
 		}
 	}
