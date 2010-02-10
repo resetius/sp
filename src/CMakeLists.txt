@@ -4,7 +4,7 @@ include_directories(../spherepack_c)
 
 set(EXECUTABLE_OUTPUT_PATH "../bin")
 
-add_library(spherepack_ext lapl.cpp chafe.cpp utils.cpp)
+add_library(spherepack_ext lapl.cpp chafe.cpp jac.cpp utils.cpp)
 
 add_executable(helm helm.c)
 target_link_libraries(helm spherepack m)
