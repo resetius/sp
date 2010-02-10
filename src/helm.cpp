@@ -27,8 +27,8 @@ void solve()
 	double * r  = (double*)calloc(nlat * nlon, sizeof(double));
 	double nev1 = 0;
 
-	for (j = 0; j < nlon; ++j) {
-		for (i = 0; i < nlat; ++i) {
+	for (i = 0; i < nlat; ++i) {
+		for (j = 0; j < nlon; ++j) {
 			double theta = -0.5 * M_PI + i * dlat;
 			double phi   = j * dlon;
 
@@ -36,15 +36,15 @@ void solve()
 			double y = cos(theta) * sin(phi);
 			double z = sin(theta);
 
-			r[j * nlat + i] = -(x * y * (z * z + 6. * (z + 1.)) + z * (z + 2.)) * exp(z);
+			r[i * nlon + j] = -(x * y * (z * z + 6. * (z + 1.)) + z * (z + 2.)) * exp(z);
 		}
 	}
 
 	lapl.solve(u, r, 1.0);
 
 
-	for (j = 0; j < nlon; ++j) {
-		for (i = 0; i < nlat; ++i) {
+	for (i = 0; i < nlat; ++i) {
+		for (j = 0; j < nlon; ++j) {
 			double theta = -0.5 * M_PI + i * dlat;
 			double phi   = j * dlon;
 
@@ -54,7 +54,7 @@ void solve()
 
 			double ue = (1.+x*y)*exp(z);
 
-			nev1 = max(nev1, fabs(u[j * nlat + i] - ue));
+			nev1 = max(nev1, fabs(u[i * nlon + j] - ue));
 		}
 	}
 
@@ -63,9 +63,9 @@ void solve()
 
 	nev1 = 0;
 	lapl.calc(v, u);
-	for (j = 0; j < nlon; ++j) {
-		for (i = 0; i < nlat; ++i) {
-			nev1 = max(nev1, fabs(v[j * nlat + i] - u[j * nlat + i] - r[j * nlat + i]));
+	for (i = 0; i < nlat; ++i) {
+		for (j = 0; j < nlon; ++j) {
+			nev1 = max(nev1, fabs(v[i * nlon + j] - u[i * nlon + j] - r[i * nlon + j]));
 		}
 	}
 	fprintf(stderr, "nev2=%.16le \n", nev1);

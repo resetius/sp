@@ -26,8 +26,14 @@ public:
 	SphereLaplace(long nlat, long nlon);
 	~SphereLaplace();
 
+	/**
+	 * out[i][j]
+	 * i - latitude  (from the sourth pole to the north pole)
+	 * j - longitude
+	 **/
 	void solve(double * out, const double * in, double diag);
 	void calc(double * out, const double * in);
 };
 
 #endif /* LAPL_H */
+

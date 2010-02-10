@@ -41,23 +41,23 @@ void solve()
 
 	double nev1 = 0;
 
-	for (j = 0; j < nlon; ++j) {
-		for (i = 0; i < nlat; ++i) {
-			double theta = -0.5 * M_PI + i * dlat;
-			double phi   = j * dlon;
+	for (i = 0; i < nlat; ++i) {
+		for (j = 0; j < nlon; ++j) {
+			double phi    = -0.5 * M_PI + i * dlat;
+			double lambda = j * dlon;
 
-			r[j * nlat + i] = ans(phi, theta);
+			r[i * nlon + j] = ans(phi, lambda);
 		}
 	}
 
 	lapl.calc(&u[0], &r[0]);
 
-	for (j = 0; j < nlon; ++j) {
-		for (i = 0; i < nlat; ++i) {
-			double theta = -0.5 * M_PI + i * dlat;
-			double phi   = j * dlon;
+	for (i = 0; i < nlat; ++i) {
+		for (j = 0; j < nlon; ++j) {
+			double phi    = -0.5 * M_PI + i * dlat;
+			double lambda = j * dlon;
 
-			nev1 = max(nev1, fabs(u[j * nlat + i] - rp(phi, theta)));
+			nev1 = max(nev1, fabs(u[i * nlon + j] - rp(phi, lambda)));
 		}
 	}
 

@@ -3,6 +3,15 @@
 
 #include "lapl.h"
 
+static void transpose(double * out, const double * in, int n, int m)
+{
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < m; ++j) {
+			out[j * n + i] = in[i * m + j];
+		}
+	}
+}
+
 SphereLaplace::SphereLaplace (long nlat, long nlon) :
 		nlat (nlat), nlon (nlon),
 		lshaec (nlat* (nlat + 1) + 3* ( (nlat - 2) * (nlat - 1) + nlon + 15) ),
@@ -39,8 +48,11 @@ void SphereLaplace::solve (double * out, const double * in, double diag)
 
 	array_t a (nlat * nlat);
 	array_t b (nlat * nlat);
+	array_t t (nlat * nlon);
 
-	shaec_ (&nlat, &nlon, &isym, &nt, (double*)in,
+	transpose(&t[0], in, nlat, nlon);
+
+	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
 	        &nlat, &nlat,
 	        &wshaec[0], &lshaec,
@@ -51,13 +63,15 @@ void SphereLaplace::solve (double * out, const double * in, double diag)
 	}
 
 	islapec_ (&nlat, &nlon, &isym, &nt, &diag,
-	          out, &nlat, &nlon,
+	          &t[0], &nlat, &nlon,
 	          &a[0], &b[0], &nlat, &nlat,
 	          &wshsec[0], &lshsec, &work[0], &lwork, &pertrb, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "islapec_ error %ld\n", ierror);
 		exit(1);
 	}
+
+	transpose(out, &t[0], nlon, nlat);
 }
 
 void SphereLaplace::calc(double * out, const double * in)
@@ -68,8 +82,11 @@ void SphereLaplace::calc(double * out, const double * in)
 
 	array_t a (nlat * nlat);
 	array_t b (nlat * nlat);
+	array_t t (nlat * nlon);
 
-	shaec_ (&nlat, &nlon, &isym, &nt, (double*)in,
+	transpose(&t[0], in, nlat, nlon);
+
+	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
 	        &nlat, &nlat,
 	        &wshaec[0], &lshaec,
@@ -79,13 +96,15 @@ void SphereLaplace::calc(double * out, const double * in)
 		exit(1);
 	}
 	slapec_ (&nlat, &nlon, &isym, &nt, 
-	          out, &nlat, &nlon,
+	          &t[0], &nlat, &nlon,
 	          &a[0], &b[0], &nlat, &nlat,
 	          &wshsec[0], &lshsec, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "slapec_ error %ld\n", ierror);
 		exit(1);
 	}
+
+	transpose(out, &t[0], nlon, nlat);
 }
 
 
