@@ -36,6 +36,7 @@ void solve()
        	conf.nlon  = nlon;
 	conf.mu    = 1.0;
 	conf.sigma = -70;
+	conf.tau   = 0.01;
 	conf.rp    = rp;
 
 	double dlat = M_PI / (nlat-1);
