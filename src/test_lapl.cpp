@@ -62,6 +62,20 @@ void solve()
 	}
 
 	fprintf(stderr, "nev1=%.16le \n", nev1);
+
+	lapl.solve(&v[0], &u[0]);
+	nev1 = 0.0;
+
+	for (i = 0; i < nlat; ++i) {
+		for (j = 0; j < nlon; ++j) {
+			double phi    = -0.5 * M_PI + i * dlat;
+			double lambda = j * dlon;
+
+			nev1 = max(nev1, fabs(v[i * nlon + j] - r[i * nlon + j]));
+		}
+	}
+
+	fprintf(stderr, "nev1=%.16le \n", nev1);
 }
 
 int main(int argc, char * argv[])
