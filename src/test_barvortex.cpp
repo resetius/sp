@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "chafe.h"
+#include "barvortex.h"
 #include "utils.h"
 
 #ifdef max
@@ -23,9 +23,10 @@ double ans (double x, double y, double t)
 	return x*sin (y + t) *ipow (cos (x), 4);
 }
 
-double f (double x, double y, double t,
-          double mu, double sigma)
+double f (double x, double y, double t, SphereBarvortexConf * conf)
 {
+	double mu    = conf->mu;
+	double sigma = conf->sigma;
 	return ipow (cos (x), 2) *
 	       (x*cos (y + t) *ipow (cos (x), 2)
 	        + sigma*sin (y + t) *ipow (cos (x), 2) *x + 9*mu*sin (y + t) *sin (x) *cos (x)
@@ -37,13 +38,17 @@ void solve()
 	long nlat = 19;
 	long nlon = 36;
 
-	SphereChafeConf conf;
-	conf.nlat  = nlat;
-	conf.nlon  = nlon;
-	conf.mu    = 1.0;
-	conf.sigma = -70;
-	conf.tau   = 0.01;
-	conf.rp    = f;
+	SphereBarvortexConf conf;
+	conf.nlat     = nlat;
+	conf.nlon     = nlon;
+	conf.mu       = 1.0;
+	conf.sigma    = -70;
+	conf.tau      = 0.01;
+	conf.theta    = 0.5;
+	conf.k1       = 1.0;
+	conf.k2       = 1.0;
+	conf.rp       = f;
+	conf.coriolis = 0;
 
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -55,7 +60,7 @@ void solve()
 	vector < double > v (nlat * nlon);
 	vector < double > r (nlat * nlon);
 
-	SphereChafe chafe (conf);
+	SphereBarvortex bv (conf);
 
 	double nev1 = 0;
 
@@ -72,7 +77,7 @@ void solve()
 
 	while (true)
 	{
-		chafe.calc (&u[0], &r[0], t);
+		bv.calc (&u[0], &r[0], t);
 		t += conf.tau;
 
 		if (it % 100 == 0)
