@@ -28,3 +28,6 @@ target_link_libraries(test_jac spherepack_ext spherepack ${MATH})
 add_executable(test_chafe test_chafe.cpp)
 target_link_libraries(test_chafe spherepack_ext spherepack ${MATH})
 
+add_executable(test_barvortex test_barvortex.cpp)
+target_link_libraries(test_barvortex spherepack_ext spherepack ${MATH})
+

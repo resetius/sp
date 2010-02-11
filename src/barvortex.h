@@ -42,6 +42,9 @@ public:
 	~SphereBarvortex();
 
 	void calc(double * out, const double * in, double t);
+	double scalar(const double * u, const double * v);
+	double dist(const double * u, const double * v);
+	double norm(const double * u);
 };
 
 #endif /* BARVORTEX_H */

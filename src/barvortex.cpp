@@ -33,6 +33,34 @@ SphereBarvortex::~SphereBarvortex()
 {
 }
 
+double SphereBarvortex::scalar(const double * u, const double * v)
+{
+	long nlat = conf.nlat;
+	long nlon = conf.nlon;
+	double sum = 0.0;
+	for (int i = 0; i < nlat; ++i) {
+		double phi = -0.5 * M_PI + i * nlat;
+		double rho = cos(phi);
+		for (int j = 0; j < nlon; ++j) {
+			sum += rho * u[i * nlon + j] * v[i * nlon + j];
+		}
+	}
+	return sum;
+}
+
+double SphereBarvortex::norm(const double * u)
+{
+	return sqrt(scalar(u, u));
+}
+
+double SphereBarvortex::dist(const double * u, const double * v)
+{
+	long n = conf.nlat * conf.nlon;
+	array_t tmp(n);
+	vec_sum1(&tmp[0], u, v, 1.0, -1.0, n);
+	return norm(&tmp[0]);
+}
+
 void SphereBarvortex::calc (double * out, const double * u, double t)
 {
 	long nlat    = conf.nlat;
@@ -46,7 +74,7 @@ void SphereBarvortex::calc (double * out, const double * u, double t)
 	double sigma = conf.sigma;
 	double k1    = conf.k1;
 	double k2    = conf.k2;
-	double nr, nr0;
+	double nr, nr0 = norm(u);
 
 	array_t w (n);  // w = L(u)
 	array_t dw (n); // dw = L(w) = LL(u)
