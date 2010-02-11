@@ -35,6 +35,7 @@ class SphereBarvortex
 	SphereJacobian jac;
 
 	array_t lh;
+	array_t cosi;
 
 public:
 

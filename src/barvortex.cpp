@@ -8,15 +8,16 @@ using namespace std;
 
 SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
 		conf (conf), lapl (conf.nlat, conf.nlon), jac (conf.nlat, conf.nlon),
-		lh (conf.nlat * conf.nlon)
+		lh (conf.nlat * conf.nlon), cosi(conf.nlat)
 {
+	long nlat = conf.nlat;
+	long nlon = conf.nlon;
+	double dlat = M_PI / (nlat-1);
+	double dlon = 2. * M_PI /nlon;
+
+
 	if (conf.coriolis)
 	{
-		long nlat = conf.nlat;
-		long nlon = conf.nlon;
-		double dlat = M_PI / (nlat-1);
-		double dlon = 2. * M_PI /nlon;
-
 		for (int i = 0; i < nlat; ++i)
 		{
 			double phi    = -0.5 * M_PI + i * dlat;
@@ -26,6 +27,11 @@ SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
 				lh[i * nlon + j] = conf.coriolis(phi, lambda);
 			}
 		}
+	}
+
+	for (int i = 0; i < nlat; ++i)
+	{
+		cosi[i] = cos(-0.5 * M_PI + i * dlat);
 	}
 }
 
@@ -39,10 +45,8 @@ double SphereBarvortex::scalar(const double * u, const double * v)
 	long nlon = conf.nlon;
 	double sum = 0.0;
 	for (int i = 0; i < nlat; ++i) {
-		double phi = -0.5 * M_PI + i * nlat;
-		double rho = cos(phi);
 		for (int j = 0; j < nlon; ++j) {
-			sum += rho * u[i * nlon + j] * v[i * nlon + j];
+			sum += cosi[i] * u[i * nlon + j] * v[i * nlon + j];
 		}
 	}
 	return sum;
