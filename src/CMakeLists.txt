@@ -22,6 +22,9 @@ target_link_libraries(helm2 spherepack_ext spherepack ${MATH})
 add_executable(test_lapl test_lapl.cpp)
 target_link_libraries(test_lapl spherepack_ext spherepack ${MATH})
 
+add_executable(test_jac test_jac.cpp)
+target_link_libraries(test_jac spherepack_ext spherepack ${MATH})
+
 add_executable(test_chafe test_chafe.cpp)
 target_link_libraries(test_chafe spherepack_ext spherepack ${MATH})
 
