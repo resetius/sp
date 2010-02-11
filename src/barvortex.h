@@ -1,6 +1,8 @@
 #ifndef BARVORTEX_H
 #define BARVORTEX_H
 
+#include <vector>
+
 #include "lapl.h"
 #include "jac.h"
 
@@ -19,13 +21,20 @@ struct SphereBarvortexConf
 	double k1;
 	double k2;
 	double theta;
+
+	coriolis_t coriolis;
+	rp_t rp;
 };
 
 class SphereBarvortex
 {
+	typedef std::vector < double > array_t;
+
 	SphereBarvortexConf conf;
 	SphereLaplace lapl;
 	SphereJacobian jac;
+
+	array_t lh;
 
 public:
 
