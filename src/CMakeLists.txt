@@ -11,7 +11,7 @@ set(EXECUTABLE_OUTPUT_PATH "../bin")
 
 
 add_definitions(-D_USE_MATH_DEFINES)
-add_library(spherepack_ext lapl.cpp chafe.cpp jac.cpp utils.cpp)
+add_library(spherepack_ext lapl.cpp chafe.cpp jac.cpp barvortex.cpp utils.cpp)
 
 add_executable(helm helm.c)
 target_link_libraries(helm spherepack ${MATH})
