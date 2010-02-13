@@ -17,4 +17,14 @@ ipow (double x, int p)
 	return r;
 }
 
+#ifdef WIN32
+#include <float.h>
+#define isnan _isnan
+inline bool isinf(double x)
+{
+	int c = _fpclass(x);
+	return (c == _FPCLASS_NINF || c == _FPCLASS_PINF);
+}
+#endif
+
 #endif /* UTILS_H */

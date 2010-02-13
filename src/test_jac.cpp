@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "jac.h"
+#include "utils.h"
 
 #ifdef max
 #undef max
@@ -18,20 +19,22 @@ static inline double max(double a, double b)
 }
 
 double f1(double x, double y) {
-	return cos (x) * sin (y);
+	double t = 0.0;
+	return x*sin(y+t)*ipow(cos(x),4);
 }
 
 double f2(double x, double y) {
-	return cos (x) * cos (y);
+	return sin(y)*sin(2*x);
 }
 
 double ans(double x, double y) {
-	return (cos (x) *cos (y) *cos (x) *cos (y) + cos (x) *sin (y) *cos (x) *sin (y) );
+	double t = 0.0;
+	return ipow(cos(x),2)*(2*x*cos(y+t)*cos(x)*sin(y)*cos(2*x)-cos(y)*sin(2*x)*sin(y+t)*cos(x)+4*cos(y)*sin(2*x)*x*sin(y+t)*sin(x));
 }
 
 void solve()
 {
-	long nlat=19, nlon=36;
+	long nlat = 5 * 19, nlon = 5 * 36;
 	double dlat = M_PI / (nlat-1);
 	double dlon = 2. * M_PI /nlon;
 	int i, j;
@@ -63,7 +66,7 @@ void solve()
 	for (i = 0; i < nlat; ++i) {
 		for (j = 0; j < nlon; ++j) {
 			nev1 = max(nev1, fabs(jac[i * nlon + j] - a[i * nlon + j]));
-			fprintf(stderr, "%.16le %.16le %.16le\n", jac[i * nlon + j], a[i * nlon + j], nev1);
+			//fprintf(stderr, "%.16le %.16le %.16le\n", jac[i * nlon + j], a[i * nlon + j], nev1);
 		}
 	}
 
