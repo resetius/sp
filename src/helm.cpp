@@ -40,7 +40,7 @@ void solve()
 		}
 	}
 
-	lapl.solve(u, r, 1.0, 1.0);
+	lapl.solve(u, r, 1.0, -1.0);
 
 
 	for (i = 0; i < nlat; ++i) {
