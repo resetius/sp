@@ -127,9 +127,6 @@ void SphereBarvortex::calc (double * out, const double * u, double t)
 			}
 		}
 	}
-	// теперь прибавим часть якобиана
-	jac.calc(&jac0[0], &u[0], &lh[0]);
-	vec_sum1(&FC[0], &FC[0], &jac0[0], 1.0, -(1.0 - theta), n);
 
 	memcpy(&u_n[0], &u[0], n * sizeof(double));
 	memcpy(&w_n[0], &w[0], n * sizeof(double));

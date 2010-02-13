@@ -28,3 +28,9 @@ void vec_sum1(double * out, const double * a, const double * b, double k1, doubl
 	}
 }
 
+void vec_mult_scalar(double * out, const double * a, double k1, int size)
+{
+	for (int i = 0; i < size; ++i) {
+		out[i] = k1 * a[i];
+	}
+}

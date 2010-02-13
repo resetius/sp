@@ -12,6 +12,7 @@ struct SphereChafeConf
 	double tau;
 	double mu;
 	double sigma;
+	double theta;
 	rp_t rp;
 };
 

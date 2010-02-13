@@ -37,7 +37,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	long nt   = 1;
 	long isym = 0;
 	double pertrb = 0;
-	double koef   = diag / mult;
+	double koef   = -diag / mult;
 
 	array_t a (nlat * nlat);
 	array_t b (nlat * nlat);
