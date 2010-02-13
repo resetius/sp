@@ -23,14 +23,29 @@ double ans (double x, double y, double t)
 	return x*sin (y + t) *ipow (cos (x), 4);
 }
 
+double zero_coriolis (double phi, double lambda)
+{
+	return 0.0;
+}
+
 double f (double x, double y, double t, SphereBarvortexConf * conf)
 {
 	double mu    = conf->mu;
 	double sigma = conf->sigma;
-	return ipow (cos (x), 2) *
-	       (x*cos (y + t) *ipow (cos (x), 2)
-	        + sigma*sin (y + t) *ipow (cos (x), 2) *x + 9*mu*sin (y + t) *sin (x) *cos (x)
-	        - 15*mu*sin (y + t) *x + 20*mu*sin (y + t) *x*ipow (cos (x), 2) );
+	return 390*mu*sin(y+t)*x*ipow(cos(x),2)
+		+147*mu*sin(y+t)*sin(x)*cos(x)-
+		400*mu*sin(y+t)*x*
+		ipow(cos(x),4)-360*mu*sin(y+t)*
+		sin(x)*ipow(cos(x),3)-20*sigma*sin(y+t)*
+		ipow(cos(x),4)*x+15*sigma*sin(y+t)*
+		ipow(cos(x),2)*x-9*sigma*sin(y+t)*
+		ipow(cos(x),3)*sin(x)+30*cos(y+t)*
+		ipow(cos(x),4)*sin(y+t)*x*x*sin(x)+9*cos(y+t)*
+		ipow(cos(x),6)*sin(y+t)*sin(x)-45*mu*sin(y+t)*x-
+		9*cos(y+t)*ipow(cos(x),5)*sin(y+t)*x-20*x*cos(y+t)*
+		ipow(cos(x),4)-9*cos(y+t)*
+		ipow(cos(x),3)*sin(x)+15*x*cos(y+t)*
+		ipow(cos(x),2);
 }
 
 void solve()
@@ -41,14 +56,14 @@ void solve()
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
-	conf.mu       = 1.0;
-	conf.sigma    = -70;
-	conf.tau      = 0.01;
+	conf.mu       = 8e-5;
+	conf.sigma    = 1.6e-2;
+	conf.tau      = 0.001;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
 	conf.rp       = f;
-	conf.coriolis = 0;
+	conf.coriolis = zero_coriolis;
 
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -91,12 +106,15 @@ void solve()
 					double lambda = j * dlon;
 
 					v[i * nlon + j] = ans (phi, lambda, t);
-					nev1 = max (nev1, fabs (u[i * nlon + j] - v[i * nlon + j] ) );
 				}
 			}
 
+			nev1 = bv.dist(&u[0], &v[0]);
+
 			fprintf (stderr, "nev1=%.16le \n", nev1);
 		}
+		r.swap(u);
+
 		it += 1;
 	}
 }

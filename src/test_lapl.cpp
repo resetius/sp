@@ -46,24 +46,24 @@ void solve()
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			r[i * nlon + j] = ans(phi, lambda);
+			r[i * nlon + j] = 5 * rp(phi, lambda);
 		}
 	}
 
-	lapl.calc(&u[0], &r[0]);
+	lapl.solve(&u[0], &r[0], 5);
 
 	for (i = 0; i < nlat; ++i) {
 		for (j = 0; j < nlon; ++j) {
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			nev1 = max(nev1, fabs(u[i * nlon + j] - rp(phi, lambda)));
+			nev1 = max(nev1, fabs(u[i * nlon + j] - ans(phi, lambda)));
 		}
 	}
 
 	fprintf(stderr, "nev1=%.16le \n", nev1);
 
-	lapl.solve(&v[0], &u[0]);
+	lapl.calc(&v[0], &u[0]);
 	nev1 = 0.0;
 
 	for (i = 0; i < nlat; ++i) {
@@ -71,7 +71,7 @@ void solve()
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			nev1 = max(nev1, fabs(v[i * nlon + j] - r[i * nlon + j]));
+			nev1 = max(nev1, fabs(5 * v[i * nlon + j] - r[i * nlon + j]));
 		}
 	}
 

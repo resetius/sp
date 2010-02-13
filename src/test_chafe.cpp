@@ -34,15 +34,15 @@ double f (double x, double y, double t,
 
 void solve()
 {
-	long nlat = 19;
-	long nlon = 36;
+	long nlat = 3 * 19;
+	long nlon = 3 * 36;
 
 	SphereChafeConf conf;
 	conf.nlat  = nlat;
 	conf.nlon  = nlon;
 	conf.mu    = 1.0;
-	conf.sigma = -70;
-	conf.tau   = 0.01;
+	conf.sigma = +70.0;
+	conf.tau   = 0.001;
 	conf.rp    = f;
 
 	double dlat = M_PI / (nlat - 1);
@@ -92,6 +92,8 @@ void solve()
 
 			fprintf (stderr, "nev1=%.16le \n", nev1);
 		}
+		r.swap(u);
+
 		it += 1;
 	}
 }
