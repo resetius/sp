@@ -43,13 +43,16 @@ double SphereBarvortex::scalar(const double * u, const double * v)
 {
 	long nlat = conf.nlat;
 	long nlon = conf.nlon;
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+
 	double sum = 0.0;
 	for (int i = 0; i < nlat; ++i) {
 		for (int j = 0; j < nlon; ++j) {
 			sum += cosi[i] * u[i * nlon + j] * v[i * nlon + j];
 		}
 	}
-	return sum;
+	return sum * dlat * dlon;
 }
 
 double SphereBarvortex::norm(const double * u)
@@ -104,9 +107,9 @@ void SphereBarvortex::calc (double * out, const double * u, double t)
 	// - k1 J(0.5(u+u), 0.5(w+w)) - k2 J(0.5(u+u), l + h) + f(x, y)
 
 	// w = L (u)
-	lapl.solve (&w[0], &u[0]);
+	lapl.calc (&w[0], &u[0]);
 	// dw = L (w)
-	lapl.solve (&dw[0], &w[0]);
+	lapl.calc (&dw[0], &w[0]);
 
 	// w/dt + mu (1-theta) L w
 	vec_sum1 (&FC[0], &w[0], &dw[0], 1.0 / tau,
@@ -146,7 +149,7 @@ void SphereBarvortex::calc (double * out, const double * u, double t)
 		// - k1 J(0.5(u+u), 0.5(w+w)) - k2 J(0.5(u+u), l + h)
 		jac.calc(&jac0[0], &tmp2[0], &tmp1[0]);
 		vec_sum1(&F[0], &FC[0], &jac0[0], 1.0, -1.0, n);
-		lapl.solve(&w_n[0], &F[0], -0.5 * mu, 1.0 / tau + 0.5 * sigma);
+		lapl.solve(&w_n[0], &F[0], -theta * mu, 1.0 / tau + theta * sigma);
 		lapl.solve(&u_n1[0], &w_n[0]);
 
 		nr = dist(&u_n1[0], &u_n[0]);

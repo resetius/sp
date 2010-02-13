@@ -50,8 +50,8 @@ double f (double x, double y, double t, SphereBarvortexConf * conf)
 
 void solve()
 {
-	long nlat = 19;
-	long nlon = 36;
+	long nlat = 3*19;
+	long nlon = 3*36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
@@ -106,12 +106,13 @@ void solve()
 					double lambda = j * dlon;
 
 					v[i * nlon + j] = ans (phi, lambda, t);
+					//fprintf(stderr, "%.16lf %.16lf \n", u[i * nlon + j], v[i * nlon + j]);
 				}
 			}
 
 			nev1 = bv.dist(&u[0], &v[0]);
 
-			fprintf (stderr, "nev1=%.16le \n", nev1);
+			fprintf (stderr, "time=%lf nev1=%.16le \n", t, nev1);
 		}
 		r.swap(u);
 
