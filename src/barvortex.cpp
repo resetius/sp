@@ -68,7 +68,7 @@ double SphereBarvortex::dist(const double * u, const double * v)
 	return norm(&tmp[0]);
 }
 
-void SphereBarvortex::calc (double * out, const double * u, double t)
+void SphereBarvortex::S_step (double * out, const double * u, double t)
 {
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
@@ -162,3 +162,118 @@ void SphereBarvortex::calc (double * out, const double * u, double t)
 	memcpy(out, &u_n[0], n * sizeof(double));
 }
 
+void SphereBarvortex::L_step(double *u1, const double *u, const double * z)
+{
+	long nlat    = conf.nlat;
+	long nlon    = conf.nlon;
+	long n       = conf.nlat * conf.nlon;
+	double theta = conf.theta;
+	double mu    = conf.mu;
+	double sigma = conf.sigma;
+	double tau   = conf.tau;
+
+	array_t z_lapl(n);
+
+	array_t pt1 (n); //лаплас, умноженный на коэф
+	array_t pt2 (n); //лаплас в квадрате, умноженный на коэф
+	array_t pt3 (n); //якобиан, умноженный на коэф
+
+	lapl.calc(&z_lapl[0], z);
+	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф, 
+
+	//умножаем позже, так как лаплас пока нужен
+	//		memset(pt3, 0, nn * sizeof(double));
+	//funct1.calc(&pt3[0], &u[0], &cor[0], z, &pt1[0], &z_lapl[0]);
+	//vector_mult_scalar(&pt3[0], &pt3[0], -conf->rho, nn);
+
+	//		memset(pt2, 0, nn * sizeof(double));
+	lapl.calc(&pt2[0], &pt1[0]);
+	vec_mult_scalar(&pt2[0], &pt2[0], (1. - theta) * mu, n);
+
+	vec_mult_scalar(&pt1[0], &pt1[0], 1.0 / tau - (1. - theta) * sigma, n);
+
+	memset(u1, 0, n * sizeof(double));
+	vec_sum(u1, u1, &pt1[0], n);
+	vec_sum(u1, u1, &pt2[0], n);
+	vec_sum(u1, u1, &pt3[0], n);
+
+	lapl.solve(u1, u1, - theta * mu, 1.0 / tau + theta * sigma);
+	lapl.solve(u1, u1);
+}
+
+void SphereBarvortex::LT_step(double *v1, const double *v, const double * z)
+{
+	long nlat    = conf.nlat;
+	long nlon    = conf.nlon;
+	long n       = conf.nlat * conf.nlon;
+	double theta = conf.theta;
+	double mu    = conf.mu;
+	double sigma = conf.sigma;
+	double tau   = conf.tau;
+
+	array_t z_lapl(n);
+
+	array_t pt1 (n); //лаплас, умноженный на коэф
+	array_t pt2 (n); //лаплас в квадрате, умноженный на коэф
+	array_t pt3 (n); //якобиан, умноженный на коэф
+
+	lapl.calc(&z_lapl[0], z);
+
+	lapl.solve(v1, v);
+	lapl.solve(v1, v1, - theta * mu, 1.0 / tau + theta * sigma);
+
+	lapl.calc(&pt1[0], v1);
+	vec_mult_scalar(&pt1[0], &pt1[0], 1.0 / tau - (1. - theta) * sigma, n);
+
+	lapl.calc(&pt2[0], v1);
+	lapl.calc(&pt2[0], &pt2[0]);
+
+	vec_mult_scalar(&pt2[0], &pt2[0], (1. - theta) * mu, n);
+
+	// TODO:
+	//funct2.calc(&pt3[0], v1, &cor[0], z, 0, &z_lapl[0]);
+	//vector_mult_scalar(&pt3[0], &pt3[0], -conf->rho, nn);
+
+	memset(v1, 0, n * sizeof(double));
+	vec_sum(v1, v1, &pt1[0], n);
+	vec_sum(v1, v1, &pt2[0], n);
+	vec_sum(v1, v1, &pt3[0], n);
+}
+
+void SphereBarvortex::L_1_step(double *u1, const double *u, const double * z)
+{
+	long nlat    = conf.nlat;
+	long nlon    = conf.nlon;
+	long n       = conf.nlat * conf.nlon;
+	double theta = conf.theta;
+	double mu    = conf.mu;
+	double sigma = conf.sigma;
+	double tau   = conf.tau;
+
+	array_t z_lapl(n);
+
+	array_t pt1 (n); //лаплас, умноженный на коэф
+	array_t pt2 (n); //лаплас в квадрате, умноженный на коэф
+	array_t pt3 (n); //якобиан, умноженный на коэф
+
+	lapl.calc(&z_lapl[0], z);
+	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф, 
+
+	//умножаем позже, так как лаплас пока нужен
+	// TODO: implement
+	//jac.calc(&pt3[0], u, &cor[0], z, &pt1[0], &z_lapl[0]);
+	//vec_mult_scalar(&pt3[0], &pt3[0], conf->rho, n);
+
+	lapl.calc(&pt2[0], &pt1[0]);
+	vec_mult_scalar(&pt2[0], &pt2[0], ( - theta) * mu, n);
+
+	vec_mult_scalar(&pt1[0], &pt1[0], 1 / tau + theta * sigma, n);
+
+	memset(u1, 0, n * sizeof(double));
+	vec_sum(u1, u1, &pt1[0], n);
+	vec_sum(u1, u1, &pt2[0], n);
+	vec_sum(u1, u1, &pt3[0], n);
+
+	lapl.solve(u1, u1, (1.0 - theta) * mu, 1 / tau - (1.0 - theta) * sigma);
+	lapl.solve(u1, u1);
+}

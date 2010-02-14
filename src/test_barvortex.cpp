@@ -50,8 +50,8 @@ double f (double x, double y, double t, SphereBarvortexConf * conf)
 
 void solve()
 {
-	long nlat = 3*19;
-	long nlon = 3*36;
+	long nlat = 19;
+	long nlon = 36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
@@ -92,7 +92,7 @@ void solve()
 
 	while (true)
 	{
-		bv.calc (&u[0], &r[0], t);
+		bv.S_step (&u[0], &r[0], t);
 		t += conf.tau;
 
 		if (it % 100 == 0)

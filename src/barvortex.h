@@ -42,7 +42,12 @@ public:
 	SphereBarvortex(const SphereBarvortexConf & conf);
 	~SphereBarvortex();
 
-	void calc(double * out, const double * in, double t);
+	void S_step(double * out, const double * in, double t);
+
+	void L_step(double * out, const double * in, const double * z);
+	void LT_step(double * out, const double * in, const double * z);
+	void L_1_step(double * out, const double * in, const double * z);
+
 	double scalar(const double * u, const double * v);
 	double dist(const double * u, const double * v);
 	double norm(const double * u);
