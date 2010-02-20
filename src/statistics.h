@@ -56,7 +56,7 @@ public:
 	{
 		array_t m2x_cur = m2x.current();
 		array_t mx2_cur = mx2.current();
-		array_t cur;
+		array_t cur(n);
 		for (int i0 = 0; i0 < n; ++i0) {
 			cur[i0] = mx2_cur[i0] - m2x_cur[i0] * m2x_cur[i0];
 		}
