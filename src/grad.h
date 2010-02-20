@@ -10,6 +10,7 @@ class SphereGrad
 	long nlat;
 	long nlon;
 	long mdab;
+	long mdb;
 
 	long slsave;
 	array_t swsave;
@@ -23,6 +24,18 @@ class SphereGrad
 	long vldwork;
 	array_t vdwork;
 
+	long islsave;
+	array_t iswsave;
+
+	long isldwork;
+	array_t isdwork;
+
+	long ivlsave;
+	array_t ivwsave;
+
+	long ivldwork;
+	array_t ivdwork;
+
 	long lwork;
 	array_t work;
 
@@ -31,6 +44,7 @@ public:
 	~SphereGrad();
 
 	void calc (double * duphi, double * dulambda, const double * u);
+	void solve (double * u, const double * duphi, const double * dulambda);
 };
 
 #endif /* GRAD_H */

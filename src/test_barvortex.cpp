@@ -152,6 +152,7 @@ void run_test()
 	int i, j, it = 0;
 
 	vector < double > u (nlat * nlon);
+	vector < double > v (nlat * nlon);
 	vector < double > U (nlat * nlon);
 	vector < double > r (nlat * nlon);
 	vector < double > f (nlat * nlon);
@@ -195,13 +196,17 @@ void run_test()
 		bv.S_step (&u[0], &r[0], t);
 		t += conf.tau;
 
-		nr = bv.norm(&u[0]);
-		fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
-
 		var.accumulate(u);
 
 		if (it % 100 == 0) {
+			nr = bv.norm(&u[0]);
+			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
+
 			grad.calc(&uu[0], &vv[0], &u[0]);
+			grad.solve(&v[0], &uu[0], &vv[0]);
+
+			fprintf(stderr, "selftest: %.16lf\n", bv.dist(&u[0], &v[0]));
+
 			vec_mult_scalar(&uu[0], &uu[0], -1.0, nlat * nlon);
 
 			char ubuf[1024]; char vbuf[1024]; char psibuf[1024];
