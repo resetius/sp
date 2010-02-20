@@ -126,24 +126,6 @@ double test_coriolis (double phi, double lambda)
 	return 2 * sin(phi) + 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
 }
 
-double kornev1_rp_(double phi, double lambda, double t, SphereBarvortexConf * conf)
-{
-	double x   = phi;
-
-	double pt1 = -0.5 * (sin(x)*M_PI*x-2*sin(x)*x*x);
-	if (fabs(pt1) > 1e-14) {
-		pt1 /= cos(x);
-	}
-
-	double omg = 2.*M_PI/24./60./60.; // ?
-	double TE  = 1./omg;
-	double U0  = 6.371e+6/TE;
-
-	double pt2 = -0.5*(-M_PI+4*x);
-	double f = - 16.0 / M_PI / M_PI * 30.0 / U0 * (pt1 + pt2);
-	return conf->sigma * f;
-}
-
 void run_test()
 {
 	long nlat = 19;
@@ -154,11 +136,11 @@ void run_test()
 	conf.nlon     = nlon;
 	conf.mu       = 6.77e-5;
 	conf.sigma    = 1.14e-2;
-	conf.tau      = 2 * M_PI / 12.;
+	conf.tau      = M_PI / 12.;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
-	conf.rp       = kornev1_rp_;
+	conf.rp       = 0;
 	conf.coriolis = test_coriolis;
 
 	double dlat = M_PI / (nlat - 1);
@@ -171,10 +153,12 @@ void run_test()
 	vector < double > u (nlat * nlon);
 	vector < double > v (nlat * nlon);
 	vector < double > r (nlat * nlon);
+	vector < double > f (nlat * nlon);
 
-	SphereBarvortex bv (conf);
-
-	double nev1 = 0;
+	double nr = 0;
+	double omg = 2.*M_PI/24./60./60.; // ?
+	double TE  = 1./omg;
+	double U0  = 6.371e+6/TE;
 
 	for (i = 0; i < nlat; ++i)
 	{
@@ -183,9 +167,18 @@ void run_test()
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			r[i * nlon + j] = ans (phi, lambda, t);
+			r[i * nlon + j] = -(M_PI / 4 * ipow(phi, 2) - ipow(phi, 3) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 		}
 	}
+
+	SphereLaplace lapl(nlat, nlon);
+
+	lapl.calc(&f[0], &r[0]);
+	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
+
+	conf.rp2 = &f[0];
+
+	SphereBarvortex bv (conf);
 
 	Variance < double > var(u.size());
 
@@ -193,6 +186,9 @@ void run_test()
 	{
 		bv.S_step (&u[0], &r[0], t);
 		t += conf.tau;
+
+		nr = bv.norm(&u[0]);
+		fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
 
 		var.accumulate(u);
 

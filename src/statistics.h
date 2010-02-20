@@ -44,7 +44,7 @@ public:
 
 	void accumulate(const array_t & value)
 	{
-		array_t tmp;
+		array_t tmp(n);
 		for (int i0 = 0; i0 < n; ++i0) {
 			tmp[i0] = value[i0] * value[i0];
 		}

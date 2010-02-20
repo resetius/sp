@@ -24,6 +24,7 @@ struct SphereBarvortexConf
 
 	coriolis_t coriolis;
 	rp_t rp;
+	double * rp2;
 };
 
 class SphereBarvortex
