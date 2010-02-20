@@ -206,13 +206,13 @@ void run_test()
 			char ubuf[1024]; char vbuf[1024]; char psibuf[1024];
 			char Ubuf[1024]; char Vbuf[1024]; char Psibuf[1024];
 
-			snprintf(ubuf, 1024,   "out/norm_u_06d.txt", it);
-			snprintf(vbuf, 1024,   "out/norm_v_06d.txt", it);
-			snprintf(psibuf, 1024, "out/norm_psi_06d.txt", it);
+			snprintf(ubuf, 1024,   "out/norm_u_%06d.txt", it);
+			snprintf(vbuf, 1024,   "out/norm_v_%06d.txt", it);
+			snprintf(psibuf, 1024, "out/norm_psi_%06d.txt", it);
 
-			snprintf(Ubuf, 1024,   "out/orig_u_06d.txt", it);
-			snprintf(Vbuf, 1024,   "out/orig_v_06d.txt", it);
-			snprintf(Psibuf, 1024, "out/orig_psi_06d.txt", it);
+			snprintf(Ubuf, 1024,   "out/orig_u_%06d.txt", it);
+			snprintf(Vbuf, 1024,   "out/orig_v_%06d.txt", it);
+			snprintf(Psibuf, 1024, "out/orig_psi_%06d.txt", it);
 
 			fprintfwmatrix(ubuf,   &uu[0], nlat, nlon, "%23.16lf ");
 			fprintfwmatrix(vbuf,   &vv[0], nlat, nlon, "%23.16lf ");
