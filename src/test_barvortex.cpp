@@ -174,14 +174,17 @@ void run_test()
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
-			r[i * nlon + j] = (phi > 0) ? ff : -ff;
+			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
+			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
+			u[i * nlon + j] = - (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
+			v[i * nlon + j] = 0;
 		}
 	}
 
 	SphereLaplace lapl(nlat, nlon);
 	SphereGrad grad(nlat, nlon);
 
+	grad.solve(&r[0], &u[0], &v[0]);
 	lapl.calc(&f[0], &r[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
