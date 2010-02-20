@@ -199,7 +199,7 @@ void run_test()
 
 		var.accumulate(u);
 
-		if (i % 100 == 0) {
+		if (it % 100 == 0) {
 			grad.calc(&uu[0], &vv[0], &u[0]);
 			vec_mult_scalar(&uu[0], &uu[0], -1.0, nlat * nlon);
 
