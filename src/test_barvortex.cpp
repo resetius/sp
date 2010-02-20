@@ -173,7 +173,8 @@ void run_test()
 			double phi    = -0.5 * M_PI + i * dlat;
 			double lambda = j * dlon;
 
-			r[i * nlon + j] = -(M_PI / 4 * ipow(phi, 2) - ipow(phi, 3) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
+			double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
+			r[i * nlon + j] = (phi > 0) ? ff : -ff;
 		}
 	}
 
@@ -236,8 +237,8 @@ void run_test()
 		vector < double > m = var.m_current();
 		vector < double > d = var.current();
 
-		fprintfwmatrix("m.txt", &m[0], nlat, nlon, "%23.16lf ");
-		fprintfwmatrix("d.txt", &d[0], nlat, nlon, "%23.16lf ");
+		fprintfwmatrix("out/m.txt", &m[0], nlat, nlon, "%23.16lf ");
+		fprintfwmatrix("out/d.txt", &d[0], nlat, nlon, "%23.16lf ");
 	}
 }
 
