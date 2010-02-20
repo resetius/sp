@@ -65,6 +65,6 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 		exit(1);
 	}
 
-	transpose (&duphi[0], &dutheta[0], nlon, nlat);
+	transpose (&duph[0], &dutheta[0], nlon, nlat);
 	transpose (&dulambda[0], &duphi[0], nlon, nlat);
 }

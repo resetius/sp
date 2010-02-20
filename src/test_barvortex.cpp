@@ -222,9 +222,9 @@ void run_test()
 			vec_mult_scalar(&vv[0], &vv[0], 1.0 / RE, nlon * nlat);
 			vec_mult_scalar(&U[0],  &u[0],  PSI0, nlon * nlat);
 
-			fprintfwmatrix(Ubuf,   &uu[0], nlat, nlon, "%23.16lf ");
-			fprintfwmatrix(Vbuf,   &vv[0], nlat, nlon, "%23.16lf ");
-			fprintfwmatrix(Psibuf,  &U[0], nlat, nlon, "%23.16lf ");
+			fprintfwmatrix(Ubuf,   &uu[0], nlat, nlon, "%23.16le ");
+			fprintfwmatrix(Vbuf,   &vv[0], nlat, nlon, "%23.16le ");
+			fprintfwmatrix(Psibuf,  &U[0], nlat, nlon, "%23.16le ");
 		}
 
 		r.swap(u);
