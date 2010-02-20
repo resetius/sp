@@ -41,3 +41,24 @@ void vec_mult_scalar(double * out, const double * a, double k1, int size)
 		out[i] = k1 * a[i];
 	}
 }
+
+void fprintfwmatrix(FILE * f, const double * u, long nlat, long nlon, const char * format)
+{
+	for (long i = 0; i < nlat; ++i) {
+		for (long j = 0; j < nlon; ++j) {
+			fprintf(f, format, u[i * nlon + j]);
+		}
+		fprintf(f, "\n");
+	}
+}
+
+void fprintfwmatrix(const char * fname, const double * u, long nlat, long nlon, const char * format)
+{
+	FILE * f = fopen(fname, "w");
+	if (!f) {
+		fprintf(stderr, "cannot open %s\n", fname);
+		exit(1);
+	}
+	fprintfwmatrix(f, u, nlat, nlon, format);
+	fclose(f);
+}

@@ -10,8 +10,8 @@ endif ()
 set(EXECUTABLE_OUTPUT_PATH "../bin")
 
 
-add_definitions(-D_USE_MATH_DEFINES)
-add_library(spherepack_ext statistics.h lapl.cpp chafe.cpp jac.cpp barvortex.cpp utils.cpp)
+add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS)
+add_library(spherepack_ext statistics.h grad.cpp lapl.cpp chafe.cpp jac.cpp barvortex.cpp utils.cpp)
 
 add_executable(helm helm.c)
 target_link_libraries(helm spherepack ${MATH})

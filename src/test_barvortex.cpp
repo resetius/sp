@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "barvortex.h"
+#include "grad.h"
 #include "utils.h"
 #include "statistics.h"
 
@@ -151,13 +152,18 @@ void run_test()
 	int i, j, it = 0;
 
 	vector < double > u (nlat * nlon);
-	vector < double > v (nlat * nlon);
+	vector < double > U (nlat * nlon);
 	vector < double > r (nlat * nlon);
 	vector < double > f (nlat * nlon);
+
+	vector < double > uu (nlat * nlon);
+	vector < double > vv (nlat * nlon);
 
 	double nr = 0;
 	double omg = 2.*M_PI/24./60./60.; // ?
 	double TE  = 1./omg;
+	double RE  = 6.371e+6;
+	double PSI0 = RE * RE / TE;
 	double U0  = 6.371e+6/TE;
 
 	for (i = 0; i < nlat; ++i)
@@ -172,6 +178,7 @@ void run_test()
 	}
 
 	SphereLaplace lapl(nlat, nlon);
+	SphereGrad grad(nlat, nlon);
 
 	lapl.calc(&f[0], &r[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
@@ -192,27 +199,45 @@ void run_test()
 
 		var.accumulate(u);
 
+		if (i % 100 == 0) {
+			grad.calc(&uu[0], &vv[0], &u[0]);
+			vec_mult_scalar(&uu[0], &uu[0], -1.0, nlat * nlon);
+
+			char ubuf[1024]; char vbuf[1024]; char psibuf[1024];
+			char Ubuf[1024]; char Vbuf[1024]; char Psibuf[1024];
+
+			snprintf(ubuf, 1024,   "out/norm_u_06d.txt", it);
+			snprintf(vbuf, 1024,   "out/norm_v_06d.txt", it);
+			snprintf(psibuf, 1024, "out/norm_psi_06d.txt", it);
+
+			snprintf(Ubuf, 1024,   "out/orig_u_06d.txt", it);
+			snprintf(Vbuf, 1024,   "out/orig_v_06d.txt", it);
+			snprintf(Psibuf, 1024, "out/orig_psi_06d.txt", it);
+
+			fprintfwmatrix(ubuf,   &uu[0], nlat, nlon, "%23.16lf ");
+			fprintfwmatrix(vbuf,   &vv[0], nlat, nlon, "%23.16lf ");
+			fprintfwmatrix(psibuf,  &u[0], nlat, nlon, "%23.16lf ");
+
+			vec_mult_scalar(&uu[0], &uu[0], 1.0 / RE, nlon * nlat);
+			vec_mult_scalar(&vv[0], &vv[0], 1.0 / RE, nlon * nlat);
+			vec_mult_scalar(&U[0],  &u[0],  PSI0, nlon * nlat);
+
+			fprintfwmatrix(Ubuf,   &uu[0], nlat, nlon, "%23.16lf ");
+			fprintfwmatrix(Vbuf,   &vv[0], nlat, nlon, "%23.16lf ");
+			fprintfwmatrix(Psibuf,  &U[0], nlat, nlon, "%23.16lf ");
+		}
+
 		r.swap(u);
 
 		it += 1;
 	}
 
 	{
-		FILE * f1 = fopen("m.txt", "wb");
-		FILE * f2 = fopen("d.txt", "wb");
 		vector < double > m = var.m_current();
 		vector < double > d = var.current();
-		for (i = 0; i < nlat; ++i)
-		{
-			for (j = 0; j < nlon; ++j)
-			{
-				fprintf(f1, "%.16lf ", m[i * nlon + j]);
-				fprintf(f2, "%.16lf ", d[i * nlon + j]);
-			}
-			fprintf(f1, "\n");
-			fprintf(f2, "\n");
-		}
-		fclose(f1);fclose(f2);
+
+		fprintfwmatrix("m.txt", &m[0], nlat, nlon, "%23.16lf ");
+		fprintfwmatrix("d.txt", &d[0], nlat, nlon, "%23.16lf ");
 	}
 }
 
