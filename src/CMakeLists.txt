@@ -11,7 +11,28 @@ set(EXECUTABLE_OUTPUT_PATH "../bin")
 
 
 add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS)
-add_library(spherepack_ext statistics.h grad.cpp lapl.cpp chafe.cpp jac.cpp barvortex.cpp utils.cpp)
+add_library(spherepack_ext 
+	statistics.h 
+
+	grad.cpp 
+	grad.h
+	lapl.cpp 
+	lapl.h
+	div.cpp
+	div.h
+	jac.cpp
+	jac.h
+	vorticity.h
+	vorticity.cpp
+
+	chafe.cpp 
+	chafe.h
+	barvortex.cpp 
+	barvortex.h
+
+	utils.cpp
+	utils.h
+	)
 
 add_executable(helm helm.c)
 target_link_libraries(helm spherepack ${MATH})
