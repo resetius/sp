@@ -122,9 +122,18 @@ void solve()
 	}
 }
 
+inline double sign(double k)
+{
+	if (k > 0) {
+		return 1.0;
+	} else {
+		return -1.0;
+	}
+}
+
 double test_coriolis (double phi, double lambda)
 {
-	return 2 * sin(phi) + 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+	return 2 * sin(phi) + 0.5 * cos(2 * lambda) * sign(2 * phi) * ipow(sin(2 * phi), 2);
 }
 
 void run_test()
@@ -147,7 +156,7 @@ void run_test()
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
 	double t = 0;
-	double T = 2 * M_PI * 1000.0;
+	double T = 2 * M_PI * 3000.0;
 
 	int i, j, it = 0;
 
@@ -156,6 +165,7 @@ void run_test()
 	vector < double > U (nlat * nlon);
 	vector < double > r (nlat * nlon);
 	vector < double > f (nlat * nlon);
+	vector < double > cor(nlat * nlon);
 
 	vector < double > uu (nlat * nlon);
 	vector < double > vv (nlat * nlon);
@@ -176,8 +186,13 @@ void run_test()
 
 			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
-			u[i * nlon + j] = - (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
+			if (phi > 0) {
+				u[i * nlon + j] = - (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
+			} else {
+				u[i * nlon + j] = - (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
+			}
 			v[i * nlon + j] = 0;
+			cor[i * nlon + j] = conf.coriolis(phi, lambda);
 		}
 	}
 
@@ -247,6 +262,8 @@ void run_test()
 
 		fprintfwmatrix("out/m.txt", &m[0], nlat, nlon, "%23.16lf ");
 		fprintfwmatrix("out/d.txt", &d[0], nlat, nlon, "%23.16lf ");
+		fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
+		fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
 	}
 }
 
