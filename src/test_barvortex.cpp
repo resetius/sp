@@ -158,7 +158,7 @@ void run_test(const char * srtm)
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
 	double t = 0;
-	double T = 2 * M_PI * 1000.0;
+	double T = 2 * M_PI * 10000.0;
 
 	int i, j, it = 0;
 
@@ -183,6 +183,11 @@ void run_test(const char * srtm)
 	ReliefLoader rel_loader(srtm);
 	rel_loader.get(&rel[0], nlat, nlon);
 
+	double rel_max = 0.0;
+	for (i = 0; i < nlat * nlon; ++i) {
+		if (rel_max < rel[i]) rel_max = rel[i];
+	}
+
 	for (i = 0; i < nlat; ++i)
 	{
 		for (j = 0; j < nlon; ++j)
@@ -195,11 +200,15 @@ void run_test(const char * srtm)
 			if (phi > 0) {
 				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			} else {
-				u[i * nlon + j] = (-phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
-			cor[i * nlon + j] = TE * rel[i * nlon + j] + 2 * sin(phi);
+
+			//cor[i * nlon + j] = 1000 * rel[i * nlon + j] / rel_max + 2 * sin(phi);
+			//
+			rel[i * nlon + j] = 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sign(phi) * sin(phi);
 		}
 	}
 

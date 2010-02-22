@@ -10,5 +10,5 @@ do
 	unset surface \n \
 	set cntrparam levels 20 \n \
 	set contour \n \
-	splot \"$i\" matrix with lines" | gnuplot > pics/$i.png
+	splot \"$i\" matrix with lines" | gnuplot > pics/$i.png 2>/dev/null
 done
