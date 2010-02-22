@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "vorticity.h"
 #include "spherepack.h"
 #include "utils.h"

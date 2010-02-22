@@ -157,7 +157,7 @@ void run_test()
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
 	double t = 0;
-	double T = 2 * M_PI * 3000.0;
+	double T = 2 * M_PI * 1000.0;
 
 	int i, j, it = 0;
 
@@ -188,9 +188,9 @@ void run_test()
 			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
 			if (phi > 0) {
-				u[i * nlon + j] = - (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			} else {
-				u[i * nlon + j] = - (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			cor[i * nlon + j] = conf.coriolis(phi, lambda);
@@ -201,8 +201,8 @@ void run_test()
 	SphereGrad grad(nlat, nlon);
 	SphereVorticity vor(nlat, nlon);
 
-	vor.calc(&r[0], &u[0], &v[0]);
-	lapl.calc(&f[0], &r[0]);
+	vor.calc(&f[0], &u[0], &v[0]);
+	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
 	conf.rp2 = &f[0];
@@ -213,6 +213,8 @@ void run_test()
 
 	fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
 	fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
+
+//	exit(1);
 
 	while (t < T)
 	{
@@ -226,9 +228,6 @@ void run_test()
 			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
 
 			grad.calc(&uu[0], &vv[0], &u[0]);
-			grad.solve(&v[0], &uu[0], &vv[0]);
-
-			fprintf(stderr, "selftest: %.16lf\n", bv.dist(&u[0], &v[0]));
 
 			vec_mult_scalar(&uu[0], &uu[0], -1.0, nlat * nlon);
 
