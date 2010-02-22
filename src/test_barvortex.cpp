@@ -180,8 +180,9 @@ void run_test(const char * srtm)
 	double RE  = 6.371e+6;
 	double PSI0 = RE * RE / TE;
 	double U0  = 6.371e+6/TE;
+	const char * fn = srtm ? srtm : "";
 
-	ReliefLoader rel_loader(srtm);
+	ReliefLoader rel_loader(fn);
 	rel_loader.get(&rel[0], nlat, nlon);
 
 	double rel_max = 0.0;
@@ -208,8 +209,8 @@ void run_test(const char * srtm)
 
 			//cor[i * nlon + j] = 1000 * rel[i * nlon + j] / rel_max + 2 * sin(phi);
 			//
-			//rel[i * nlon + j] = 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
-			rel[i * nlon + j] = rel[i * nlon + j];
+			//rel[i * nlon + j] = 1000 * 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+			//rel[i * nlon + j] = rel[i * nlon + j];
 			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sin(phi);
 		}
 	}

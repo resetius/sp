@@ -17,19 +17,16 @@ SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
 	double dlon = 2. * M_PI /nlon;
 
 
-	if (conf.coriolis)
+	for (int i = 0; i < nlat; ++i)
 	{
-		for (int i = 0; i < nlat; ++i)
+		double phi    = -0.5 * M_PI + i * dlat;
+		for (int j = 0; j < nlon; ++j)
 		{
-			double phi    = -0.5 * M_PI + i * dlat;
-			for (int j = 0; j < nlon; ++j)
-			{
-				double lambda = j * dlon;
-				if (conf.coriolis) {
-					lh[i * nlon + j] = conf.coriolis(phi, lambda);
-				} else if (conf.coriolis2) {
-					lh[i * nlon + j] = conf.coriolis2[i * nlon + j];
-				}
+			double lambda = j * dlon;
+			if (conf.coriolis) {
+				lh[i * nlon + j] = conf.coriolis(phi, lambda);
+			} else if (conf.coriolis2) {
+				lh[i * nlon + j] = conf.coriolis2[i * nlon + j];
 			}
 		}
 	}
