@@ -146,6 +146,7 @@ void run_test(const char * srtm)
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
+	conf.isym     = 1;
 	conf.mu       = 6.77e-5;
 	conf.sigma    = 1.14e-2;
 	conf.tau      = M_PI / 12.;
@@ -212,7 +213,7 @@ void run_test(const char * srtm)
 		}
 	}
 
-	SphereLaplace lapl(nlat, nlon);
+	SphereLaplace lapl(nlat, nlon, conf.isym);
 	SphereGrad grad(nlat, nlon);
 	SphereVorticity vor(nlat, nlon);
 

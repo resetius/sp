@@ -4,8 +4,8 @@
 #include "lapl.h"
 #include "utils.h"
 
-SphereLaplace::SphereLaplace (long nlat, long nlon) :
-		nlat (nlat), nlon (nlon),
+SphereLaplace::SphereLaplace (long nlat, long nlon, long isym) :
+		nlat (nlat), nlon (nlon), isym(isym),
 		lshaec (nlat* (nlat + 1) + 3* ( (nlat - 2) * (nlat - 1) + nlon + 15) ),
 		lshsec (lshaec), lwork(nlat*(2*nlon+3*(nlat+1)+2*nlat+1)), ldwork(nlat + 1),
 		wshaec(lshaec), wshsec(lshsec), work(lwork), dwork(ldwork)
@@ -35,7 +35,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 {
 	long ierror = 0;
 	long nt   = 1;
-	long isym = 0;
+
 	double pertrb = 0;
 	double koef   = -diag / mult;
 

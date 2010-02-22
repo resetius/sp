@@ -7,7 +7,8 @@
 using namespace std;
 
 SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
-		conf (conf), lapl (conf.nlat, conf.nlon), jac (conf.nlat, conf.nlon),
+		conf (conf), lapl (conf.nlat, conf.nlon, conf.isym), 
+			jac (conf.nlat, conf.nlon, conf.isym),
 		lh (conf.nlat * conf.nlon), cosi(conf.nlat)
 {
 	long nlat = conf.nlat;

@@ -8,6 +8,7 @@ class SphereJacobian
 	typedef std::vector < double > array_t;
 	long nlat;
 	long nlon;
+	long isym;
 	long mdab;
 
 	long slsave;
@@ -26,7 +27,7 @@ class SphereJacobian
 	array_t work;
 
 public:
-	SphereJacobian(long nlat, long nlon);
+	SphereJacobian(long nlat, long nlon, long isym);
 	~SphereJacobian();
 
 	void calc(double * out, const double * u, const double * v);

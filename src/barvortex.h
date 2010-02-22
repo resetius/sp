@@ -15,6 +15,8 @@ struct SphereBarvortexConf
 {
 	long nlat;
 	long nlon;
+	long isym;
+
 	double tau;
 	double sigma;
 	double mu;

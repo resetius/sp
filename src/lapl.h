@@ -9,6 +9,7 @@ class SphereLaplace {
 
 	long nlat;
 	long nlon;
+	long isym;
 
 	long lshaec;
 	long lshsec;
@@ -23,7 +24,7 @@ class SphereLaplace {
 	void init();
 
 public:
-	SphereLaplace(long nlat, long nlon);
+	SphereLaplace(long nlat, long nlon, long isym);
 	~SphereLaplace();
 
 	/**

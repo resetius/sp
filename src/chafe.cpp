@@ -4,7 +4,7 @@
 #include "utils.h"
 
 SphereChafe::SphereChafe(const SphereChafeConf & conf)
-	: conf(conf), lapl(conf.nlat, conf.nlon)
+	: conf(conf), lapl(conf.nlat, conf.nlon, 0)
 {
 }
 

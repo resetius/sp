@@ -7,8 +7,8 @@
 
 using namespace std;
 
-SphereJacobian::SphereJacobian (long nlat, long nlon) :
-		nlat (nlat), nlon (nlon), mdab ( (nlon + 2) / 2),
+SphereJacobian::SphereJacobian (long nlat, long nlon, long isym) :
+		nlat (nlat), nlon (nlon), isym(isym), mdab ( (nlon + 2) / 2),
 		slsave (5*nlat*nlat*nlon), swsave (slsave),
 		sldwork (4*nlat*nlat), sdwork (sldwork),
 		vlsave (5*nlat*nlat*nlon), vwsave (slsave),
@@ -36,7 +36,7 @@ SphereJacobian::~SphereJacobian()
 void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 {
 	long ierror = 0;
-	long isym   = 0;
+
 	long nt     = 1;
 	long n      = nlat * nlon;
 
