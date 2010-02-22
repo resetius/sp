@@ -24,7 +24,11 @@ SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
 			for (int j = 0; j < nlon; ++j)
 			{
 				double lambda = j * dlon;
-				lh[i * nlon + j] = conf.coriolis(phi, lambda);
+				if (conf.coriolis) {
+					lh[i * nlon + j] = conf.coriolis(phi, lambda);
+				} else if (conf.coriolis2) {
+					lh[i * nlon + j] = conf.coriolis2[i * nlon + j];
+				}
 			}
 		}
 	}

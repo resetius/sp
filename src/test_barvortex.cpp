@@ -8,6 +8,7 @@
 #include "grad.h"
 #include "vorticity.h"
 #include "utils.h"
+#include "srtm_rel.h"
 #include "statistics.h"
 
 #ifdef max
@@ -137,7 +138,7 @@ double test_coriolis (double phi, double lambda)
 	return 2 * sin(phi) + 0.5 * cos(2 * lambda) * sign(2 * phi) * ipow(sin(2 * phi), 2);
 }
 
-void run_test()
+void run_test(const char * srtm)
 {
 	long nlat = 19;
 	long nlon = 36;
@@ -152,7 +153,7 @@ void run_test()
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
 	conf.rp       = 0;
-	conf.coriolis = test_coriolis;
+	conf.coriolis = 0;//test_coriolis;
 
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -167,6 +168,7 @@ void run_test()
 	vector < double > r (nlat * nlon);
 	vector < double > f (nlat * nlon);
 	vector < double > cor(nlat * nlon);
+	vector < double > rel(nlat * nlon);
 
 	vector < double > uu (nlat * nlon);
 	vector < double > vv (nlat * nlon);
@@ -177,6 +179,9 @@ void run_test()
 	double RE  = 6.371e+6;
 	double PSI0 = RE * RE / TE;
 	double U0  = 6.371e+6/TE;
+
+	ReliefLoader rel_loader(srtm);
+	rel_loader.get(&rel[0], nlat, nlon);
 
 	for (i = 0; i < nlat; ++i)
 	{
@@ -193,7 +198,8 @@ void run_test()
 				u[i * nlon + j] = (-phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
-			cor[i * nlon + j] = conf.coriolis(phi, lambda);
+			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
+			cor[i * nlon + j] = TE * rel[i * nlon + j] + 2 * sin(phi);
 		}
 	}
 
@@ -206,12 +212,14 @@ void run_test()
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
 	conf.rp2 = &f[0];
+	conf.coriolis2 = &cor[0];
 
 	SphereBarvortex bv (conf);
 
 	Variance < double > var(u.size());
 
 	fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
+	fprintfwmatrix("out/rel.txt", &rel[0], nlat, nlon, "%23.16lf ");
 	fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
 
 //	exit(1);
@@ -273,6 +281,6 @@ void run_test()
 int main (int argc, char * argv[])
 {
 	//solve();
-	run_test();
+	run_test(argv[1]);
 }
 

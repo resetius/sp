@@ -32,6 +32,8 @@ add_library(spherepack_ext
 
 	utils.cpp
 	utils.h
+	srtm_rel.cpp
+	srtm_rel.h
 	)
 
 add_executable(helm helm.c)
