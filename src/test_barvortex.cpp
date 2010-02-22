@@ -6,6 +6,7 @@
 
 #include "barvortex.h"
 #include "grad.h"
+#include "vorticity.h"
 #include "utils.h"
 #include "statistics.h"
 
@@ -198,8 +199,9 @@ void run_test()
 
 	SphereLaplace lapl(nlat, nlon);
 	SphereGrad grad(nlat, nlon);
+	SphereVorticity vor(nlat, nlon);
 
-	grad.solve(&r[0], &u[0], &v[0]);
+	vor.calc(&r[0], &u[0], &v[0]);
 	lapl.calc(&f[0], &r[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
@@ -208,6 +210,9 @@ void run_test()
 	SphereBarvortex bv (conf);
 
 	Variance < double > var(u.size());
+
+	fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
+	fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
 
 	while (t < T)
 	{
@@ -262,8 +267,6 @@ void run_test()
 
 		fprintfwmatrix("out/m.txt", &m[0], nlat, nlon, "%23.16lf ");
 		fprintfwmatrix("out/d.txt", &d[0], nlat, nlon, "%23.16lf ");
-		fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
-		fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
 	}
 }
 

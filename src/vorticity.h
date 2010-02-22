@@ -9,6 +9,22 @@ class SphereVorticity
 
 	long nlat;
 	long nlon;
+	long mdc;
+
+	long islsave;
+	array_t iswsave;
+
+	long isldwork;
+	array_t isdwork;
+
+	long ivlsave;
+	array_t ivwsave;
+
+	long ivldwork;
+	array_t ivdwork;
+
+	long lwork;
+	array_t work;
 
 public:
 	SphereVorticity(long nlat, long nlon);
