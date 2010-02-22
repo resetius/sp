@@ -146,10 +146,10 @@ void run_test(const char * srtm)
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
-	conf.isym     = 1;
+	conf.isym     = 0;
 	conf.mu       = 6.77e-5;
 	conf.sigma    = 1.14e-2;
-	conf.tau      = M_PI / 12.;
+	conf.tau      = 2 * M_PI / 48.;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
@@ -208,8 +208,9 @@ void run_test(const char * srtm)
 
 			//cor[i * nlon + j] = 1000 * rel[i * nlon + j] / rel_max + 2 * sin(phi);
 			//
-			rel[i * nlon + j] = 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
-			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sign(phi) * sin(phi);
+			//rel[i * nlon + j] = 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+			rel[i * nlon + j] = rel[i * nlon + j];
+			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sin(phi);
 		}
 	}
 
@@ -218,6 +219,7 @@ void run_test(const char * srtm)
 	SphereVorticity vor(nlat, nlon);
 
 	vor.calc(&f[0], &u[0], &v[0]);
+	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
