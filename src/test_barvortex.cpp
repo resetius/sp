@@ -190,7 +190,7 @@ void run_test()
 			if (phi > 0) {
 				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			} else {
-				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (-phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			cor[i * nlon + j] = conf.coriolis(phi, lambda);
