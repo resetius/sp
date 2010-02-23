@@ -140,8 +140,8 @@ double test_coriolis (double phi, double lambda)
 
 void run_test(const char * srtm)
 {
-	long nlat = 19;
-	long nlon = 36;
+	long nlat = 3 * 19;
+	long nlon = 3 * 36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
@@ -184,7 +184,7 @@ void run_test(const char * srtm)
 	const char * fn = srtm ? srtm : "";
 
 	ReliefLoader rel_loader(fn);
-	//rel_loader.get(&rel[0], nlat, nlon);
+	rel_loader.get(&rel[0], nlat, nlon);
 
 	double rel_max = 0.0;
 	for (i = 0; i < nlat * nlon; ++i) {
@@ -202,9 +202,9 @@ void run_test(const char * srtm)
 			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
 			if (phi > 0) {
-				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 55.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			} else {
-				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 55.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
@@ -242,7 +242,7 @@ void run_test(const char * srtm)
 	fprintfwmatrix("out/rel.txt", &rel[0], nlat, nlon, "%23.16lf ");
 	fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
 
-//	exit(1);
+	//exit(1);
 
 	while (t < T)
 	{

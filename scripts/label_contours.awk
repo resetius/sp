@@ -64,7 +64,7 @@ $2=="Contour" {
     # Generate a fragment of the plot command for each contour
     if (inclt > 0) {
 	if ($3!="0,") plotcmd = plotcmd ",\\\n\t''"
-	plotcmd = plotcmd sprintf(" index %i title '%s' w l lt %i", plotindex, $5, plotindex)
+	plotcmd = plotcmd sprintf(" index %i title '%s' w l lt %i lw 2", plotindex, $5, plotindex)
     }
 }
 
@@ -125,7 +125,7 @@ contour_nb>=0 && label_nth>0 && ((NR-contour_startpt_NR-nfrom) % label_nth) == 1
     
 # Write out the entire plot command
 END {
-    print "\n" plotcmd
+    print "\n" plotcmd ", 'rel.dat' w l lc rgb '#c3b1b1' lt 0 lw 0.5 notitle"
 }
 
 
