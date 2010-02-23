@@ -140,8 +140,8 @@ double test_coriolis (double phi, double lambda)
 
 void run_test(const char * srtm)
 {
-	long nlat = 19;
-	long nlon = 36;
+	long nlat = 3 * 19;
+	long nlon = 3 * 36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
@@ -149,7 +149,7 @@ void run_test(const char * srtm)
 	conf.isym     = 0;
 	conf.mu       = 6.77e-5;
 	conf.sigma    = 1.14e-2;
-	conf.tau      = 2 * M_PI / 48.;
+	conf.tau      = 2 * M_PI / 24.;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
@@ -159,7 +159,7 @@ void run_test(const char * srtm)
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
 	double t = 0;
-	double T = 2 * M_PI * 10000.0;
+	double T = 2 * M_PI * 1000.0;
 
 	int i, j, it = 0;
 
@@ -188,6 +188,7 @@ void run_test(const char * srtm)
 	double rel_max = 0.0;
 	for (i = 0; i < nlat * nlon; ++i) {
 		if (rel_max < rel[i]) rel_max = rel[i];
+		//if (rel_max < fabs(rel[i])) rel_max = fabs(rel[i]);
 	}
 
 	for (i = 0; i < nlat; ++i)
@@ -200,9 +201,9 @@ void run_test(const char * srtm)
 			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
 			if (phi > 0) {
-				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 55.0 / U0);
 			} else {
-				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 55.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
@@ -210,7 +211,11 @@ void run_test(const char * srtm)
 			//cor[i * nlon + j] = 1000 * rel[i * nlon + j] / rel_max + 2 * sin(phi);
 			//
 			//rel[i * nlon + j] = 1000 * 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
-			//rel[i * nlon + j] = rel[i * nlon + j];
+			if (rel[i * nlon + j] > 0) {
+				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
+			} else {
+				rel[i * nlon + j] = 0.0;
+			}
 			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sin(phi);
 		}
 	}
@@ -220,7 +225,7 @@ void run_test(const char * srtm)
 	SphereVorticity vor(nlat, nlon);
 
 	vor.calc(&f[0], &u[0], &v[0]);
-	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+	//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
