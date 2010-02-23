@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 
 #include "vorticity.h"
@@ -71,4 +72,64 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 	}
 
 	transpose (&div[0], &vt[0], nlon, nlat);
+}
+
+void SphereVorticity::test()
+{
+	long n      = nlat * nlon;
+	int i, j;
+	array_t u(n);
+	array_t v(n);
+	array_t psi(n);
+	array_t psi1(n);
+
+
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+
+	for (i = 0; i < nlat; ++i)
+	{
+		double phi    = -0.5 * M_PI + i * dlat;
+
+		for (j = 0; j < nlon; ++j)
+		{
+			double lambda = j * dlon;
+			u[i * nlon + j]   =  (M_PI / 2 + phi) * (M_PI / 2. - phi);
+			psi[i * nlon + j] = 
+				- sin(phi) * (M_PI / 2 + phi) * (M_PI / 2. - phi) 
+				+ cos(phi) * (M_PI / 2 - phi) - cos(phi) * (M_PI / 2 + phi);
+			psi[i * nlon + j] /= cos(phi);
+		}
+	}
+
+	calc(&psi1[0], &u[0], &v[0]);
+	fprintf(stderr, "vorticity test= %.16lf\n", dist(&psi1[0], &psi[0]));
+}
+
+double SphereVorticity::scalar(const double * u, const double * v)
+{
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+
+	double sum = 0.0;
+	for (int i = 0; i < nlat; ++i) {
+		double phi    = -0.5 * M_PI + i * dlat;
+		for (int j = 0; j < nlon; ++j) {
+			sum += cos(phi) * u[i * nlon + j] * v[i * nlon + j];
+		}
+	}
+	return sum * dlat * dlon;
+}
+
+double SphereVorticity::norm(const double * u)
+{
+	return sqrt(scalar(u, u));
+}
+
+double SphereVorticity::dist(const double * u, const double * v)
+{
+	long n = nlat * nlon;
+	array_t tmp(n);
+	vec_sum1(&tmp[0], u, v, 1.0, -1.0, n);
+	return norm(&tmp[0]);
 }

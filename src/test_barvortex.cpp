@@ -140,8 +140,8 @@ double test_coriolis (double phi, double lambda)
 
 void run_test(const char * srtm)
 {
-	long nlat = 3 * 19;
-	long nlon = 3 * 36;
+	long nlat = 19;
+	long nlon = 36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
@@ -184,7 +184,7 @@ void run_test(const char * srtm)
 	const char * fn = srtm ? srtm : "";
 
 	ReliefLoader rel_loader(fn);
-	rel_loader.get(&rel[0], nlat, nlon);
+	//rel_loader.get(&rel[0], nlat, nlon);
 
 	double rel_max = 0.0;
 	for (i = 0; i < nlat * nlon; ++i) {
@@ -226,6 +226,7 @@ void run_test(const char * srtm)
 	SphereVorticity vor(nlat, nlon);
 
 	vor.calc(&f[0], &u[0], &v[0]);
+	vor.test();
 	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
