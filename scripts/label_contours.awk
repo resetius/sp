@@ -64,7 +64,7 @@ $2=="Contour" {
     # Generate a fragment of the plot command for each contour
     if (inclt > 0) {
 	if ($3!="0,") plotcmd = plotcmd ",\\\n\t''"
-	plotcmd = plotcmd sprintf(" index %i title '%s' w l lt %i lw 2", plotindex, $5, plotindex)
+	plotcmd = plotcmd sprintf(" index %i title '%s' w l lt %i lw 1.5", plotindex, $5, plotindex)
     }
 }
 
