@@ -149,7 +149,8 @@ void run_test(const char * srtm)
 	conf.isym     = 0;
 	conf.mu       = 6.77e-5;
 	conf.sigma    = 1.14e-2;
-	conf.tau      = 2 * M_PI / 24.;
+	int part_of_the_day = 24;
+	conf.tau      = 2 * M_PI / (double) part_of_the_day;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
@@ -225,7 +226,7 @@ void run_test(const char * srtm)
 	SphereVorticity vor(nlat, nlon);
 
 	vor.calc(&f[0], &u[0], &v[0]);
-	//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
@@ -249,7 +250,7 @@ void run_test(const char * srtm)
 
 		var.accumulate(u);
 
-		if (it % 100 == 0) {
+		if (it % part_of_the_day == 0) {
 			nr = bv.norm(&u[0]);
 			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
 
@@ -272,8 +273,8 @@ void run_test(const char * srtm)
 			fprintfwmatrix(vbuf,   &vv[0], nlat, nlon, "%23.16lf ");
 			fprintfwmatrix(psibuf,  &u[0], nlat, nlon, "%23.16lf ");
 
-			vec_mult_scalar(&uu[0], &uu[0], 1.0 / RE, nlon * nlat);
-			vec_mult_scalar(&vv[0], &vv[0], 1.0 / RE, nlon * nlat);
+			vec_mult_scalar(&uu[0], &uu[0], U0, nlon * nlat);
+			vec_mult_scalar(&vv[0], &vv[0], U0, nlon * nlat);
 			vec_mult_scalar(&U[0],  &u[0],  PSI0, nlon * nlat);
 
 			fprintfwmatrix(Ubuf,   &uu[0], nlat, nlon, "%23.16le ");
