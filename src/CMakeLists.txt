@@ -22,6 +22,8 @@ add_library(spherepack_ext
 	div.h
 	jac.cpp
 	jac.h
+	norm.cpp
+	norm.h
 	vorticity.h
 	vorticity.cpp
 

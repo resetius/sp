@@ -6,10 +6,10 @@
 
 using namespace std;
 
-SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
-		conf (conf), lapl (conf.nlat, conf.nlon, conf.isym), 
+SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) : SphereNorm(conf.nlat, conf.nlon),
+		conf (conf), lapl (conf.nlat, conf.nlon, conf.isym),
 			jac (conf.nlat, conf.nlon, conf.isym),
-		lh (conf.nlat * conf.nlon), cosi(conf.nlat)
+		lh (conf.nlat * conf.nlon)
 {
 	long nlat = conf.nlat;
 	long nlon = conf.nlon;
@@ -30,44 +30,10 @@ SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) :
 			}
 		}
 	}
-
-	for (int i = 0; i < nlat; ++i)
-	{
-		cosi[i] = cos(-0.5 * M_PI + i * dlat);
-	}
 }
 
 SphereBarvortex::~SphereBarvortex()
 {
-}
-
-double SphereBarvortex::scalar(const double * u, const double * v)
-{
-	long nlat = conf.nlat;
-	long nlon = conf.nlon;
-	double dlat = M_PI / (nlat - 1);
-	double dlon = 2. * M_PI / nlon;
-
-	double sum = 0.0;
-	for (int i = 0; i < nlat; ++i) {
-		for (int j = 0; j < nlon; ++j) {
-			sum += cosi[i] * u[i * nlon + j] * v[i * nlon + j];
-		}
-	}
-	return sum * dlat * dlon;
-}
-
-double SphereBarvortex::norm(const double * u)
-{
-	return sqrt(scalar(u, u));
-}
-
-double SphereBarvortex::dist(const double * u, const double * v)
-{
-	long n = conf.nlat * conf.nlon;
-	array_t tmp(n);
-	vec_sum1(&tmp[0], u, v, 1.0, -1.0, n);
-	return norm(&tmp[0]);
 }
 
 void SphereBarvortex::S_step (double * out, const double * u, double t)
@@ -139,7 +105,7 @@ void SphereBarvortex::S_step (double * out, const double * u, double t)
 	memcpy(&w_n[0], &w[0], n * sizeof(double));
 
 	// в FC содержится правая часть, которая не меняется при итерациях!
-	
+
 	for (int it = 0; it < 1000; ++it) {
 		// k1 J(0.5(u+u), 0.5(w+w)) + k2 J(0.5(u+u), l + h)   =
 		// = J(0.5 (u+u), 0.5 k1 (w+w)) + J(0.5 (u+u), k2 (l + h)) =
@@ -183,7 +149,7 @@ void SphereBarvortex::L_step(double *u1, const double *u, const double * z)
 	array_t pt3 (n); //якобиан, умноженный на коэф
 
 	lapl.calc(&z_lapl[0], z);
-	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф, 
+	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф,
 
 	//умножаем позже, так как лаплас пока нужен
 	//		memset(pt3, 0, nn * sizeof(double));
@@ -261,7 +227,7 @@ void SphereBarvortex::L_1_step(double *u1, const double *u, const double * z)
 	array_t pt3 (n); //якобиан, умноженный на коэф
 
 	lapl.calc(&z_lapl[0], z);
-	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф, 
+	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф,
 
 	//умножаем позже, так как лаплас пока нужен
 	// TODO: implement

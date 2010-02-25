@@ -7,7 +7,7 @@
 
 using namespace std;
 
-SphereVorticity::SphereVorticity(long nlat, long nlon):
+SphereVorticity::SphereVorticity(long nlat, long nlon): SphereNorm(nlat, nlon),
 	nlat(nlat), nlon(nlon),  mdc( (nlon+1)/2 ),
 
 	islsave (5*nlat*nlat*nlon), iswsave (islsave),
@@ -55,7 +55,7 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 	transpose (&ww[0], &u[0], nlat, nlon);
 
 	vhaec_(&nlat, &nlon, &ityp, &nt, &vv[0], &ww[0], &nlat, &nlon,
-		&br[0], &bi[0], &cr[0], &ci[0], &mdc, &nlat, 
+		&br[0], &bi[0], &cr[0], &ci[0], &mdc, &nlat,
 		&ivwsave[0], &ivlsave, &work[0], &lwork, &ierror);
 
 	if (ierror != 0) {
@@ -95,8 +95,8 @@ void SphereVorticity::test()
 		{
 			double lambda = j * dlon;
 			u[i * nlon + j]   =  (M_PI / 2 + phi) * (M_PI / 2. - phi);
-			psi[i * nlon + j] = 
-				- sin(phi) * (M_PI / 2 + phi) * (M_PI / 2. - phi) 
+			psi[i * nlon + j] =
+				- sin(phi) * (M_PI / 2 + phi) * (M_PI / 2. - phi)
 				+ cos(phi) * (M_PI / 2 - phi) - cos(phi) * (M_PI / 2 + phi);
 			psi[i * nlon + j] /= cos(phi);
 		}
@@ -106,30 +106,3 @@ void SphereVorticity::test()
 	fprintf(stderr, "vorticity test= %.16lf\n", dist(&psi1[0], &psi[0]));
 }
 
-double SphereVorticity::scalar(const double * u, const double * v)
-{
-	double dlat = M_PI / (nlat - 1);
-	double dlon = 2. * M_PI / nlon;
-
-	double sum = 0.0;
-	for (int i = 0; i < nlat; ++i) {
-		double phi    = -0.5 * M_PI + i * dlat;
-		for (int j = 0; j < nlon; ++j) {
-			sum += cos(phi) * u[i * nlon + j] * v[i * nlon + j];
-		}
-	}
-	return sum * dlat * dlon;
-}
-
-double SphereVorticity::norm(const double * u)
-{
-	return sqrt(scalar(u, u));
-}
-
-double SphereVorticity::dist(const double * u, const double * v)
-{
-	long n = nlat * nlon;
-	array_t tmp(n);
-	vec_sum1(&tmp[0], u, v, 1.0, -1.0, n);
-	return norm(&tmp[0]);
-}
