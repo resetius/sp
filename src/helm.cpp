@@ -8,6 +8,8 @@
 #undef max
 #endif
 
+#include "omp.h"
+
 static inline double max(double a, double b)
 {
 	return (a > b) ? a : b;
@@ -40,7 +42,10 @@ void solve()
 		}
 	}
 
-	lapl.solve(u, r, 1.0, -1.0);
+	omp_set_num_threads(4);
+	for (int i = 0; i < 100000; ++i) {
+		lapl.solve(u, r, 1.0, -1.0);
+	}
 
 
 	for (i = 0; i < nlat; ++i) {

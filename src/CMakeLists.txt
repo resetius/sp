@@ -56,3 +56,12 @@ target_link_libraries(test_chafe spherepack_ext spherepack ${MATH})
 add_executable(test_barvortex test_barvortex.cpp)
 target_link_libraries(test_barvortex spherepack_ext spherepack ${MATH})
 
+if (OPENMP_FOUND)
+	set_target_properties(helm PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(helm2 PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(test_lapl PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(test_jac PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(test_chafe PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+endif ()
+
