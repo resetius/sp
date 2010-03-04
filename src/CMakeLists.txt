@@ -1,6 +1,6 @@
 project(examples C)
 
-include_directories(../spherepack_c)
+include_directories(${SPHEREPACK_INCLUDE})
 
 
 if (NOT WIN32)
@@ -44,24 +44,24 @@ target_link_libraries(helm spherepack ${MATH})
 add_executable(helm2 helm.cpp)
 target_link_libraries(helm2 spherepack_ext spherepack ${MATH})
 
-add_executable(test_lapl test_lapl.cpp)
-target_link_libraries(test_lapl spherepack_ext spherepack ${MATH})
+add_executable(sp_test_lapl test_lapl.cpp)
+target_link_libraries(sp_test_lapl spherepack_ext spherepack ${MATH})
 
-add_executable(test_jac test_jac.cpp)
-target_link_libraries(test_jac spherepack_ext spherepack ${MATH})
+add_executable(sp_test_jac test_jac.cpp)
+target_link_libraries(sp_test_jac spherepack_ext spherepack ${MATH})
 
-add_executable(test_chafe test_chafe.cpp)
-target_link_libraries(test_chafe spherepack_ext spherepack ${MATH})
+add_executable(sp_test_chafe test_chafe.cpp)
+target_link_libraries(sp_test_chafe spherepack_ext spherepack ${MATH})
 
-add_executable(test_barvortex test_barvortex.cpp)
-target_link_libraries(test_barvortex spherepack_ext spherepack ${MATH})
+add_executable(sp_test_barvortex test_barvortex.cpp)
+target_link_libraries(sp_test_barvortex spherepack_ext spherepack ${MATH})
 
 if (OPENMP_FOUND)
 	set_target_properties(helm PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(helm2 PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
-	set_target_properties(test_lapl PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
-	set_target_properties(test_jac PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
-	set_target_properties(test_chafe PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
-	set_target_properties(test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(sp_test_lapl PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(sp_test_jac PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(sp_test_chafe PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(sp_test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 endif ()
 
