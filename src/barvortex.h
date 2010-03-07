@@ -5,6 +5,7 @@
 
 #include "lapl.h"
 #include "jac.h"
+#include "norm.h"
 
 struct SphereBarvortexConf;
 
@@ -30,7 +31,7 @@ struct SphereBarvortexConf
 	double * rp2;
 };
 
-class SphereBarvortex
+class SphereBarvortex: public SphereNorm
 {
 	typedef std::vector < double > array_t;
 
@@ -39,7 +40,6 @@ class SphereBarvortex
 	SphereJacobian jac;
 
 	array_t lh;
-	array_t cosi;
 
 public:
 
@@ -51,10 +51,6 @@ public:
 	void L_step(double * out, const double * in, const double * z);
 	void LT_step(double * out, const double * in, const double * z);
 	void L_1_step(double * out, const double * in, const double * z);
-
-	double scalar(const double * u, const double * v);
-	double dist(const double * u, const double * v);
-	double norm(const double * u);
 };
 
 #endif /* BARVORTEX_H */

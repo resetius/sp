@@ -2,8 +2,9 @@
 #define VORTICITY_H
 
 #include <vector>
+#include "norm.h"
 
-class SphereVorticity
+class SphereVorticity: public SphereNorm
 {
 	typedef std::vector < double > array_t;
 
@@ -32,10 +33,6 @@ public:
 
 	void calc(double * div, const double * u, const double *v);
 	void test();
-
-	double scalar(const double * u, const double * v);
-	double dist(const double * u, const double * v);
-	double norm(const double * u);
 };
 
 #endif /* VORTICITY_H */

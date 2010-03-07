@@ -138,10 +138,47 @@ double test_coriolis (double phi, double lambda)
 	return 2 * sin(phi) + 0.5 * cos(2 * lambda) * sign(2 * phi) * ipow(sin(2 * phi), 2);
 }
 
+void output_psi(const char * prefix, const char * suffix,
+				const double * psi, long nlat, long nlon,
+				double U0, double PSI0,
+				SphereGrad & grad)
+{
+	vector < double > u (nlat * nlon);
+	vector < double > v (nlat * nlon);
+	vector < double > Psi (nlat * nlon);
+
+	grad.calc(&u[0], &v[0], &psi[0]);
+
+	vec_mult_scalar(&u[0], &u[0], -1.0, nlat * nlon);
+
+	char ubuf[1024]; char vbuf[1024]; char psibuf[1024];
+	char Ubuf[1024]; char Vbuf[1024]; char Psibuf[1024];
+
+	snprintf(ubuf, 1024,   "out/%snorm_u%s.txt", prefix, suffix);
+	snprintf(vbuf, 1024,   "out/%snorm_v%s.txt", prefix, suffix);
+	snprintf(psibuf, 1024, "out/%snorm_psi%s.txt", prefix, suffix);
+
+	snprintf(Ubuf, 1024,   "out/%sorig_u%s.txt", prefix, suffix);
+	snprintf(Vbuf, 1024,   "out/%sorig_v%s.txt", prefix, suffix);
+	snprintf(Psibuf, 1024, "out/%sorig_psi%s.txt", prefix, suffix);
+
+	fprintfwmatrix(ubuf,   &u[0], nlat, nlon, "%23.16lf ");
+	fprintfwmatrix(vbuf,   &v[0], nlat, nlon, "%23.16lf ");
+	fprintfwmatrix(psibuf, &psi[0], nlat, nlon, "%23.16lf ");
+
+	vec_mult_scalar(&u[0], &u[0], U0, nlon * nlat);
+	vec_mult_scalar(&v[0], &v[0], U0, nlon * nlat);
+	vec_mult_scalar(&Psi[0],  &psi[0],  PSI0, nlon * nlat);
+
+	fprintfwmatrix(Ubuf,   &u[0], nlat, nlon, "%23.16le ");
+	fprintfwmatrix(Vbuf,   &v[0], nlat, nlon, "%23.16le ");
+	fprintfwmatrix(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
+}
+
 void run_test(const char * srtm)
 {
-	long nlat = 19;
-	long nlon = 36;
+	long nlat =  3 * 19;
+	long nlon =  3 * 36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
@@ -149,7 +186,7 @@ void run_test(const char * srtm)
 	conf.isym     = 0;
 	conf.mu       = 6.77e-5;
 	conf.sigma    = 1.14e-2;
-	int part_of_the_day = 24;
+	int part_of_the_day = 192;
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
@@ -166,14 +203,11 @@ void run_test(const char * srtm)
 
 	vector < double > u (nlat * nlon);
 	vector < double > v (nlat * nlon);
-	vector < double > U (nlat * nlon);
+
 	vector < double > r (nlat * nlon);
 	vector < double > f (nlat * nlon);
 	vector < double > cor(nlat * nlon);
 	vector < double > rel(nlat * nlon);
-
-	vector < double > uu (nlat * nlon);
-	vector < double > vv (nlat * nlon);
 
 	double nr = 0;
 	double omg = 2.*M_PI/24./60./60.; // ?
@@ -184,7 +218,7 @@ void run_test(const char * srtm)
 	const char * fn = srtm ? srtm : "";
 
 	ReliefLoader rel_loader(fn);
-	//rel_loader.get(&rel[0], nlat, nlon);
+	rel_loader.get(&rel[0], nlat, nlon);
 
 	double rel_max = 0.0;
 	for (i = 0; i < nlat * nlon; ++i) {
@@ -202,16 +236,18 @@ void run_test(const char * srtm)
 			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
 			if (phi > 0) {
-				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 55.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 100.0 / U0);
 			} else {
-				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 55.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 100.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
 
 			//cor[i * nlon + j] = 1000 * rel[i * nlon + j] / rel_max + 2 * sin(phi);
 			//
-			//rel[i * nlon + j] = 1000 * 0.5 * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+
+			//rel[i * nlon + j] = 0.5 * sign(phi) * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+
 			if (rel[i * nlon + j] > 0) {
 				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
 			} else {
@@ -228,6 +264,18 @@ void run_test(const char * srtm)
 	vor.calc(&f[0], &u[0], &v[0]);
 	vor.test();
 	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+#if 0
+	for (i = 0; i < nlat; ++i)
+	{
+		for (j = 0; j < nlon; ++j)
+		{
+			double phi    = -0.5 * M_PI + i * dlat;
+			if (phi < 0) {
+				f[i * nlon + j] *= -1.0;
+			}
+		}
+	}
+#endif
 	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
@@ -241,47 +289,31 @@ void run_test(const char * srtm)
 	fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
 	fprintfwmatrix("out/rel.txt", &rel[0], nlat, nlon, "%23.16lf ");
 	fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
+	fprintfwmatrix("out/u0.txt", &u[0], nlat, nlon, "%23.16lf ");
+	fprintfwmatrix("out/v0.txt", &v[0], nlat, nlon, "%23.16lf ");
 
-//	exit(1);
+	//exit(1);
 
 	while (t < T)
 	{
+		if (it % part_of_the_day == 0) {
+			char buf[1024];
+			nr = bv.norm(&r[0]);
+			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
+			snprintf(buf, 1024, "%06d", it);
+			output_psi("", buf, &r[0], nlat, nlon, U0, PSI0, grad);
+
+			vector < double > m = var.m_current();
+			vector < double > d = var.current();
+
+			output_psi("m_", "", &m[0], nlat, nlon, U0, PSI0, grad);
+			output_psi("d_", "", &d[0], nlat, nlon, U0, PSI0, grad);
+		}
+
 		bv.S_step (&u[0], &r[0], t);
 		t += conf.tau;
 
 		var.accumulate(u);
-
-		if (it % part_of_the_day == 0) {
-			nr = bv.norm(&u[0]);
-			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
-
-			grad.calc(&uu[0], &vv[0], &u[0]);
-
-			vec_mult_scalar(&uu[0], &uu[0], -1.0, nlat * nlon);
-
-			char ubuf[1024]; char vbuf[1024]; char psibuf[1024];
-			char Ubuf[1024]; char Vbuf[1024]; char Psibuf[1024];
-
-			snprintf(ubuf, 1024,   "out/norm_u_%06d.txt", it);
-			snprintf(vbuf, 1024,   "out/norm_v_%06d.txt", it);
-			snprintf(psibuf, 1024, "out/norm_psi_%06d.txt", it);
-
-			snprintf(Ubuf, 1024,   "out/orig_u_%06d.txt", it);
-			snprintf(Vbuf, 1024,   "out/orig_v_%06d.txt", it);
-			snprintf(Psibuf, 1024, "out/orig_psi_%06d.txt", it);
-
-			fprintfwmatrix(ubuf,   &uu[0], nlat, nlon, "%23.16lf ");
-			fprintfwmatrix(vbuf,   &vv[0], nlat, nlon, "%23.16lf ");
-			fprintfwmatrix(psibuf,  &u[0], nlat, nlon, "%23.16lf ");
-
-			vec_mult_scalar(&uu[0], &uu[0], U0, nlon * nlat);
-			vec_mult_scalar(&vv[0], &vv[0], U0, nlon * nlat);
-			vec_mult_scalar(&U[0],  &u[0],  PSI0, nlon * nlat);
-
-			fprintfwmatrix(Ubuf,   &uu[0], nlat, nlon, "%23.16le ");
-			fprintfwmatrix(Vbuf,   &vv[0], nlat, nlon, "%23.16le ");
-			fprintfwmatrix(Psibuf,  &U[0], nlat, nlon, "%23.16le ");
-		}
 
 		r.swap(u);
 
@@ -292,8 +324,8 @@ void run_test(const char * srtm)
 		vector < double > m = var.m_current();
 		vector < double > d = var.current();
 
-		fprintfwmatrix("out/m.txt", &m[0], nlat, nlon, "%23.16lf ");
-		fprintfwmatrix("out/d.txt", &d[0], nlat, nlon, "%23.16lf ");
+		output_psi("m_", "", &m[0], nlat, nlon, U0, PSI0, grad);
+		output_psi("d_", "", &d[0], nlat, nlon, U0, PSI0, grad);
 	}
 }
 
