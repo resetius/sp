@@ -17,6 +17,7 @@ extern "C" int yyget_lineno  (void);
 %}
 %union {
   char * str;
+  double number;
 }
 %parse-param { Parser * ptr }
 %token NAME
@@ -32,6 +33,7 @@ extern "C" int yyget_lineno  (void);
 %token DELTA
 %token ARROW
 %token <str> VAR
+%token <num> NUMBER
 %right '='
 %left '+' '-'
 %left '*' '/'
@@ -39,26 +41,31 @@ extern "C" int yyget_lineno  (void);
 %%
 
 body: '\n'
+	| clause '\n'
 	| body '\n'
 	| body clause '\n'
 	;
 
-clause: NAME ':' VAR {}
-	| PRECISSION ':' VAR {}
-	| METHOD ':' VAR {}
-	| SURFACE ':' VAR {}
-	| APPROXIMATION ':' VAR {}
+clause: 
+	NAME ':' VAR { fprintf(stderr, "name: %s\n", yytext); }
+	| PRECISSION ':' VAR { fprintf(stderr, "precission: %s\n", yytext); }
+	| METHOD ':' VAR { fprintf(stderr, "method: %s\n", yytext); }
+	| SURFACE ':' VAR { fprintf(stderr, "surface: %s\n", yytext); }
+	| APPROXIMATION ':' VAR { fprintf(stderr, "apporox: %s", yytext); }
 	| MAP ':' VAR ARROW VAR {}
 	| SCALAR ':' VAR {}
 	| FUNCTION ':' VAR {}
-	| FUNCTION ':' VAR '(' 'x', 'y' ')' {}
-	| FUNCTION ':' VAR '(' 'x', 'y', 't' ')' {}
+	| FUNCTION ':' VAR '(' VAR ',' VAR ')' {}
+	| FUNCTION ':' VAR '(' VAR ',' VAR ',' VAR ')' {}
 	| EQUATION ':' expr {}
 	;
 
 expr: VAR {}
+	| NUMBER {}
+	| VAR '[' NUMBER ']' {}
 	| '(' expr ')' {}
 	| expr '^' expr {}
+	| expr '_' expr {}
 	| expr '+' expr {}
 	| expr '-' expr {}
 	| expr '/' expr {}

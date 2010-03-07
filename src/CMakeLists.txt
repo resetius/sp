@@ -11,7 +11,7 @@ endif ()
 set(EXECUTABLE_OUTPUT_PATH "../bin")
 
 
-add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS)
+add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -DYY_NO_UNISTD_H)
 add_library(spherepack_ext 
 	statistics.h 
 
@@ -45,6 +45,9 @@ bison_target(generator_parser generator_parser.ypp
 	${CMAKE_CURRENT_SOURCE_DIR}/generator_parser.cpp)
 add_flex_bison_dependency(generator_scanner generator_parser)
 set(generator_source 
+	generator_parser.ypp 
+	generator_scanner.l 
+	generator_scanner.h 
 	${BISON_generator_parser_OUTPUTS}
 	${FLEX_generator_scanner_OUTPUTS}
 	)

@@ -8,7 +8,9 @@
 #undef max
 #endif
 
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 
 static inline double max(double a, double b)
 {
@@ -42,7 +44,10 @@ void solve()
 		}
 	}
 
+#ifdef _OPENMP
 	omp_set_num_threads(4);
+#endif
+
 	for (int i = 0; i < 100000; ++i) {
 		lapl.solve(u, r, 1.0, -1.0);
 	}
