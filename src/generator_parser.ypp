@@ -5,6 +5,10 @@
 #include <stdexcept>
 #include <sstream>
 
+extern "C" {
+#include "generator_scanner.h"
+}
+
 #include "generator.h"
 
 extern int yyerror(Parser * ptr, const char *s);
@@ -18,7 +22,7 @@ extern "C" int yyget_lineno  (void);
 %token NAME
 %token PRECISSION
 %token METHOD
-%token DOMAIN
+%token SURFACE
 %token APPROXIMATION
 %token MAP
 %token SCALAR
@@ -42,7 +46,7 @@ body: '\n'
 clause: NAME ':' VAR {}
 	| PRECISSION ':' VAR {}
 	| METHOD ':' VAR {}
-	| DOMAIN ':' VAR {}
+	| SURFACE ':' VAR {}
 	| APPROXIMATION ':' VAR {}
 	| MAP ':' VAR ARROW VAR {}
 	| SCALAR ':' VAR {}

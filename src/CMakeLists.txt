@@ -1,6 +1,7 @@
 project(examples C)
 
-include_directories(${SPHEREPACK_INCLUDE})
+include_directories(${SPHEREPACK_INCLUDE} .)
+message("d = ${SPHEREPACK_INCLUDE}")
 
 
 if (NOT WIN32)
@@ -38,6 +39,19 @@ add_library(spherepack_ext
 	srtm_rel.h
 	)
 
+flex_target(generator_scanner generator_scanner.l 
+	${CMAKE_CURRENT_SOURCE_DIR}/generator_scanner.c)
+bison_target(generator_parser generator_parser.ypp 
+	${CMAKE_CURRENT_SOURCE_DIR}/generator_parser.cpp)
+add_flex_bison_dependency(generator_scanner generator_parser)
+set(generator_source 
+	${BISON_generator_parser_OUTPUTS}
+	${FLEX_generator_scanner_OUTPUTS}
+	)
+add_library(generator ${generator_source})
+add_executable(gen_scheme generator_main.cpp)
+target_link_libraries(gen_scheme generator)
+
 add_executable(helm helm.c)
 target_link_libraries(helm spherepack ${MATH})
 
@@ -63,5 +77,6 @@ if (OPENMP_FOUND)
 	set_target_properties(sp_test_jac PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_chafe PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(gen_scheme PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 endif ()
 

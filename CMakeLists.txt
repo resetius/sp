@@ -1,6 +1,8 @@
 project(sph_ex)
 cmake_minimum_required(VERSION 2.8)
 
+find_package(BISON)
+find_package(FLEX)
 find_package(OpenMP)
 add_definitions(${OpenMP_C_FLAGS})
 
