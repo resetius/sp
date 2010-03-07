@@ -1,0 +1,75 @@
+%{
+
+#include <stdio.h>
+#include <math.h>
+#include <stdexcept>
+#include <sstream>
+
+#include "generator.h"
+
+extern int yyerror(Parser * ptr, const char *s);
+extern "C" int yyget_lineno  (void);
+
+%}
+%union {
+  char * str;
+}
+%parse-param { Parser * ptr }
+%token NAME
+%token PRECISSION
+%token METHOD
+%token DOMAIN
+%token APPROXIMATION
+%token MAP
+%token SCALAR
+%token FUNCTION
+%token EQUATION
+%token JACOBIAN
+%token DELTA
+%token ARROW
+%token <str> VAR
+%right '='
+%left '+' '-'
+%left '*' '/'
+%right '^'
+%%
+
+body: '\n'
+	| body '\n'
+	| body clause '\n'
+	;
+
+clause: NAME ':' VAR {}
+	| PRECISSION ':' VAR {}
+	| METHOD ':' VAR {}
+	| DOMAIN ':' VAR {}
+	| APPROXIMATION ':' VAR {}
+	| MAP ':' VAR ARROW VAR {}
+	| SCALAR ':' VAR {}
+	| FUNCTION ':' VAR {}
+	| EQUATION ':' expr {}
+	;
+
+expr: VAR {}
+	| '(' expr ')' {}
+	| expr '^' expr {}
+	| expr '+' expr {}
+	| expr '-' expr {}
+	| expr '/' expr {}
+	| expr '*' expr {}
+	| function expr {}
+	| expr '=' expr {}
+	;
+
+function: JACOBIAN {}
+	| DELTA {}
+	;
+%%
+int yyerror(Parser * ptr, const char * s)
+{
+	std::stringstream str;
+	str << "syntax error near line " << yyget_lineno() << "\n";
+	ptr->error = true;
+	throw std::logic_error(str.str());
+	return 0;
+}
