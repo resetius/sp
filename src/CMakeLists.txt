@@ -40,11 +40,13 @@ add_library(spherepack_ext
 	)
 
 flex_target(generator_scanner generator_scanner.l 
-	${CMAKE_CURRENT_SOURCE_DIR}/generator_scanner.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/generator_scanner.cpp)
 bison_target(generator_parser generator_parser.ypp 
 	${CMAKE_CURRENT_SOURCE_DIR}/generator_parser.cpp)
 add_flex_bison_dependency(generator_scanner generator_parser)
 set(generator_source 
+	generator.cpp
+	generator.h
 	generator_parser.ypp 
 	generator_scanner.l 
 	generator_scanner.h 

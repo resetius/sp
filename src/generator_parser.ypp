@@ -5,19 +5,15 @@
 #include <stdexcept>
 #include <sstream>
 
-extern "C" {
 #include "generator_scanner.h"
-}
-
 #include "generator.h"
 
 extern int yyerror(Parser * ptr, const char *s);
-extern "C" int yyget_lineno  (void);
 
 %}
 %union {
-  char * str;
-  double number;
+	char * str;
+	double number;
 }
 %parse-param { Parser * ptr }
 %token NAME
@@ -47,17 +43,51 @@ body: '\n'
 	;
 
 clause: 
-	NAME ':' VAR { fprintf(stderr, "name: %s\n", yytext); }
-	| PRECISSION ':' VAR { fprintf(stderr, "precission: %s\n", yytext); }
-	| METHOD ':' VAR { fprintf(stderr, "method: %s\n", yytext); }
-	| SURFACE ':' VAR { fprintf(stderr, "surface: %s\n", yytext); }
-	| APPROXIMATION ':' VAR { fprintf(stderr, "apporox: %s", yytext); }
-	| MAP ':' VAR ARROW VAR {}
-	| SCALAR ':' VAR {}
-	| FUNCTION ':' VAR {}
-	| FUNCTION ':' VAR '(' VAR ',' VAR ')' {}
-	| FUNCTION ':' VAR '(' VAR ',' VAR ',' VAR ')' {}
-	| EQUATION ':' expr {}
+	NAME ':' VAR 
+		{
+			ptr->set_name($3); free($3); 
+		}
+	| PRECISSION ':' VAR 
+		{
+			ptr->set_precission($3); 
+			free($3); 
+		}
+	| METHOD ':' VAR 
+		{
+			ptr->set_method($3); 
+			free($3); 
+		}
+	| SURFACE ':' VAR 
+		{ 
+			ptr->set_surface($3); 
+			free($3); 
+		}
+	| APPROXIMATION ':' VAR 
+		{ 
+			ptr->set_approximation($3); 
+			free($3); 
+		}
+	| MAP ':' VAR ARROW VAR 
+		{ 
+			ptr->add_map($3, $5); 
+			free($3); free($5); 
+		}
+	| SCALAR ':' VAR 
+		{ 
+			ptr->add_scalar($3); 
+			free($3); 
+		}
+	| FUNCTION ':' VAR '(' VAR ',' VAR ')' 
+		{ 
+			ptr->add_function($3, 2); 
+			free($3); free($5); free($7); 
+		}
+	| FUNCTION ':' VAR '(' VAR ',' VAR ',' VAR ')' 
+		{ 
+			ptr->add_function($3, 3); 
+			free($3); free($5); free($7); free($9);
+		}
+	| EQUATION ':' expr { ptr->new_equation(); }
 	;
 
 expr: VAR {}
@@ -65,15 +95,18 @@ expr: VAR {}
 	| VAR '[' NUMBER ']' {}
 	| '(' expr ')' {}
 	| expr '^' expr {}
-	| expr '_' expr {}
 	| expr '+' expr {}
 	| expr '-' expr {}
 	| expr '/' expr {}
 	| expr '*' expr {}
-	| function expr {}
+	| function '(' sexpr ')' {}
 	| expr '=' expr {}
 	;
 
+sexpr: expr
+	| sexpr ',' expr
+	;
+	
 function: JACOBIAN {}
 	| DELTA {}
 	;
@@ -81,7 +114,7 @@ function: JACOBIAN {}
 int yyerror(Parser * ptr, const char * s)
 {
 	std::stringstream str;
-	str << "syntax error near line " << yyget_lineno() << "\n";
+	str << "syntax error near line " << yyget_lineno();
 	ptr->error = true;
 	throw std::logic_error(str.str());
 	return 0;
