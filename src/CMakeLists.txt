@@ -1,8 +1,6 @@
 project(examples C)
 
 include_directories(${SPHEREPACK_INCLUDE} .)
-message("d = ${SPHEREPACK_INCLUDE}")
-
 
 if (NOT WIN32)
 set(MATH m)
@@ -51,7 +49,7 @@ set(generator_source
 	generator_harmonic.h
 	generator_parser.ypp 
 	generator_scanner.l 
-	generator_scanner.h 
+
 	${BISON_generator_parser_OUTPUTS}
 	${FLEX_generator_scanner_OUTPUTS}
 	)
