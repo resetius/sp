@@ -3,6 +3,7 @@
 %}
 %option 8bit
 %option outfile="generator_scanner.c" header-file="generator_scanner.h" case-insensitive
+WHITESPACE [ \t]
 %%
 "name" { return NAME; }
 "precission" { return PRECISSION; }
@@ -16,6 +17,7 @@
 "Jacobian" { return JACOBIAN; }
 "->" { return ARROW; }
 [0-9a-bA-B]+ { return VAR; }
+WHITESPACE {}
 "\n"    { ++yylineno; return '\n'; }
 . { return yytext[0]; }
 %%

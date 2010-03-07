@@ -51,6 +51,8 @@ clause: NAME ':' VAR {}
 	| MAP ':' VAR ARROW VAR {}
 	| SCALAR ':' VAR {}
 	| FUNCTION ':' VAR {}
+	| FUNCTION ':' VAR '(' 'x', 'y' ')' {}
+	| FUNCTION ':' VAR '(' 'x', 'y', 't' ')' {}
 	| EQUATION ':' expr {}
 	;
 

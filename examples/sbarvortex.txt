@@ -1,0 +1,27 @@
+name: SBarVortex
+precission: double
+method: harmonics
+surface: sphere
+
+approximation: time
+map: u->u'
+map: w->w'
+
+scalar: theta
+scalar: sigma
+scalar: mu
+scalar: tau
+scalar: k1
+scalar: k2
+function: f(x, y, t)
+function: l(x, y)
+function: h(x, y)
+
+equation: \
+	w'_(n+1) / tau - mu * theta * Delta(w'_(n+1)) + sigma * theta * w'_(n+1) \
+	= w / tau + mu * (1 - theta) * Delta(w) - sigma * (1 - theta) * w + f \
+	- Jacobian(theta * u'_n + (1-theta) * u, \
+	           k1 * (theta * w'_n + (1-theta) * w) + k2 * (l + h))
+
+equation: \
+	Delta (u'_(n+1)) = w'_(n+1)
