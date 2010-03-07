@@ -47,6 +47,8 @@ add_flex_bison_dependency(generator_scanner generator_parser)
 set(generator_source 
 	generator.cpp
 	generator.h
+	generator_harmonic.cpp
+	generator_harmonic.h
 	generator_parser.ypp 
 	generator_scanner.l 
 	generator_scanner.h 

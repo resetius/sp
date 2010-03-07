@@ -1,7 +1,7 @@
 name: SBarVortex
+method: harmonic
 
 precission: double
-method: harmonic
 surface: sphere
 approximation: time
 map: u->u'
