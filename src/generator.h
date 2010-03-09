@@ -44,6 +44,9 @@ struct Generator
 
 	virtual void make_header(const std::string & name, const std::string & h_name);
 	virtual void make(const std::string & class_name, const std::string & h_name, const std::string & cpp_name);
+
+	typedef std::set < std::string > methods_declrs_t;
+	methods_declrs_t methods_declrs;
 };
 
 struct Parser
