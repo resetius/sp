@@ -54,7 +54,7 @@ void Generator::set_precission(const std::string & p)
 	} else {
 		stringstream str;
 		str << "unknown precission " << p;
-		throw std::logic_error(str.str());
+		throw logic_error(str.str());
 	}
 }
 
@@ -64,14 +64,27 @@ void Generator::add_map(const std::string & from, const std::string & to)
 
 void Generator::add_scalar(const std::string &p)
 {
+	scalars.insert(p);
 }
 
 void Generator::add_function(const std::string &p, int args)
 {
+	if (args > 3 || args < 2) {
+		stringstream str;
+		str << p << ": args < 2 || args > 3 ";
+		throw logic_error(str.str());
+	}
+
+	functions[p] = args;
 }
 
 void Generator::new_equation()
 {
+}
+
+void Generator::make(const string & name, const string & h_name, const string & cpp_name)
+{
+	make_header(name, h_name);
 }
 
 Parser::Parser()
@@ -153,3 +166,13 @@ void Parser::new_equation()
 	check("equation");
 	generator->new_equation();
 }
+
+void Parser::make(const std::string & hname, const std::string & cppname)
+{
+	check("make");
+	if (name.empty()) {
+		throw logic_error("name not set !");
+	}
+	generator->make(name, hname, cppname);
+}
+

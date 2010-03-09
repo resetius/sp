@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 #include <memory>
 
 struct Generator;
@@ -20,6 +21,12 @@ struct Generator
 
 	int precission;
 
+	typedef std::set < std::string > scalars_t;
+	scalars_t scalars;
+
+	typedef std::map < std::string, int > functions_t;
+	functions_t functions;
+
 	Generator();
 	virtual ~Generator();
 
@@ -32,6 +39,9 @@ struct Generator
 	virtual void add_function(const std::string &p, int args);
 
 	virtual void new_equation();
+
+	virtual void make_header(const std::string & name, const std::string & h_name);
+	virtual void make(const std::string & class_name, const std::string & h_name, const std::string & cpp_name);
 };
 
 struct Parser
@@ -57,6 +67,7 @@ struct Parser
 	void new_equation();
 
 	void check(const std::string &p);
+	void make(const std::string & hname, const std::string & cppname);
 };
 
 #include "generator_harmonic.h"
