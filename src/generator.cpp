@@ -58,8 +58,9 @@ void Generator::set_precission(const std::string & p)
 	}
 }
 
-void Generator::add_map(const std::string & from, const std::string & to)
+void Generator::add_initial(const std::string & p)
 {
+	initials.insert(p);
 }
 
 void Generator::add_scalar(const std::string &p)
@@ -143,10 +144,10 @@ void Parser::set_approximation(const std::string &p)
 	generator->set_approximation(p);
 }
 
-void Parser::add_map(const std::string & from, const std::string & to)
+void Parser::add_initial(const std::string & p)
 {
-	check("map");
-	generator->add_map(from, to);
+	check("initial");
+	generator->add_initial(p);
 }
 
 void Parser::add_scalar(const std::string &p)

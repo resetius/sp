@@ -23,6 +23,8 @@ struct Generator
 
 	typedef std::set < std::string > scalars_t;
 	scalars_t scalars;
+	typedef std::set < std::string > initials_t;
+	initials_t initials;
 
 	typedef std::map < std::string, int > functions_t;
 	functions_t functions;
@@ -34,7 +36,7 @@ struct Generator
 	virtual void set_approximation(const std::string &p) = 0;
 	virtual void set_precission(const std::string & p);
 
-	virtual void add_map(const std::string & from, const std::string & to);
+	virtual void add_initial(const std::string &var);
 	virtual void add_scalar(const std::string &p);
 	virtual void add_function(const std::string &p, int args);
 
@@ -60,7 +62,7 @@ struct Parser
 	void set_surface(const std::string &p);
 	void set_approximation(const std::string &p);
 
-	void add_map(const std::string & from, const std::string & to);
+	void add_initial(const std::string &p);
 	void add_scalar(const std::string &p);
 	void add_function(const std::string &p, int args);
 

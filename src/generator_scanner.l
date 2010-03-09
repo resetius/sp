@@ -17,7 +17,8 @@ int isatty (int )
 "method" { return METHOD; }
 "surface" { return SURFACE; }
 "approximation" { return APPROXIMATION; }
-"map" { return MAP; }
+"initial" { return INITIAL; }
+"declare" { return DECLARE; }
 "scalar" { return SCALAR; }
 "function" { return FUNCTION; }
 "equation" { return EQUATION; }
