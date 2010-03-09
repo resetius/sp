@@ -31,7 +31,6 @@ void Generator::make_header(const string & name, const string & h_name)
 "#define %s\n"
 "/* generated file ! do not edit !*/ \n\n"
 "#include <string.h>\n\n"
-"#include <memory>\n\n"
 , upper(name).c_str(), upper(name).c_str());
 
 	fprintf(f,
@@ -69,8 +68,7 @@ fprintf(f,
 fprintf(f,
 "class %s\n"
 "{\n"
-"	class PImpl;\n"
-"	std::auto_ptr < PImpl > impl;\n\n"
+"/* locals here */\n"
 "public:\n"
 "	%s(const %sConf & conf);\n\n"
 , name.c_str(), name.c_str(), name.c_str()
