@@ -25,13 +25,15 @@ int yywrap()
 	return 1;
 }
 
+void do_parse(Parser * ptr);
+
 void do_all(FILE * f, const string & hname, const string & cppname)
 {
 	Parser p;
 	yyset_in(f);
 
 	try {
-		while (yyparse(&p));
+		do_parse(&p);
 		p.make(hname, cppname);
 	} catch (exception & e) {
 		fprintf(stderr, "%s\n", e.what());

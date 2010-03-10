@@ -6,6 +6,8 @@
 #include <sstream>
 #include <memory>
 
+#define YY_DECL int yylex( YYSTYPE & yylval )
+
 #include "generator_scanner.h"
 #include "generator.h"
 
@@ -20,6 +22,8 @@ using namespace std;
 	struct Expression * exp;
 }
 %parse-param { Parser * ptr }
+%define api.pure
+%define api.push_pull "push"
 %token NAME
 %token PRECISSION
 %token METHOD
@@ -43,6 +47,7 @@ using namespace std;
 %left '*' '/'
 %left ','
 %right '^'
+%destructor { fprintf(stderr, "destroy %s\n", $$); free($$); } <str>
 %%
 
 body: '\n'
@@ -157,3 +162,22 @@ int yyerror(Parser * ptr, const char * s)
 	return 0;
 }
 
+int yylex( YYSTYPE & );
+
+void do_parse(Parser * ptr)
+{
+	int yychar;
+	int status;
+	yypstate *ps = yypstate_new ();
+	try {
+		do {
+			YYSTYPE val;
+			yychar = yylex (val);
+			status = yypush_parse (ps, yychar, &val, ptr);
+		} while (status == YYPUSH_MORE);
+	} catch ( exception & e) {
+		yypstate_delete (ps);
+		throw;
+	}
+	yypstate_delete (ps);
+}

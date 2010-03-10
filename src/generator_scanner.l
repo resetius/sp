@@ -1,5 +1,8 @@
 %{
+struct Parser;
 #include "generator_parser.hpp"
+
+#define YY_DECL int yylex( YYSTYPE & yylval )
 
 int isatty (int )
 {
