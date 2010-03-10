@@ -1,11 +1,13 @@
 #include <math.h>
+#include <assert.h>
+
 #include <stdexcept>
 #include <sstream>
 #include "generator.h"
 
 using namespace std;
 
-Expression & Expression::operator = (const std::string & s)
+Expression & Expression::operator = (const std::string & s) throw()
 {
 	if (s == "Jacobian" || s == "Delta") {
 		type = OPERATOR;
@@ -16,14 +18,14 @@ Expression & Expression::operator = (const std::string & s)
 	return *this;
 }
 
-Expression & Expression::operator = (double v)
+Expression & Expression::operator = (double v) throw()
 {
 	type = NUMBER;
 	num  = v;
 	return *this;
 }
 
-Expression & Expression::operator += (const Expression & other)
+Expression & Expression::operator += (const Expression & other) throw()
 {
 	if (type == NUMBER && other.type == NUMBER) {
 		num -= other.num;
@@ -31,7 +33,7 @@ Expression & Expression::operator += (const Expression & other)
 	return *this;
 }
 
-Expression & Expression::operator -= (const Expression & other)
+Expression & Expression::operator -= (const Expression & other) throw()
 {
 	if (type == NUMBER && other.type == NUMBER) {
 		num += other.num;
@@ -39,7 +41,7 @@ Expression & Expression::operator -= (const Expression & other)
 	return *this;
 }
 
-Expression & Expression::operator /= (const Expression & other)
+Expression & Expression::operator /= (const Expression & other) throw()
 {
 	if (type == NUMBER && other.type == NUMBER) {
 		num /= other.num;
@@ -47,7 +49,7 @@ Expression & Expression::operator /= (const Expression & other)
 	return *this;
 }
 
-Expression & Expression::operator *= (const Expression & other)
+Expression & Expression::operator *= (const Expression & other) throw()
 {
 	if (type == NUMBER && other.type == NUMBER) {
 		num *= other.num;
@@ -55,7 +57,7 @@ Expression & Expression::operator *= (const Expression & other)
 	return *this;
 }
 
-Expression & Expression::operator ^= (const Expression & other)
+Expression & Expression::operator ^= (const Expression & other) throw()
 {
 	if (type == NUMBER && other.type == NUMBER) {
 		num = pow(num, other.num);
@@ -63,25 +65,23 @@ Expression & Expression::operator ^= (const Expression & other)
 	return *this;
 }
 
-Expression & Expression::operator , (Expression & other)
+Expression & Expression::operator , (const Expression & other) throw()
 {
 	if (type != LIST) {
 		type = LIST;
-		sexpr.push_back(new Expression(*this));
+		sexpr.push_back(*this);
 	}
-	sexpr.push_back(&other);
+	sexpr.push_back(other);
 	return * this;
 }
 
-Expression & Expression::operator () (Expression & other)
+Expression & Expression::operator () (const Expression & other) throw()
 {
-	if (!(type == OPERATOR && 
+	assert ((type == OPERATOR && 
 		(other.type == LIST 
 		|| other.type == STRING 
-		|| other.type == NUMBER))) 
-	{
-		throw logic_error("syntax error");
-	}
+		|| other.type == NUMBER)));
+
 	sexpr = other.sexpr;
 	return * this;
 }

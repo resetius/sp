@@ -27,21 +27,21 @@ struct Expression
 	std::string str; // var or operator name
 	double num;      // number
 
-	typedef std::list < Expression * > stack_t;
+	typedef std::list < Expression > stack_t;
 	stack_t stack;
 
-	typedef std::list < Expression * > list_t;
+	typedef std::list < Expression > list_t;
 	list_t sexpr;
 
-	Expression & operator = (const std::string & s);
-	Expression & operator = (double v);
-	Expression & operator += (const Expression & other);
-	Expression & operator -= (const Expression & other);
-	Expression & operator /= (const Expression & other);
-	Expression & operator *= (const Expression & other);
-	Expression & operator ^= (const Expression & other);
-	Expression & operator , (Expression & other);
-	Expression & operator () (Expression & other);
+	Expression & operator = (const std::string & s) throw();
+	Expression & operator = (double v) throw();
+	Expression & operator += (const Expression & other) throw();
+	Expression & operator -= (const Expression & other) throw();
+	Expression & operator /= (const Expression & other) throw();
+	Expression & operator *= (const Expression & other) throw();
+	Expression & operator ^= (const Expression & other) throw();
+	Expression & operator , (const Expression & other) throw();
+	Expression & operator () (const Expression & other) throw();
 	~Expression();
 
 protected:
@@ -82,8 +82,7 @@ struct Generator
 	declarations_t declarations;
 
 	virtual void add_declaration(const std::string &p, Expression * e);
-
-	virtual void new_equation();
+	virtual void add_equation(Expression * lp, Expression * rp);
 
 	virtual void make_header(const std::string & name, const std::string & h_name);
 	virtual void make(const std::string & class_name, const std::string & h_name, const std::string & cpp_name);
@@ -118,7 +117,7 @@ struct Parser
 	void add_function(const std::string &p, int args);
 	void add_declaration(const std::string &p, Expression * e);
 
-	void new_equation();
+	void add_equation(Expression * lp, Expression * rp);
 
 	void check(const std::string &p);
 	void check_var(const std::string &p);

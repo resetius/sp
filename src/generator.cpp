@@ -113,7 +113,7 @@ void Generator::check_var(const std::string &p)
 	}
 }
 
-void Generator::new_equation()
+void Generator::add_equation(Expression * lp, Expression * rp)
 {
 	fprintf(stderr, "new equation ");
 }
@@ -203,10 +203,10 @@ void Parser::add_function(const std::string &p, int args)
 	generator->add_function(p, args);
 }
 
-void Parser::new_equation()
+void Parser::add_equation(Expression * lp, Expression * rp)
 {
 	check("equation");
-	generator->new_equation();
+	generator->add_equation(lp, rp);
 }
 
 void Parser::add_declaration(const std::string &p, Expression * e)
