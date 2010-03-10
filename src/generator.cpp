@@ -28,6 +28,11 @@ Generator::Generator(): precission(0)
 
 Generator::~Generator()
 {
+	for (declarations_t::iterator it = declarations.begin();
+		it != declarations.end(); ++it)
+	{
+		delete it->second;
+	}
 }
 
 int register_generator(const std::string & name, generator_creator_t creator)
@@ -84,6 +89,17 @@ void Generator::add_function(const std::string &p, int args)
 	functions[p] = args;
 }
 
+void Generator::add_declaration(const std::string &p, Expression * e)
+{
+	if (declarations.find(p) != declarations.end()) {
+		stringstream str;
+		str << p << " already declared";
+		throw logic_error(str.str());
+	}
+
+	declarations[p] = e;
+}
+
 void Generator::new_equation()
 {
 	fprintf(stderr, "new equation ");
@@ -92,7 +108,6 @@ void Generator::new_equation()
 Expression *  Generator::new_expression()
 {
 	Expression * exp = new Expression(this);
-	expressions.insert(exp);
 	return exp;
 }
 
@@ -181,6 +196,12 @@ void Parser::new_equation()
 	generator->new_equation();
 }
 
+void Parser::add_declaration(const std::string &p, Expression * e)
+{
+	check("declaration");
+	generator->add_declaration(p, e);
+}
+
 void Parser::make(const std::string & hname, const std::string & cppname)
 {
 	check("make");
@@ -192,7 +213,6 @@ void Parser::make(const std::string & hname, const std::string & cppname)
 
 Expression::~Expression()
 {
-	g->expressions.erase(this);
 }
 
 Expression * Parser::new_expression()

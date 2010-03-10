@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <list>
 #include <memory>
 
 struct Generator;
@@ -19,68 +20,32 @@ struct Expression
 		STRING   = 0,
 		NUMBER   = 1,
 		OPERATOR = 2,
-		COMPLEX  = 3,
+		LIST     = 3,
+		COMPLEX  = 4,
 	};
 	int type;
-	std::string str;
-	double num;
+	std::string str; // var or operator name
+	double num;      // number
 
-	Expression & operator = (const std::string & s)
-	{
-		if (s == "Jacobian" || s == "Delta") {
-			type = OPERATOR;
-		} else {
-			type = STRING;
-		}
-		str  = s;
-	}
+	typedef std::list < Expression * > stack_t;
+	stack_t stack;
 
-	Expression & operator = (double v)
-	{
-		type = NUMBER;
-		num  = v;
-	}
+	typedef std::list < Expression * > list_t;
+	list_t sexpr;
 
-	Expression & operator += (const Expression & other)
-	{
-		return *this;
-	}
-
-	Expression & operator -= (const Expression & other)
-	{
-		return *this;
-	}
-
-	Expression & operator /= (const Expression & other)
-	{
-		return *this;
-	}
-
-	Expression & operator *= (const Expression & other)
-	{
-		return *this;
-	}
-
-	Expression & operator ^= (const Expression & other)
-	{
-		return *this;
-	}
-
-	Expression & operator , (const Expression & other)
-	{
-		return * this;
-	}
-
-	Expression & operator () (const Expression & other)
-	{
-		return * this;
-	}
-
+	Expression & operator = (const std::string & s);
+	Expression & operator = (double v);
+	Expression & operator += (const Expression & other);
+	Expression & operator -= (const Expression & other);
+	Expression & operator /= (const Expression & other);
+	Expression & operator *= (const Expression & other);
+	Expression & operator ^= (const Expression & other);
+	Expression & operator , (Expression & other);
+	Expression & operator () (Expression & other);
 	~Expression();
 
 protected:
 	Expression(Generator * p): g(p) {};
-	Expression(const Expression&);
 	friend struct Generator;
 };
 
@@ -113,6 +78,11 @@ struct Generator
 	virtual void add_scalar(const std::string &p);
 	virtual void add_function(const std::string &p, int args);
 
+	typedef std::map < std::string , Expression * > declarations_t;
+	declarations_t declarations;
+
+	virtual void add_declaration(const std::string &p, Expression * e);
+
 	virtual void new_equation();
 
 	virtual void make_header(const std::string & name, const std::string & h_name);
@@ -120,9 +90,6 @@ struct Generator
 
 	typedef std::set < std::string > methods_declrs_t;
 	methods_declrs_t methods_declrs;
-
-	typedef std::set < Expression * > expressions_t;
-	expressions_t expressions;
 
 	Expression * new_expression();
 
@@ -148,6 +115,7 @@ struct Parser
 	void add_initial(const std::string &p);
 	void add_scalar(const std::string &p);
 	void add_function(const std::string &p, int args);
+	void add_declaration(const std::string &p, Expression * e);
 
 	void new_equation();
 

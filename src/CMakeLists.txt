@@ -48,6 +48,7 @@ set(generator_source
 	generator_header.cpp
 	generator_harmonic.cpp
 	generator_harmonic.h
+	generator_expression.cpp
 	generator_parser.ypp 
 	generator_scanner.l 
 
