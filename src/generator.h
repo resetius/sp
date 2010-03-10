@@ -87,6 +87,7 @@ struct Generator
 
 	virtual void make_header(const std::string & name, const std::string & h_name);
 	virtual void make(const std::string & class_name, const std::string & h_name, const std::string & cpp_name);
+	virtual void check_var(const std::string &p);
 
 	typedef std::set < std::string > methods_declrs_t;
 	methods_declrs_t methods_declrs;
@@ -120,6 +121,7 @@ struct Parser
 	void new_equation();
 
 	void check(const std::string &p);
+	void check_var(const std::string &p);
 	void make(const std::string & hname, const std::string & cppname);
 
 	Expression * new_expression();

@@ -100,6 +100,19 @@ void Generator::add_declaration(const std::string &p, Expression * e)
 	declarations[p] = e;
 }
 
+void Generator::check_var(const std::string &p)
+{
+	bool flag = false;
+	flag |= (declarations.find(p) != declarations.end());
+	flag |= (initials.find(p) != initials.end());
+
+	if (!flag) {
+		stringstream str;
+		str << "symbol " << p << " is not defined";
+		throw logic_error(str.str());
+	}
+}
+
 void Generator::new_equation()
 {
 	fprintf(stderr, "new equation ");
@@ -209,6 +222,11 @@ void Parser::make(const std::string & hname, const std::string & cppname)
 		throw logic_error("name not set !");
 	}
 	generator->make(name, hname, cppname);
+}
+
+void Parser::check_var(const std::string &p)
+{
+	generator->check_var(p);
 }
 
 Expression::~Expression()

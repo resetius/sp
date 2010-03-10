@@ -108,6 +108,7 @@ expr:
 	VAR 
 		{ 
 			$$    = ptr->new_expression(); 
+			ptr->check_var($1);
 			*($$) = $1; 
 			fprintf(stderr, "%s\n", $1); free($1); 
 		}
@@ -120,6 +121,7 @@ expr:
 	| VAR '[' NUMBER ']' 
 		{
 			$$    = ptr->new_expression();
+			ptr->check_var($1);
 			*($$) = $1;
 			fprintf(stderr, "%s\n", $1); fprintf(stderr, "%d\n", $3); free($1); 
 		}
