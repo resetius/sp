@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include <stdexcept>
 #include <sstream>
 #include <map>
@@ -60,6 +62,8 @@ void Generator::set_precission(const std::string & p)
 
 void Generator::add_initial(const std::string & p)
 {
+	fprintf(stderr, "new initial %s\n", p.c_str());
+
 	initials.insert(p);
 }
 
@@ -75,12 +79,21 @@ void Generator::add_function(const std::string &p, int args)
 		str << p << ": args < 2 || args > 3 ";
 		throw logic_error(str.str());
 	}
+	fprintf(stderr, "new function %s\n", p.c_str());
 
 	functions[p] = args;
 }
 
 void Generator::new_equation()
 {
+	fprintf(stderr, "new equation ");
+}
+
+Expression *  Generator::new_expression()
+{
+	Expression * exp = new Expression(this);
+	expressions.insert(exp);
+	return exp;
 }
 
 void Generator::make(const string & name, const string & h_name, const string & cpp_name)
@@ -176,4 +189,17 @@ void Parser::make(const std::string & hname, const std::string & cppname)
 	}
 	generator->make(name, hname, cppname);
 }
+
+Expression::~Expression()
+{
+	g->expressions.erase(this);
+}
+
+Expression * Parser::new_expression()
+{
+	check("new expression");
+	Expression * exp = generator->new_expression();
+	return exp;
+}
+
 

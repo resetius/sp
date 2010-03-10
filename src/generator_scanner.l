@@ -17,7 +17,7 @@ int isatty (int )
 "method" { return METHOD; }
 "surface" { return SURFACE; }
 "approximation" { return APPROXIMATION; }
-"initial" { return INITIAL; }
+"initial" { return START; }
 "declare" { return DECLARE; }
 "scalar" { return SCALAR; }
 "function" { return FUNCTION; }
@@ -25,7 +25,7 @@ int isatty (int )
 "Delta" { return DELTA; }
 "Jacobian" { return JACOBIAN; }
 "->" { return ARROW; }
-[0-9]+\.?[0-9]* { yylval.number = atof(yytext); return NUMBER; }
+[0-9]+\.?[0-9]* { yylval.num = atof(yytext); return NUMBER; }
 [a-zA-Z]+[0-9a-zA-Z]*'? { yylval.str = strdup(yytext); return VAR; }
 "\n"    { ++yylineno; return '\n'; }
 . { /*fprintf(stderr, " %c ", yytext[0]);*/return yytext[0]; }

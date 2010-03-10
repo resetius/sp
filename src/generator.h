@@ -11,6 +11,79 @@ typedef Generator * (*generator_creator_t)(void);
 int register_generator(const std::string & name, generator_creator_t);
 Generator * make_generator(const std::string & name);
 
+struct Expression
+{
+	Generator * g;
+
+	enum {
+		STRING   = 0,
+		NUMBER   = 1,
+		OPERATOR = 2,
+		COMPLEX  = 3,
+	};
+	int type;
+	std::string str;
+	double num;
+
+	Expression & operator = (const std::string & s)
+	{
+		if (s == "Jacobian" || s == "Delta") {
+			type = OPERATOR;
+		} else {
+			type = STRING;
+		}
+		str  = s;
+	}
+
+	Expression & operator = (double v)
+	{
+		type = NUMBER;
+		num  = v;
+	}
+
+	Expression & operator += (const Expression & other)
+	{
+		return *this;
+	}
+
+	Expression & operator -= (const Expression & other)
+	{
+		return *this;
+	}
+
+	Expression & operator /= (const Expression & other)
+	{
+		return *this;
+	}
+
+	Expression & operator *= (const Expression & other)
+	{
+		return *this;
+	}
+
+	Expression & operator ^= (const Expression & other)
+	{
+		return *this;
+	}
+
+	Expression & operator , (const Expression & other)
+	{
+		return * this;
+	}
+
+	Expression & operator () (const Expression & other)
+	{
+		return * this;
+	}
+
+	~Expression();
+
+protected:
+	Expression(Generator * p): g(p) {};
+	Expression(const Expression&);
+	friend struct Generator;
+};
+
 struct Generator
 {
 	enum {
@@ -47,6 +120,13 @@ struct Generator
 
 	typedef std::set < std::string > methods_declrs_t;
 	methods_declrs_t methods_declrs;
+
+	typedef std::set < Expression * > expressions_t;
+	expressions_t expressions;
+
+	Expression * new_expression();
+
+	friend struct Expression;
 };
 
 struct Parser
@@ -73,8 +153,11 @@ struct Parser
 
 	void check(const std::string &p);
 	void make(const std::string & hname, const std::string & cppname);
+
+	Expression * new_expression();
 };
 
 #include "generator_harmonic.h"
 
 #endif /* GENERATOR_H */
+
