@@ -32,11 +32,6 @@ void do_all(FILE * f, const string & hname, const string & cppname)
 
 	try {
 		while (yyparse(&p));
-	} catch (exception & e) {
-		fprintf(stderr, "%s\n", e.what());
-	}
-
-	try {
 		p.make(hname, cppname);
 	} catch (exception & e) {
 		fprintf(stderr, "%s\n", e.what());

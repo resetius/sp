@@ -47,6 +47,7 @@ struct Expression
 protected:
 	Expression(Generator * p): g(p) {};
 	friend struct Generator;
+	friend class GC;
 };
 
 struct Generator
@@ -90,14 +91,23 @@ struct Generator
 
 	typedef std::set < std::string > methods_declrs_t;
 	methods_declrs_t methods_declrs;
+};
 
-	Expression * new_expression();
+class GC
+{
+	std::list < char * > strings;
+	std::list < Expression * > exprs;
 
-	friend struct Expression;
+public:
+
+	char * new_string(const char * str);
+	Expression * new_expression(Generator * gen);
+	void collect_all();
 };
 
 struct Parser
 {
+	GC gc;
 	std::string name;
 
 	std::auto_ptr < Generator > generator;

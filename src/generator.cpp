@@ -28,11 +28,6 @@ Generator::Generator(): precission(0)
 
 Generator::~Generator()
 {
-	for (declarations_t::iterator it = declarations.begin();
-		it != declarations.end(); ++it)
-	{
-		delete it->second;
-	}
 }
 
 int register_generator(const std::string & name, generator_creator_t creator)
@@ -118,12 +113,6 @@ void Generator::add_equation(Expression * lp, Expression * rp)
 	fprintf(stderr, "new equation ");
 }
 
-Expression *  Generator::new_expression()
-{
-	Expression * exp = new Expression(this);
-	return exp;
-}
-
 void Generator::make(const string & name, const string & h_name, const string & cpp_name)
 {
 	make_header(name, h_name);
@@ -135,6 +124,7 @@ Parser::Parser()
 
 Parser::~Parser()
 {
+	gc.collect_all();
 }
 
 void Parser::set_name(const std::string & n)
@@ -236,8 +226,37 @@ Expression::~Expression()
 Expression * Parser::new_expression()
 {
 	check("new expression");
-	Expression * exp = generator->new_expression();
+	Expression * exp = gc.new_expression(generator.get());
 	return exp;
 }
 
+char * GC::new_string(const char * str)
+{
+	char * s = strdup(str);
+	strings.push_back(s);
+	return s;
+}
 
+Expression * GC::new_expression(Generator * g)
+{
+	Expression * e = new Expression(g);
+	exprs.push_back(e);
+	return e;
+}
+
+void GC::collect_all()
+{
+	for (list < Expression * > ::iterator it = exprs.begin();
+		it != exprs.end(); ++it)
+	{
+		delete *it;
+	}
+	exprs.clear();
+
+	for (list < char * > ::iterator it = strings.begin();
+		it != strings.end(); ++it)
+	{
+		delete *it;
+	}
+	strings.clear();
+}
