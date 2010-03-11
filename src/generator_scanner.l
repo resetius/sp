@@ -2,7 +2,7 @@
 struct Parser;
 #include "generator_parser.hpp"
 
-#define YY_DECL int yylex( YYSTYPE & yylval )
+#define YY_DECL int yylex( yyscan_t yyscanner, YYSTYPE & yylval )
 
 int isatty (int )
 {
@@ -12,6 +12,7 @@ int isatty (int )
 %}
 %option 8bit
 %option outfile="generator_scanner.cpp" header-file="generator_scanner.h" case-insensitive
+%option reentrant
 %%
 [ \t]+ { continue; }
 \\.*\n { ++yylineno; continue; }

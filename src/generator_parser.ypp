@@ -6,12 +6,12 @@
 #include <sstream>
 #include <memory>
 
-#define YY_DECL int yylex( YYSTYPE & yylval )
+#define YY_DECL int yylex( yyscan_t yyscanner, YYSTYPE & yylval )
 
 #include "generator_scanner.h"
 #include "generator.h"
 
-extern int yyerror(Parser * ptr, const char *s);
+extern int yyerror(Parser * ptr, yyscan_t yyscanner, const char *s);
 
 using namespace std;
 
@@ -22,6 +22,7 @@ using namespace std;
 	struct Expression * exp;
 }
 %parse-param { Parser * ptr }
+%parse-param { yyscan_t yyscanner }
 %define api.pure
 %define api.push_pull "push"
 %token NAME
@@ -47,7 +48,7 @@ using namespace std;
 %left '*' '/'
 %left ','
 %right '^'
-%destructor { fprintf(stderr, "destroy %s\n", $$); free($$); } <str>
+%destructor { fprintf(stderr, "destroy %s\n", $$);  } <>
 %%
 
 body: '\n'
@@ -57,59 +58,16 @@ body: '\n'
 	;
 
 clause: 
-	NAME ':' VAR 
-		{
-			string arg = $3; free($3);
-			ptr->set_name(arg); 
-		}
-	| PRECISSION ':' VAR 
-		{
-			string arg = $3; free($3);
-			ptr->set_precission(arg); 
-		}
-	| METHOD ':' VAR 
-		{
-			string arg = $3; free($3);
-			ptr->set_method(arg); 
-		}
-	| SURFACE ':' VAR 
-		{
-			string arg = $3; free($3); 
-			ptr->set_surface(arg); 
-		}
-	| APPROXIMATION ':' VAR 
-		{
-			string arg = $3; free($3);
-			ptr->set_approximation(arg); 
-		}
-	| START ':' VAR 
-		{
-			string arg = $3; free($3);
-			ptr->add_initial(arg); 
-		}
-	| DECLARE ':' VAR '=' expr
-		{
-			string arg = $3; free($3);
-			ptr->add_declaration(arg, $5);
-		}
-	| SCALAR ':' VAR
-		{
-			string var = $3;
-			free($3);
-			ptr->add_scalar(var); 
-		}
-	| FUNCTION ':' VAR '(' VAR ',' VAR ')' 
-		{
-			string arg = $3;
-			free($3); free($5); free($7); 
-			ptr->add_function(arg, 2); 
-		}
-	| FUNCTION ':' VAR '(' VAR ',' VAR ',' VAR ')' 
-		{
-			string arg = $3;
-			free($3); free($5); free($7); free($9);
-			ptr->add_function(arg, 3); 
-		}
+	NAME ':' VAR { ptr->set_name($3); }
+	| PRECISSION ':' VAR { ptr->set_precission($3); }
+	| METHOD ':' VAR { ptr->set_method($3); }
+	| SURFACE ':' VAR { ptr->set_surface($3); }
+	| APPROXIMATION ':' VAR	{ ptr->set_approximation($3); }
+	| START ':' VAR { ptr->add_initial($3); }
+	| DECLARE ':' VAR '=' expr { ptr->add_declaration($3, $5); }
+	| SCALAR ':' VAR { ptr->add_scalar($3); }
+	| FUNCTION ':' VAR '(' VAR ',' VAR ')' 	{ ptr->add_function($3, 2); }
+	| FUNCTION ':' VAR '(' VAR ',' VAR ',' VAR ')' { ptr->add_function($3, 3); }
 	| EQUATION ':' expr '=' expr { ptr->add_equation($3, $5); }
 	;
 
@@ -154,30 +112,41 @@ operator: JACOBIAN { $$ = ptr->new_expression(); *$$ = "Jacobian"; }
 	| DELTA { $$ = ptr->new_expression(); *$$ = "Delta"; }
 	;
 %%
-int yyerror(Parser * ptr, const char * s)
+int yyerror(Parser * ptr, yyscan_t yyscanner, const char * s)
 {
 	std::stringstream str;
-	str << "syntax error near line " << yyget_lineno();
+	str << "syntax error near line " << yyget_lineno(yyscanner);
 	throw std::logic_error(str.str());
 	return 0;
 }
 
-int yylex( YYSTYPE & );
+int yylex( yyscan_t yyscanner, YYSTYPE & );
 
-void do_parse(Parser * ptr)
+int yywrap( yyscan_t yyscanner )
+{
+	return 1;
+}
+
+void Parser::parse(FILE * f)
 {
 	int yychar;
 	int status;
+	yyscan_t scanner;
+	yylex_init( &scanner );
+	yyset_in(f, scanner);
 	yypstate *ps = yypstate_new ();
 	try {
 		do {
 			YYSTYPE val;
-			yychar = yylex (val);
-			status = yypush_parse (ps, yychar, &val, ptr);
+			yychar = yylex (scanner, val);
+			status = yypush_parse (ps, yychar, &val, this, scanner);
 		} while (status == YYPUSH_MORE);
 	} catch ( exception & e) {
 		yypstate_delete (ps);
+		yylex_destroy(scanner);
 		throw;
 	}
 	yypstate_delete (ps);
+	yylex_destroy (scanner);
 }
+

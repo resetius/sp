@@ -134,6 +134,7 @@ struct Parser
 	void make(const std::string & hname, const std::string & cppname);
 
 	Expression * new_expression();
+	void parse(FILE * f);
 };
 
 #include "generator_harmonic.h"

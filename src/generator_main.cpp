@@ -8,8 +8,6 @@
 
 using namespace std;
 
-int yyparse(Parser * ptr);
-
 void usage(char * argv)
 {
 	fprintf(stderr, "usage: %s \n"
@@ -20,20 +18,12 @@ void usage(char * argv)
 	exit(-1);
 }
 
-int yywrap()
-{
-	return 1;
-}
-
-void do_parse(Parser * ptr);
-
 void do_all(FILE * f, const string & hname, const string & cppname)
 {
 	Parser p;
-	yyset_in(f);
 
 	try {
-		do_parse(&p);
+		p.parse(f);
 		p.make(hname, cppname);
 	} catch (exception & e) {
 		fprintf(stderr, "%s\n", e.what());
