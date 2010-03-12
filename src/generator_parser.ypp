@@ -6,12 +6,17 @@
 #include <sstream>
 #include <memory>
 
-#define YY_DECL int yylex( yyscan_t yyscanner, YYSTYPE & yylval )
+#define YY_DECL int yylex( YYSTYPE * yylval, yyscan_t yyscanner, Parser * ptr )
+#define YYLEX_PARAM yyscanner, ptr
 
-#include "generator_scanner.h"
 #include "generator.h"
+#include "generator_scanner.h"
+#include "generator_parser.hpp"
 
-extern int yyerror(Parser * ptr, yyscan_t yyscanner, const char *s);
+YY_DECL;
+
+
+extern int yyerror(yyscan_t yyscanner, Parser * ptr, const char *s);
 
 using namespace std;
 
@@ -21,10 +26,9 @@ using namespace std;
 	double num;
 	struct Expression * exp;
 }
-%parse-param { Parser * ptr }
 %parse-param { yyscan_t yyscanner }
+%parse-param { Parser * ptr }
 %define api.pure
-%define api.push_pull "push"
 %token NAME
 %token PRECISSION
 %token METHOD
@@ -48,7 +52,6 @@ using namespace std;
 %left '*' '/'
 %left ','
 %right '^'
-%destructor { fprintf(stderr, "destroy %s\n", $$);  } <>
 %%
 
 body: '\n'
@@ -112,7 +115,7 @@ operator: JACOBIAN { $$ = ptr->new_expression(); *$$ = "Jacobian"; }
 	| DELTA { $$ = ptr->new_expression(); *$$ = "Delta"; }
 	;
 %%
-int yyerror(Parser * ptr, yyscan_t yyscanner, const char * s)
+int yyerror(yyscan_t yyscanner, Parser * ptr, const char * s)
 {
 	std::stringstream str;
 	str << "syntax error near line " << yyget_lineno(yyscanner);
@@ -120,7 +123,7 @@ int yyerror(Parser * ptr, yyscan_t yyscanner, const char * s)
 	return 0;
 }
 
-int yylex( yyscan_t yyscanner, YYSTYPE & );
+int yylex( YYSTYPE &, yyscan_t yyscanner, Parser * ptr );
 
 int yywrap( yyscan_t yyscanner )
 {
@@ -131,22 +134,16 @@ void Parser::parse(FILE * f)
 {
 	int yychar;
 	int status;
+	YYSTYPE val;
 	yyscan_t scanner;
 	yylex_init( &scanner );
 	yyset_in(f, scanner);
-	yypstate *ps = yypstate_new ();
 	try {
-		do {
-			YYSTYPE val;
-			yychar = yylex (scanner, val);
-			status = yypush_parse (ps, yychar, &val, this, scanner);
-		} while (status == YYPUSH_MORE);
+		while (yyparse(scanner, this));
 	} catch ( exception & e) {
-		yypstate_delete (ps);
 		yylex_destroy(scanner);
 		throw;
 	}
-	yypstate_delete (ps);
 	yylex_destroy (scanner);
 }
 

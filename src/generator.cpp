@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <stdexcept>
@@ -235,6 +236,8 @@ char * GC::new_string(const char * str)
 {
 	char * s = strdup(str);
 	strings.push_back(s);
+	fprintf(stderr, "new string %s -> %s\n", str, s);
+	string rr = s;
 	return s;
 }
 
@@ -257,7 +260,8 @@ void GC::collect_all()
 	for (list < char * > ::iterator it = strings.begin();
 		it != strings.end(); ++it)
 	{
-		delete *it;
+		free(*it);
 	}
 	strings.clear();
 }
+

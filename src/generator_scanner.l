@@ -1,8 +1,8 @@
 %{
-struct Parser;
+#include "generator.h"
 #include "generator_parser.hpp"
 
-#define YY_DECL int yylex( yyscan_t yyscanner, YYSTYPE & yylval )
+#define YY_DECL int yylex( YYSTYPE * yylval, yyscan_t yyscanner, Parser * parser )
 
 int isatty (int )
 {
@@ -29,8 +29,8 @@ int isatty (int )
 "Delta" { return DELTA; }
 "Jacobian" { return JACOBIAN; }
 "->" { return ARROW; }
-[0-9]+\.?[0-9]* { yylval.num = atof(yytext); return NUMBER; }
-[a-zA-Z]+[0-9a-zA-Z]*'? { yylval.str = strdup(yytext); return VAR; }
+[0-9]+\.?[0-9]* { yylval->num = atof(yytext); return NUMBER; }
+[a-zA-Z]+[0-9a-zA-Z]*'? { yylval->str = "harmonic"; /*strdup(yytext); */ /*parser->gc.new_string(yytext);*/ return VAR; }
 "\n"    { ++yylineno; return '\n'; }
 . { /*fprintf(stderr, " %c ", yytext[0]);*/return yytext[0]; }
 %%
