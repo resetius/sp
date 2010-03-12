@@ -132,7 +132,6 @@ int yywrap( yyscan_t yyscanner )
 
 void Parser::parse(FILE * f)
 {
-	int yychar;
 	int status;
 	YYSTYPE val;
 	yyscan_t scanner;
