@@ -41,11 +41,7 @@ char * my_strcpy(char *dest, const char *src){
 "->" { return ARROW; }
 [0-9]+\.?[0-9]* { yylval->num = atof(yytext); return NUMBER; }
 [a-zA-Z]+[0-9a-zA-Z]*'? { 
-	yylval->str = (char*)calloc(128, 1); 
-fprintf(stderr, "%s\n", yytext);
-char * p = yytext;
-//	my_strcpy(yylval->str, p);/*"harmonic";*/ /*strdup(yytext); */ /*parser->gc.new_string(yytext);*/ 
-yylval->str = parser->gc.new_string(p);
+	yylval->str = parser->gc.new_string(yytext);
 	return VAR; 
 }
 "\n"    { ++yylineno; return '\n'; }

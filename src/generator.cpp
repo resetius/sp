@@ -232,14 +232,10 @@ Expression * Parser::new_expression()
 	return exp;
 }
 
-char * GC::new_string(const char * str)
+const char * GC::new_string(const char * str)
 {
-	char * s = (char*)calloc(1, strlen(str) + 16);
-	char * p = s;
-	while (*p++ = *str++); 
+	char * s = strdup(str);
 	strings.push_back(s);
-//	fprintf(stderr, "new string %s -> %s\n", str, s);
-//	string rr = s;
 	return s;
 }
 
@@ -259,13 +255,12 @@ void GC::collect_all()
 	}
 	exprs.clear();
 
-	for (list < char * > ::iterator it = strings.begin();
+	for (list < const char * > ::iterator it = strings.begin();
 		it != strings.end(); ++it)
 	{
-		char * p = *it;
-		fprintf(stderr, "delete '%p' '%s'\n", p, p);
-		free(p);
+		const char * p = *it;
+		free((char*)p);
 	}
+
 	strings.clear();
 }
-

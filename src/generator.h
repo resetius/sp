@@ -95,12 +95,12 @@ struct Generator
 
 class GC
 {
-	std::list < char * > strings;
+	std::list < const char * > strings;
 	std::list < Expression * > exprs;
 
 public:
 
-	char * new_string(const char * str);
+	const char * new_string(const char * str);
 	Expression * new_expression(Generator * gen);
 	void collect_all();
 };

@@ -22,7 +22,7 @@ using namespace std;
 
 %}
 %union {
-	char * str;
+	const char * str;
 	double num;
 	struct Expression * exp;
 }
@@ -80,20 +80,18 @@ expr:
 			$$    = ptr->new_expression();
 			ptr->check_var($1);
 			*($$) = $1;
-			fprintf(stderr, "%s\n", $1); free($1);
+			fprintf(stderr, "%s\n", $1);
 		}
 	| NUMBER 
 		{
 			$$    = ptr->new_expression();
 			(*$$) = $1;
-			fprintf(stderr, "%lf\n", $1); 
 		}
 	| VAR '[' NUMBER ']' 
 		{
 			$$    = ptr->new_expression();
 			ptr->check_var($1);
 			*($$) = $1;
-			fprintf(stderr, "%s\n", $1); fprintf(stderr, "%d\n", $3); free($1); 
 		}
 	| '(' expr ')' { $$ = $2; }
 	| expr '^' expr { (*$1) ^= *($3); $$ = $1; }
