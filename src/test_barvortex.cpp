@@ -177,16 +177,16 @@ void output_psi(const char * prefix, const char * suffix,
 
 void run_test(const char * srtm)
 {
-	long nlat =  3 * 19;
-	long nlon =  3 * 36;
+	long nlat = 5 * 19;
+	long nlon = 5 * 36;
 
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
 	conf.isym     = 0;
-	conf.mu       = 6.77e-5;
+	conf.mu       = 1.5e-5;
 	conf.sigma    = 1.14e-2;
-	int part_of_the_day = 192;
+	int part_of_the_day = 48;
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
@@ -236,9 +236,9 @@ void run_test(const char * srtm)
 			//double ff = -(M_PI / 4 * ipow(phi, 2) - fabs(ipow(phi, 3)) / 3.0) * 16.0 / M_PI / M_PI * 3.0 / U0;
 			//r[i * nlon + j] = (phi > 0) ? ff : -ff;
 			if (phi > 0) {
-				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 100.0 / U0);
+				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			} else {
-				u[i * nlon + j] = (phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 100.0 / U0);
+				u[i * nlon + j] = (-phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
@@ -246,7 +246,7 @@ void run_test(const char * srtm)
 			//cor[i * nlon + j] = 1000 * rel[i * nlon + j] / rel_max + 2 * sin(phi);
 			//
 
-			//rel[i * nlon + j] = 0.5 * sign(phi) * cos(2 * lambda) * ipow(sin(2 * phi), 2);
+		//	rel[i * nlon + j] = 0.5 * sign(phi) * cos(2 * lambda) * ipow(sin(2 * phi), 2);
 
 			if (rel[i * nlon + j] > 0) {
 				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
@@ -299,8 +299,9 @@ void run_test(const char * srtm)
 		if (it % part_of_the_day == 0) {
 			char buf[1024];
 			nr = bv.norm(&r[0]);
+			if (isnan(nr)) break;
 			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
-			snprintf(buf, 1024, "%06d", it);
+			snprintf(buf, 1024, "_%06d", it);
 			output_psi("", buf, &r[0], nlat, nlon, U0, PSI0, grad);
 
 			vector < double > m = var.m_current();
@@ -320,7 +321,7 @@ void run_test(const char * srtm)
 		it += 1;
 	}
 
-	{
+	if (!isnan(nr)) {
 		vector < double > m = var.m_current();
 		vector < double > d = var.current();
 
