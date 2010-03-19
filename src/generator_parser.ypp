@@ -41,7 +41,8 @@ using namespace std;
 %token EQUATION
 %token JACOBIAN
 %token DELTA
-%token ARROW
+%token RARROW
+%token LARROW
 %token <str> VAR
 %token <num> NUMBER
 %type  <exp> expr;
@@ -68,6 +69,7 @@ clause:
 	| APPROXIMATION ':' VAR	{ ptr->set_approximation($3); }
 	| START ':' VAR { ptr->add_initial($3); }
 	| DECLARE ':' VAR '=' expr { ptr->add_declaration($3, $5); }
+	| DECLARE ':' VAR LARROW expr { ptr->add_dependency($3, $5); }
 	| SCALAR ':' VAR { ptr->add_scalar($3); }
 	| FUNCTION ':' VAR '(' VAR ',' VAR ')' 	{ ptr->add_function($3, 2); }
 	| FUNCTION ':' VAR '(' VAR ',' VAR ',' VAR ')' { ptr->add_function($3, 3); }

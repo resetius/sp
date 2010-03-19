@@ -8,6 +8,8 @@
 #include <memory>
 
 struct Generator;
+struct Parser;
+
 typedef Generator * (*generator_creator_t)(void);
 int register_generator(const std::string & name, generator_creator_t);
 Generator * make_generator(const std::string & name);
@@ -15,6 +17,7 @@ Generator * make_generator(const std::string & name);
 struct Expression
 {
 	Generator * g;
+	Parser * p;
 
 	enum {
 		STRING   = 0,
@@ -44,8 +47,10 @@ struct Expression
 	Expression & operator () (const Expression & other) throw();
 	~Expression();
 
+	Expression * new_op(const std::string & op, const Expression & other) throw();
+
 protected:
-	Expression(Generator * p): g(p) {};
+	Expression(Generator * g, Parser *p): g(g), p(p) {};
 	friend struct Generator;
 	friend class GC;
 };
@@ -101,7 +106,7 @@ class GC
 public:
 
 	const char * new_string(const char * str);
-	Expression * new_expression(Generator * gen);
+	Expression * new_expression(Generator * gen, Parser * p);
 	void collect_all();
 };
 

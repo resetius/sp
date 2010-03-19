@@ -38,7 +38,8 @@ char * my_strcpy(char *dest, const char *src){
 "equation" { return EQUATION; }
 "Delta" { return DELTA; }
 "Jacobian" { return JACOBIAN; }
-"->" { return ARROW; }
+"<-" { return LARROW; }
+"->" { return RARROW; }
 [0-9]+\.?[0-9]* { yylval->num = atof(yytext); return NUMBER; }
 [a-zA-Z]+[0-9a-zA-Z]*'? { 
 	yylval->str = parser->gc.new_string(yytext);

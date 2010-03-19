@@ -228,7 +228,7 @@ Expression::~Expression()
 Expression * Parser::new_expression()
 {
 	check("new expression");
-	Expression * exp = gc.new_expression(generator.get());
+	Expression * exp = gc.new_expression(generator.get(), this);
 	return exp;
 }
 
@@ -239,9 +239,9 @@ const char * GC::new_string(const char * str)
 	return s;
 }
 
-Expression * GC::new_expression(Generator * g)
+Expression * GC::new_expression(Generator * g, Parser * p)
 {
-	Expression * e = new Expression(g);
+	Expression * e = new Expression(g, p);
 	exprs.push_back(e);
 	return e;
 }
