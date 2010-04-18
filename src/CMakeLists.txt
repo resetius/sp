@@ -37,6 +37,7 @@ add_library(spherepack_ext
 	srtm_rel.h
 	)
 
+if (FLEX_FOUND AND BISON_FOUND)
 flex_target(generator_scanner generator_scanner.l 
 	${CMAKE_CURRENT_SOURCE_DIR}/generator_scanner.cpp)
 bison_target(generator_parser generator_parser.ypp 
@@ -58,6 +59,10 @@ set(generator_source
 add_library(generator ${generator_source})
 add_executable(gen_scheme generator_main.cpp)
 target_link_libraries(gen_scheme generator)
+if (OPENMP_FOUND)
+set_target_properties(gen_scheme PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+endif()
+endif()
 
 add_executable(helm helm.c)
 target_link_libraries(helm spherepack ${MATH})
@@ -84,6 +89,5 @@ if (OPENMP_FOUND)
 	set_target_properties(sp_test_jac PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_chafe PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
-	set_target_properties(gen_scheme PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 endif ()
 
