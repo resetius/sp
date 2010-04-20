@@ -31,6 +31,7 @@ public:
 	~SphereJacobian();
 
 	void calc(double * out, const double * u, const double * v);
+	void calc_t(double * out, const double * u, const double * v);
 };
 
 #endif /* SPHERE_JAC_H */

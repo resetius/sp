@@ -94,3 +94,9 @@ void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 	transpose (out, &j[0], nlon, nlat);
 }
 
+void SphereJacobian::calc_t (double * out, const double * u1, const double * v1)
+{
+	calc(out, u1, v1);
+	vec_mult_scalar(out, out, -1, nlon * nlat);
+}
+
