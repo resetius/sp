@@ -6,7 +6,7 @@ if (NOT WIN32)
 set(MATH m)
 endif ()
 
-set(EXECUTABLE_OUTPUT_PATH "../bin")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 
 add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -DYY_NO_UNISTD_H)
