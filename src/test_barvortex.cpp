@@ -8,7 +8,6 @@
 #include "grad.h"
 #include "vorticity.h"
 #include "utils.h"
-#include "srtm_rel.h"
 #include "statistics.h"
 
 #ifdef max
@@ -217,8 +216,18 @@ void run_test(const char * srtm)
 	double U0  = 6.371e+6/TE;
 	const char * fn = srtm ? srtm : "";
 
-	ReliefLoader rel_loader(fn);
-	rel_loader.get(&rel[0], nlat, nlon);
+	if (fn) {
+		FILE * f = fopen(fn, "rb");
+		if (f) {
+			size_t size = nlat * nlon * sizeof(double);
+			if (fread(&rel[0], 1, size, f) != size) {
+				fprintf(stderr, "bad relief file format ! \n");
+			}
+		} else {
+			fprintf(stderr, "relief file not found ! \n");
+		}
+		fclose(f);
+	}
 
 	double rel_max = 0.0;
 	for (i = 0; i < nlat * nlon; ++i) {
@@ -334,6 +343,8 @@ void run_test(const char * srtm)
 int main (int argc, char * argv[])
 {
 	//solve();
+
+	// exe [relief in binary format!]
 	run_test(argv[1]);
 }
 
