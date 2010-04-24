@@ -26,12 +26,12 @@ double ans (double x, double y, double t)
 	return x*sin (y + t) *ipow (cos (x), 4);
 }
 
-double zero_coriolis (double phi, double lambda)
+double zero_coriolis (double phi, double lambda, double t, const SphereBarvortexConf * conf)
 {
 	return 0.0;
 }
 
-double f (double x, double y, double t, SphereBarvortexConf * conf)
+double f (double x, double y, double t, const SphereBarvortexConf * conf)
 {
 	double mu    = conf->mu;
 	double sigma = conf->sigma;
@@ -66,7 +66,7 @@ void solve()
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
 	conf.rp       = f;
-	conf.coriolis = zero_coriolis;
+	conf.cor      = zero_coriolis;
 
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -182,7 +182,6 @@ void run_test(const char * srtm)
 	SphereBarvortexConf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
-	conf.isym     = 0;
 	conf.mu       = 1.5e-5;
 	conf.sigma    = 1.14e-2;
 	int part_of_the_day = 48;
@@ -191,7 +190,7 @@ void run_test(const char * srtm)
 	conf.k1       = 1.0;
 	conf.k2       = 1.0;
 	conf.rp       = 0;
-	conf.coriolis = 0;//test_coriolis;
+	conf.cor      = 0;//test_coriolis;
 
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -266,7 +265,7 @@ void run_test(const char * srtm)
 		}
 	}
 
-	SphereLaplace lapl(nlat, nlon, conf.isym);
+	SphereLaplace lapl(nlat, nlon, 0);
 	SphereGrad grad(nlat, nlon);
 	SphereVorticity vor(nlat, nlon);
 
@@ -288,8 +287,8 @@ void run_test(const char * srtm)
 	lapl.solve(&r[0], &f[0]);
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
-	conf.rp2 = &f[0];
-	conf.coriolis2 = &cor[0];
+	conf.rp2  = &f[0];
+	conf.cor2 = &cor[0];
 
 	SphereBarvortex bv (conf);
 

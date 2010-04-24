@@ -9,14 +9,13 @@
 
 struct SphereBarvortexConf;
 
-typedef double (*coriolis_t) (double phi, double lambda);
-typedef double (*rp_t ) (double phi, double lambda, double t, SphereBarvortexConf * conf );
-
 struct SphereBarvortexConf
 {
+	typedef double (*rp_t ) (double phi, double lambda, 
+		double t, const SphereBarvortexConf * conf );
+
 	long nlat;
 	long nlon;
-	long isym;
 
 	double tau;
 	double sigma;
@@ -25,10 +24,12 @@ struct SphereBarvortexConf
 	double k2;
 	double theta;
 
-	coriolis_t coriolis;
+	rp_t cor;
 	rp_t rp;
-	double * coriolis2;
+	double * cor2;
 	double * rp2;
+
+	SphereBarvortexConf(): rp(0), rp2(0), cor(0), cor2(0) {}
 };
 
 class SphereBarvortex: public SphereNorm

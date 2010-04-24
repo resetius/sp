@@ -7,8 +7,8 @@
 using namespace std;
 
 SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) : SphereNorm(conf.nlat, conf.nlon),
-		conf (conf), lapl (conf.nlat, conf.nlon, conf.isym),
-			jac (conf.nlat, conf.nlon, conf.isym),
+		conf (conf), lapl (conf.nlat, conf.nlon, 0),
+			jac (conf.nlat, conf.nlon, 0),
 		lh (conf.nlat * conf.nlon)
 {
 	long nlat = conf.nlat;
@@ -23,10 +23,10 @@ SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) : SphereNorm
 		for (int j = 0; j < nlon; ++j)
 		{
 			double lambda = j * dlon;
-			if (conf.coriolis) {
-				lh[i * nlon + j] = conf.coriolis(phi, lambda);
-			} else if (conf.coriolis2) {
-				lh[i * nlon + j] = conf.coriolis2[i * nlon + j];
+			if (conf.cor) {
+				lh[i * nlon + j] = conf.cor(phi, lambda, 0, &conf);
+			} else if (conf.cor2) {
+				lh[i * nlon + j] = conf.cor2[i * nlon + j];
 			}
 		}
 	}
