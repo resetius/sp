@@ -26,12 +26,12 @@ double ans (double x, double y, double t)
 	return x*sin (y + t) *ipow (cos (x), 4);
 }
 
-double zero_coriolis (double phi, double lambda, double t, const SphereBarvortexConf * conf)
+double zero_coriolis (double phi, double lambda, double t, const SphereBarvortex::Conf * conf)
 {
 	return 0.0;
 }
 
-double f (double x, double y, double t, const SphereBarvortexConf * conf)
+double f (double x, double y, double t, const SphereBarvortex::Conf * conf)
 {
 	double mu    = conf->mu;
 	double sigma = conf->sigma;
@@ -56,7 +56,7 @@ void solve()
 	long nlat = 19;
 	long nlon = 36;
 
-	SphereBarvortexConf conf;
+	SphereBarvortex::Conf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
 	conf.mu       = 8e-5;
@@ -179,7 +179,7 @@ void run_test(const char * srtm)
 	long nlat = 5 * 19;
 	long nlon = 5 * 36;
 
-	SphereBarvortexConf conf;
+	SphereBarvortex::Conf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
 	conf.mu       = 1.5e-5;

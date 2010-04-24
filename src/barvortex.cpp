@@ -6,7 +6,7 @@
 
 using namespace std;
 
-SphereBarvortex::SphereBarvortex (const SphereBarvortexConf & conf) : SphereNorm(conf.nlat, conf.nlon),
+SphereBarvortex::SphereBarvortex (const SphereBarvortex::Conf & conf) : SphereNorm(conf.nlat, conf.nlon),
 		conf (conf), lapl (conf.nlat, conf.nlon, 0),
 			jac (conf.nlat, conf.nlon, 0),
 		lh (conf.nlat * conf.nlon)
