@@ -33,8 +33,6 @@ add_library(spherepack_ext
 
 	utils.cpp
 	utils.h
-	srtm_rel.cpp
-	srtm_rel.h
 	)
 
 if (FLEX_FOUND AND BISON_FOUND)

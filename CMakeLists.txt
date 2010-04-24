@@ -11,4 +11,5 @@ add_subdirectory(spherepack_c)
 endif ()
 
 add_subdirectory(src)
+add_subdirectory(utils)
 
