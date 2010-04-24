@@ -170,15 +170,15 @@ void ReliefLoader::get(double * out, long nlat, long nlon)
 
 void usage(const char * argv)
 {
-	fprintf(stderr, "%s topo30 [-nlat nlat] [-nlon nlon] [-o output] [-fmt bin|txt]");
+	fprintf(stderr, "%s topo30 [-nlat nlat] [-nlon nlon] [-o output] [-fmt bin|txt]\n", argv);
 	exit(1);
 }
 
 int main(int argc, char ** argv)
 {
 	string output = "output.rel";
-	int nlat = 32;
-	int nlon = 24;
+	int nlat = 19;
+	int nlon = 36;
 	int bin  = 0;
 
 	if (argc < 2) {
