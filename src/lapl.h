@@ -34,6 +34,7 @@ public:
 	 **/
 	void solve(double * out, const double * in, double mult = 1.0, double diag = 0.0);
 	void calc(double * out, const double * in);
+	void make_psi(double * psi, const double * u, const double * v);
 };
 
 #endif /* LAPL_H */
