@@ -219,7 +219,9 @@ int main(int argc, char ** argv)
 			} else {
 				usage(argv[0]);
 			}
-		} 
+		} else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "-h")) {
+			usage(argv[0]);
+		}
 	}
 
 	fprintf(stderr, "nlat=%d\n", nlat);
