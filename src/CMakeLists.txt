@@ -1,4 +1,4 @@
-project(examples C)
+project(sp_src C)
 
 include_directories(${SPHEREPACK_INCLUDE} .)
 
@@ -34,33 +34,6 @@ add_library(spherepack_ext
 	utils.cpp
 	utils.h
 	)
-
-if (FLEX_FOUND AND BISON_FOUND)
-flex_target(generator_scanner generator_scanner.l 
-	${CMAKE_CURRENT_SOURCE_DIR}/generator_scanner.cpp)
-bison_target(generator_parser generator_parser.ypp 
-	${CMAKE_CURRENT_SOURCE_DIR}/generator_parser.cpp)
-add_flex_bison_dependency(generator_scanner generator_parser)
-set(generator_source 
-	generator.cpp
-	generator.h
-	generator_header.cpp
-	generator_harmonic.cpp
-	generator_harmonic.h
-	generator_expression.cpp
-	generator_parser.ypp 
-	generator_scanner.l 
-
-	${BISON_generator_parser_OUTPUTS}
-	${FLEX_generator_scanner_OUTPUTS}
-	)
-add_library(generator ${generator_source})
-add_executable(gen_scheme generator_main.cpp)
-target_link_libraries(gen_scheme generator)
-if (OPENMP_FOUND)
-set_target_properties(gen_scheme PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
-endif()
-endif()
 
 add_executable(sp_test_helm helm.c)
 target_link_libraries(sp_test_helm spherepack ${MATH})
