@@ -52,6 +52,9 @@ public:
 	void L_step(double * out, const double * in, const double * z);
 	void LT_step(double * out, const double * in, const double * z);
 	void L_1_step(double * out, const double * in, const double * z);
+
+	void p2u(double * u, const double * p);
+	void u2p(double * p, const double * u);
 };
 
 #endif /* BARVORTEX_H */
