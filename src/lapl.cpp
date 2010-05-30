@@ -46,11 +46,14 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 
 	transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
 
+	// находим разложение (a, b) по сферическим гармоникам
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
 	        &nlat, &nlat,
 	        &wshaec[0], &lshaec,
 	        &work[0], &lwork, &ierror);
+	// чтобы по разложению (a, b) собрать назад функцию надо воспользоваться
+	// функцией shsec_
 	if (ierror != 0) {
 		fprintf(stderr, "shaec_ error %ld\n", ierror);
 		exit(1);
