@@ -3,9 +3,10 @@
 
 #include "spherepack.h"
 #include "jac.h"
-#include "utils.h"
+#include "linal.h"
 
 using namespace std;
+using namespace linal;
 
 SphereJacobian::SphereJacobian (long nlat, long nlon, long isym) :
 		nlat (nlat), nlon (nlon), isym(isym), mdab ( (nlon + 2) / 2),

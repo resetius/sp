@@ -3,9 +3,10 @@
 
 #include "vorticity.h"
 #include "spherepack.h"
-#include "utils.h"
+#include "linal.h"
 
 using namespace std;
+using namespace linal;
 
 SphereVorticity::SphereVorticity(long nlat, long nlon): SphereNorm(nlat, nlon),
 	nlat(nlat), nlon(nlon),  mdc( (nlon+1)/2 ),

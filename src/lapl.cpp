@@ -3,7 +3,9 @@
 
 #include "lapl.h"
 #include "vorticity.h"
-#include "utils.h"
+#include "linal.h"
+
+using namespace linal;
 
 SphereLaplace::SphereLaplace (long nlat, long nlon, long isym) :
 		nlat (nlat), nlon (nlon), isym(isym),

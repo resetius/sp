@@ -7,15 +7,15 @@
 #include "barvortex.h"
 #include "grad.h"
 #include "vorticity.h"
-#include "utils.h"
 #include "statistics.h"
-#include "linal_util.h"
+#include "linal.h"
 
 #ifdef max
 #undef max
 #endif
 
 using namespace std;
+using namespace linal;
 
 static inline double max (double a, double b)
 {

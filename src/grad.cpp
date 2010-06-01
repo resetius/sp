@@ -3,9 +3,10 @@
 
 #include "spherepack.h"
 #include "grad.h"
-#include "utils.h"
+#include "linal.h"
 
 using namespace std;
+using namespace linal;
 
 SphereGrad::SphereGrad (long nlat, long nlon) :
 		nlat (nlat), nlon (nlon), mdab ( (nlon + 2) / 2), mdb((nlon+1)/2),

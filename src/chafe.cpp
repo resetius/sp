@@ -1,7 +1,9 @@
 #include <math.h>
 
 #include "chafe.h"
-#include "utils.h"
+#include "linal.h"
+
+using namespace linal;
 
 SphereChafe::SphereChafe(const SphereChafeConf & conf)
 	: conf(conf), lapl(conf.nlat, conf.nlon, 0)

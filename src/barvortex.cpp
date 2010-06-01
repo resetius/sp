@@ -2,9 +2,10 @@
 #include <string.h>
 
 #include "barvortex.h"
-#include "utils.h"
+#include "linal.h"
 
 using namespace std;
+using namespace linal;
 
 SphereBarvortex::SphereBarvortex (const SphereBarvortex::Conf & conf) : SphereNorm(conf.nlat, conf.nlon),
 		conf (conf), lapl (conf.nlat, conf.nlon, 0),

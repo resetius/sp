@@ -5,14 +5,14 @@
 #include <vector>
 
 #include "lapl.h"
-#include "utils.h"
-#include "linal_util.h"
+#include "linal.h"
 
 #ifdef max
 #undef max
 #endif
 
 using namespace std;
+using namespace linal;
 
 static inline double max(double a, double b)
 {

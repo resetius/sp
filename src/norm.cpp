@@ -1,7 +1,9 @@
 
 #include <math.h>
 #include "norm.h"
-#include "utils.h"
+#include "linal.h"
+
+using namespace linal;
 
 SphereNorm::SphereNorm(long nlat, long nlon): nlat(nlat), nlon(nlon), cosi(nlat)
 {
