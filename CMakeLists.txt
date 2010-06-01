@@ -7,14 +7,15 @@ include(CheckedAddSubdir)
 find_package(OpenMP)
 add_definitions(${OpenMP_C_FLAGS})
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/spherepack_c)
-add_subdirectory(spherepack_c)
-endif ()
-
+add_subdirectory_if_exists(spherepack_c)
 add_subdirectory_if_exists(linal)
 
 if (NOT LINAL_HOME)
         message(FATAL "linal library not found")
+endif ()
+
+if (NOT SPHEREPACK_INCLUDE)
+	message(FATAL "linal spherepack library not found")
 endif ()
 
 add_subdirectory(src)
