@@ -6,6 +6,7 @@
 
 #include "lapl.h"
 #include "utils.h"
+#include "linal_util.h"
 
 #ifdef max
 #undef max
