@@ -22,17 +22,23 @@ public:
 
 		double tau;
 		double sigma;
+		double sigma1;
 		double mu;
+		double mu1;
 		double k1;
 		double k2;
 		double theta;
+		double alpha;
 
 		rp_t cor;
-		rp_t rp;
-		double * cor2;
-		double * rp2;
+		rp_t rp1;
+		rp_t rp2;
 
-		Conf(): rp(0), rp2(0), cor(0), cor2(0) {}
+		double * cor2;
+		double * rp12;
+		double * rp22;
+
+		Conf(): cor(0), rp1(0), rp2(0), cor2(0), rp12(0), rp22(0) {}
 	};
 
 private:
@@ -47,6 +53,9 @@ public:
 
 	SphereBaroclin(const Conf & conf);
 	~SphereBaroclin();
+
+	// u = &in[0]
+	// v = &in[nlat * nlon]
 
 	void S_step(double * out, const double * in, double t);
 
