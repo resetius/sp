@@ -32,6 +32,8 @@ add_library(sp
 	chafe.h
 	barvortex.cpp 
 	barvortex.h
+	baroclin.cpp
+	baroclin.h
 	)
 
 add_executable(sp_test_helm helm.c)
