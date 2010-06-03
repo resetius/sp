@@ -13,6 +13,8 @@ add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -DYY_NO_UNISTD_H $
 add_library(sp 
 	statistics.h 
 
+	operator.cpp
+	operator.h
 	grad.cpp 
 	grad.h
 	lapl.cpp 
