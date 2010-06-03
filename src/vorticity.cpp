@@ -8,29 +8,8 @@
 using namespace std;
 using namespace linal;
 
-SphereVorticity::SphereVorticity(long nlat, long nlon): SphereNorm(nlat, nlon),
-	nlat(nlat), nlon(nlon),  mdc( (nlon+1)/2 ),
-
-	islsave (5*nlat*nlat*nlon), iswsave (islsave),
-	isldwork (4*nlat*nlat), isdwork (isldwork),
-	ivlsave (5*nlat*nlat*nlon), ivwsave (islsave),
-	ivldwork (4*nlat*nlat), ivdwork (ivldwork),
-
-	lwork (5*nlat*nlat*nlon), work (lwork)
+SphereVorticity::SphereVorticity(const SphereOperator & op): SphereOperator(op)
 {
-	long ierror = 0;
-
-	shseci_ (&nlat, &nlon, &iswsave[0], &islsave, &isdwork[0], &isldwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "shseci_ error\n");
-		exit(1);
-	}
-
-	vhaeci_ (&nlat, &nlon, &ivwsave[0], &ivlsave, &ivdwork[0], &ivldwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "vhseci_ error\n");
-		exit(1);
-	}
 }
 
 SphereVorticity::~SphereVorticity()

@@ -6,7 +6,7 @@
 using namespace linal;
 
 SphereChafe::SphereChafe(const SphereChafeConf & conf)
-	: conf(conf), lapl(conf.nlat, conf.nlon, 0)
+	: conf(conf), op(conf.nlat, conf.nlon, 0), lapl(op)
 {
 }
 

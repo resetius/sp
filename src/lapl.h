@@ -3,33 +3,12 @@
 
 #include <vector>
 #include "spherepack.h"
+#include "operator.h"
 
-class SphereLaplace
+class SphereLaplace: public SphereOperator
 {
-	typedef std::vector < double > array_t;
-
-	long nlat;
-	long nlon;
-	long isym;
-
-	long slsave;
-	array_t swsave;
-
-	long sldwork;
-	array_t sdwork;
-
-	long islsave;
-	array_t iswsave;
-
-	long isldwork;
-	array_t isdwork;
-
-	long lwork;
-	array_t work;
-	void init();
-
 public:
-	SphereLaplace (long nlat, long nlon, long isym);
+	SphereLaplace (const SphereOperator & op);
 	~SphereLaplace();
 
 	/**

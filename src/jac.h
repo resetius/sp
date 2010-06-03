@@ -2,32 +2,12 @@
 #define SPHERE_JAC_H
 
 #include <vector>
+#include "operator.h"
 
-class SphereJacobian
+class SphereJacobian: public SphereOperator
 {
-	typedef std::vector < double > array_t;
-	long nlat;
-	long nlon;
-	long isym;
-	long mdab;
-
-	long slsave;
-	array_t swsave;
-
-	long sldwork;
-	array_t sdwork;
-
-	long vlsave;
-	array_t vwsave;
-
-	long vldwork;
-	array_t vdwork;
-
-	long lwork;
-	array_t work;
-
 public:
-	SphereJacobian(long nlat, long nlon, long isym);
+	SphereJacobian(const SphereOperator & op);
 	~SphereJacobian();
 
 	void calc(double * out, const double * u, const double * v);

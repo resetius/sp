@@ -8,8 +8,7 @@ using namespace std;
 using namespace linal;
 
 SphereBarvortex::SphereBarvortex (const SphereBarvortex::Conf & conf) : SphereNorm(conf.nlat, conf.nlon),
-		conf (conf), lapl (conf.nlat, conf.nlon, 0),
-			jac (conf.nlat, conf.nlon, 0),
+		conf (conf), op (conf.nlat, conf.nlon, 0), lapl(op), jac (op),
 		lh (conf.nlat * conf.nlon)
 {
 	long nlat = conf.nlat;

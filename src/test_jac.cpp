@@ -45,7 +45,8 @@ void solve()
 	vector < double > a(nlat * nlon);
 	vector < double > jac(nlat * nlon);
 
-	SphereJacobian jacobian(nlat, nlon, 0);
+	SphereOperator op(nlat, nlon, 0);
+	SphereJacobian jacobian(op);
 
 	double nev1 = 0;
 

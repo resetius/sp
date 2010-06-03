@@ -266,9 +266,10 @@ void run_test(const char * srtm)
 		}
 	}
 
-	SphereLaplace lapl(nlat, nlon, 0);
-	SphereGrad grad(nlat, nlon);
-	SphereVorticity vor(nlat, nlon);
+	SphereOperator op(nlat, nlon, 0);
+	SphereLaplace lapl(op);
+	SphereGrad grad(op);
+	SphereVorticity vor(op);
 
 	vor.calc(&f[0], &u[0], &v[0]);
 	vor.test();

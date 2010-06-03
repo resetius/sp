@@ -15,6 +15,8 @@ add_library(sp
 
 	operator.cpp
 	operator.h
+	norm.cpp
+	norm.h
 	grad.cpp 
 	grad.h
 	lapl.cpp 
@@ -23,8 +25,6 @@ add_library(sp
 	div.h
 	jac.cpp
 	jac.h
-	norm.cpp
-	norm.h
 	vorticity.h
 	vorticity.cpp
 

@@ -8,26 +8,8 @@
 using namespace std;
 using namespace linal;
 
-SphereJacobian::SphereJacobian (long nlat, long nlon, long isym) :
-		nlat (nlat), nlon (nlon), isym(isym), mdab ( (nlon + 2) / 2),
-		slsave (5*nlat*nlat*nlon), swsave (slsave),
-		sldwork (4*nlat*nlat), sdwork (sldwork),
-		vlsave (5*nlat*nlat*nlon), vwsave (slsave),
-		vldwork (4*nlat*nlat), vdwork (vldwork),
-		lwork (5*nlat*nlat*nlon), work (lwork)
+SphereJacobian::SphereJacobian (const SphereOperator & op) : SphereOperator(op)
 {
-	long ierror = 0;
-	shaeci_ (&nlat, &nlon, &swsave[0], &slsave, &sdwork[0], &sldwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "shaeci_ error\n");
-		exit(1);
-	}
-
-	vhseci_ (&nlat, &nlon, &vwsave[0], &vlsave, &vdwork[0], &vldwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "vhseci_ error\n");
-		exit(1);
-	}
 }
 
 SphereJacobian::~SphereJacobian()

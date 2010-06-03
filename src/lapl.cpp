@@ -7,34 +7,8 @@
 
 using namespace linal;
 
-SphereLaplace::SphereLaplace (long nlat, long nlon, long isym) :
-		nlat (nlat), nlon (nlon), isym(isym),
-
-		slsave (5*nlat*nlat*nlon), swsave (slsave),
-		sldwork (4*nlat*nlat), sdwork (sldwork),
-
-		islsave (5*nlat*nlat*nlon), iswsave (islsave),
-		isldwork (4*nlat*nlat), isdwork (isldwork),
-
-		lwork (5*nlat*nlat*nlon), work (lwork)
+SphereLaplace::SphereLaplace (const SphereOperator & op) : SphereOperator(op)
 {
-	init();
-}
-
-void SphereLaplace::init()
-{
-	long ierror = 0;
-	shaeci_ (&nlat, &nlon, &swsave[0], &slsave, &sdwork[0], &sldwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "shaeci_ error %ld\n", ierror);
-		exit(1);
-	}
-
-	shseci_ (&nlat, &nlon, &iswsave[0], &islsave, &isdwork[0], &isldwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "shseci_ error %ld\n", ierror);
-		exit(1);
-	}
 }
 
 SphereLaplace::~SphereLaplace() {}
@@ -111,7 +85,7 @@ void SphereLaplace::calc(double * out, const double * in)
 
 void SphereLaplace::make_psi(double * psi, const double * u, const double * v)
 {
-	SphereVorticity vor (nlat, nlon);
+	SphereVorticity vor (*this);
 
 	vor.calc (&psi[0], &u[0], &v[0]);
 	vec_mult_scalar (&psi[0], &psi[0], -1.0, nlat * nlon);

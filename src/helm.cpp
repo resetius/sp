@@ -24,7 +24,8 @@ void solve()
 	double dlon = 2. * M_PI /nlon;
 	int i, j;
 
-	SphereLaplace lapl(nlat, nlon, 0);
+	SphereOperator op(nlat, nlon, 0);
+	SphereLaplace lapl(op);
 
 	double * u  = (double*)calloc(nlat * nlon, sizeof(double));
 	double * v  = (double*)calloc(nlat * nlon, sizeof(double));

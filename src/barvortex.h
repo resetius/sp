@@ -37,6 +37,7 @@ public:
 
 private:
 	Conf conf;
+	SphereOperator op;
 	SphereLaplace lapl;
 	SphereJacobian jac;
 

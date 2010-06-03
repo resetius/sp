@@ -22,6 +22,7 @@ struct SphereChafeConf
 class SphereChafe {
 	typedef std::vector < double > array_t;
 	SphereChafeConf conf;
+	SphereOperator op;
 	SphereLaplace lapl;
 
 public:

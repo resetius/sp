@@ -52,7 +52,8 @@ void solve()
 	vector < double > v(nlat * nlon);
 	vector < double > r(nlat * nlon);
 
-	SphereLaplace lapl(nlat, nlon, 0);
+	SphereOperator op(nlat, nlon, 0);
+	SphereLaplace lapl(op);
 
 	double nev1 = 0;
 

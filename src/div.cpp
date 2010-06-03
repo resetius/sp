@@ -3,8 +3,7 @@
 
 using namespace std;
 
-SphereDiv::SphereDiv(long nlat, long nlon):
-	nlat(nlat), nlon(nlon)
+SphereDiv::SphereDiv(const SphereOperator & op): SphereOperator(op)
 {
 }
 

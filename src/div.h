@@ -2,16 +2,12 @@
 #define DIV_H
 
 #include <vector>
+#include "operator.h"
 
-class SphereDiv
+class SphereDiv: public SphereOperator
 {
-	typedef std::vector < double > array_t;
-
-	long nlat;
-	long nlon;
-
 public:
-	SphereDiv(long nlat, long nlon);
+	SphereDiv(const SphereOperator & op);
 	~SphereDiv();
 
 	void calc(double * div, const double * u, const double *v);
