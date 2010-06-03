@@ -43,6 +43,7 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 {
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
+	long n1      = 2 * conf.nlat * conf.nlat;
 	long n       = conf.nlat * conf.nlon;
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -91,8 +92,10 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 	//
 	array_t F (n);
 	array_t G (n);
+	array_t rp(4 * n1);
+	array_t x(4 * n1);
 
-//
+	//
 
 	lapl.calc (&w1[0], &u1[0]);
 	lapl.calc (&w2[0], &u2[0]);
@@ -186,12 +189,20 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 		vec_sum (&F[0], &F[0], &FC[0], n);
 		vec_sum (&G[0], &G[0], &GC[0], n);
 
-		// TODO: 
 		// 1. build right part [F, G, 0, 0]
 		// 2. build right part koefs
+		memset(&rp[0], 0, 4 * n1);
+		op.func2koef(&rp[0],  &F[0]);
+		op.func2koef(&rp[n1], &G[0]);
+
+		// TODO:
 		// 3. build 4nx4n matrix (it is constant matrix)
 		// 4. solve equation and find koefs
 		// 5. build functions from koefs
+		op.koef2func(&w1_n[0], &x[0]);
+		op.koef2func(&w2_n[0], &x[n1]);
+		op.koef2func(&u1_n[0], &x[2 * n1]);
+		op.koef2func(&u2_n[0], &x[3 & n1]);
 
 		double nr1 = dist (&u1_n1[0], &u1_n[0]);
 		double nr2 = dist (&u2_n1[0], &u2_n[0]);
