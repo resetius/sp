@@ -4,27 +4,32 @@
 #include <vector>
 #include "spherepack.h"
 
-class SphereLaplace {
+class SphereLaplace
+{
 	typedef std::vector < double > array_t;
 
 	long nlat;
 	long nlon;
 	long isym;
 
-	long lshaec;
-	long lshsec;
+	long slsave;
+	array_t swsave;
+
+	long sldwork;
+	array_t sdwork;
+
+	long islsave;
+	array_t iswsave;
+
+	long isldwork;
+	array_t isdwork;
+
 	long lwork;
-	long ldwork;
-
-	array_t wshaec;
-	array_t wshsec;
 	array_t work;
-	array_t dwork;
-
 	void init();
 
 public:
-	SphereLaplace(long nlat, long nlon, long isym);
+	SphereLaplace (long nlat, long nlon, long isym);
 	~SphereLaplace();
 
 	/**
@@ -32,9 +37,9 @@ public:
 	 * i - latitude  (from the sourth pole to the north pole)
 	 * j - longitude
 	 **/
-	void solve(double * out, const double * in, double mult = 1.0, double diag = 0.0);
-	void calc(double * out, const double * in);
-	void make_psi(double * psi, const double * u, const double * v);
+	void solve (double * out, const double * in, double mult = 1.0, double diag = 0.0);
+	void calc (double * out, const double * in);
+	void make_psi (double * psi, const double * u, const double * v);
 };
 
 #endif /* LAPL_H */

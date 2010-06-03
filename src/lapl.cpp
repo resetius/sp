@@ -9,9 +9,14 @@ using namespace linal;
 
 SphereLaplace::SphereLaplace (long nlat, long nlon, long isym) :
 		nlat (nlat), nlon (nlon), isym(isym),
-		lshaec (nlat* (nlat + 1) + 3* ( (nlat - 2) * (nlat - 1) + nlon + 15) ),
-		lshsec (lshaec), lwork(nlat*(2*nlon+3*(nlat+1)+2*nlat+1)), ldwork(nlat + 1),
-		wshaec(lshaec), wshsec(lshsec), work(lwork), dwork(ldwork)
+
+		slsave (5*nlat*nlat*nlon), swsave (slsave),
+		sldwork (4*nlat*nlat), sdwork (sldwork),
+
+		islsave (5*nlat*nlat*nlon), iswsave (islsave),
+		isldwork (4*nlat*nlat), isdwork (isldwork),
+
+		lwork (5*nlat*nlat*nlon), work (lwork)
 {
 	init();
 }
@@ -19,13 +24,13 @@ SphereLaplace::SphereLaplace (long nlat, long nlon, long isym) :
 void SphereLaplace::init()
 {
 	long ierror = 0;
-	shaeci_ (&nlat, &nlon, &wshaec[0], &lshaec, &dwork[0], &ldwork, &ierror);
+	shaeci_ (&nlat, &nlon, &swsave[0], &slsave, &sdwork[0], &sldwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "shaeci_ error %ld\n", ierror);
 		exit(1);
 	}
 
-	shseci_ (&nlat, &nlon, &wshsec[0], &lshsec, &dwork[0], &ldwork, &ierror);
+	shseci_ (&nlat, &nlon, &iswsave[0], &islsave, &isdwork[0], &isldwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "shseci_ error %ld\n", ierror);
 		exit(1);
@@ -49,10 +54,8 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
 
 	// находим разложение (a, b) по сферическим гармоникам
-	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
-	        &nlat, &nlon, &a[0], &b[0],
-	        &nlat, &nlat,
-	        &wshaec[0], &lshaec,
+	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon, 
+	        &a[0], &b[0], &nlat, &nlat, &swsave[0], &slsave,
 	        &work[0], &lwork, &ierror);
 	// чтобы по разложению (a, b) собрать назад функцию надо воспользоваться
 	// функцией shsec_
@@ -64,7 +67,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	islapec_ (&nlat, &nlon, &isym, &nt, &koef,
 	          &t[0], &nlat, &nlon,
 	          &a[0], &b[0], &nlat, &nlat,
-	          &wshsec[0], &lshsec, &work[0], &lwork, &pertrb, &ierror);
+	          &iswsave[0], &islsave, &work[0], &lwork, &pertrb, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "islapec_ error %ld\n", ierror);
 		exit(1);
@@ -88,7 +91,7 @@ void SphereLaplace::calc(double * out, const double * in)
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
 	        &nlat, &nlat,
-	        &wshaec[0], &lshaec,
+	        &swsave[0], &slsave,
 	        &work[0], &lwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "shaec_ error %ld\n", ierror);
@@ -97,7 +100,7 @@ void SphereLaplace::calc(double * out, const double * in)
 	slapec_ (&nlat, &nlon, &isym, &nt, 
 	          &t[0], &nlat, &nlon,
 	          &a[0], &b[0], &nlat, &nlat,
-	          &wshsec[0], &lshsec, &work[0], &lwork, &ierror);
+	          &iswsave[0], &islsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "slapec_ error %ld\n", ierror);
 		exit(1);
