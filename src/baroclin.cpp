@@ -193,8 +193,8 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 		// 4. solve equation and find koefs
 		// 5. build functions from koefs
 
-		double nr1 = p->dist (&u1_n1[0], &u1_n[0], sz);
-		double nr2 = p->dist (&u2_n1[0], &u2_n[0], sz);
+		double nr1 = dist (&u1_n1[0], &u1_n[0]);
+		double nr2 = dist (&u2_n1[0], &u2_n[0]);
 		double nr  = std::max (nr1, nr2);
 		u1_n1.swap (u1_n);
 		u2_n1.swap (u2_n);
