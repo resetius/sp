@@ -51,6 +51,13 @@ public:
 	SphereOperator(const SphereOperator & op);
 	~SphereOperator();
 
+	/**
+	 * k -- array 2*nlat*nlat
+	 * f -- array nlat*nlon
+	 */
+	void func2koef(double * k, const double * f);
+	void koef2func(double * f, const double * k);
+
 private:
 	SphereOperator & operator = (const SphereOperator & op);
 };
