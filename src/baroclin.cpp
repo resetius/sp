@@ -9,6 +9,7 @@ using namespace linal;
 
 SphereBaroclin::SphereBaroclin (const SphereBaroclin::Conf & conf) : SphereNorm (conf.nlat, conf.nlon),
 		conf (conf), op (conf.nlat, conf.nlon, 0), lapl (op), jac (op),
+		A (4 * conf.nlat * std::min(conf.nlat, conf.nlon/2+1)),
 		lh (conf.nlat * conf.nlon)
 {
 	long nlat = conf.nlat;
@@ -33,10 +34,25 @@ SphereBaroclin::SphereBaroclin (const SphereBaroclin::Conf & conf) : SphereNorm 
 			}
 		}
 	}
+
+	build_matrix();
 }
 
 SphereBaroclin::~SphereBaroclin()
 {
+}
+
+void SphereBaroclin::build_matrix()
+{
+	long nlat = conf.nlat;
+	long mmax = std::min(conf.nlat, conf.nlon/2+1);
+
+	for (long m = 0; m < mmax; ++m)
+	{
+		for (long i = 0; i < nlat; ++i)
+		{
+		}
+	}
 }
 
 void SphereBaroclin::S_step (double * out, const double * in, double t)

@@ -6,6 +6,7 @@
 #include "lapl.h"
 #include "jac.h"
 #include "norm.h"
+#include "solver.h"
 
 class SphereBaroclin: public SphereNorm
 {
@@ -46,8 +47,11 @@ private:
 	SphereOperator op;
 	SphereLaplace lapl;
 	SphereJacobian jac;
+	linal::Solver < double > A;
 
 	array_t lh;
+
+	void build_matrix();
 
 public:
 
