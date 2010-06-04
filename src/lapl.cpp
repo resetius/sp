@@ -21,15 +21,15 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	double pertrb = 0;
 	double koef   = -diag / mult;
 
-	array_t a (nlat * nlat);
-	array_t b (nlat * nlat);
+	array_t a (mdab * nlat);
+	array_t b (mdab * nlat);
 	array_t t (nlat * nlon);
 
 	transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
 
 	// находим разложение (a, b) по сферическим гармоникам
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon, 
-	        &a[0], &b[0], &nlat, &nlat, &swsave[0], &slsave,
+	        &a[0], &b[0], &mdab, &nlat, &swsave[0], &slsave,
 	        &work[0], &lwork, &ierror);
 	// чтобы по разложению (a, b) собрать назад функцию надо воспользоваться
 	// функцией shsec_
@@ -40,7 +40,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 
 	islapec_ (&nlat, &nlon, &isym, &nt, &koef,
 	          &t[0], &nlat, &nlon,
-	          &a[0], &b[0], &nlat, &nlat,
+	          &a[0], &b[0], &mdab, &nlat,
 	          &iswsave[0], &islsave, &work[0], &lwork, &pertrb, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "islapec_ error %ld\n", ierror);
@@ -56,15 +56,15 @@ void SphereLaplace::calc(double * out, const double * in)
 	long nt = 1;
 	long isym = 0;
 
-	array_t a (nlat * nlat);
-	array_t b (nlat * nlat);
+	array_t a (mdab * nlat);
+	array_t b (mdab * nlat);
 	array_t t (nlat * nlon);
 
 	transpose(&t[0], in, nlat, nlon);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
-	        &nlat, &nlat,
+	        &mdab, &nlat,
 	        &swsave[0], &slsave,
 	        &work[0], &lwork, &ierror);
 	if (ierror != 0) {
@@ -73,7 +73,7 @@ void SphereLaplace::calc(double * out, const double * in)
 	}
 	slapec_ (&nlat, &nlon, &isym, &nt, 
 	          &t[0], &nlat, &nlon,
-	          &a[0], &b[0], &nlat, &nlat,
+	          &a[0], &b[0], &mdab, &nlat,
 	          &iswsave[0], &islsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "slapec_ error %ld\n", ierror);

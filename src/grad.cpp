@@ -23,8 +23,8 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 	long nt     = 1;
 	long n      = nlat * nlon;
 
-	array_t a (nlat * nlat);
-	array_t b (nlat * nlat);
+	array_t a (mdab * nlat);
+	array_t b (mdab * nlat);
 
 	array_t u (nlat * nlon);
 	array_t dutheta (nlat * nlon);
@@ -89,3 +89,4 @@ void SphereGrad::solve (double * u1, const double * duph, const double * dulambd
 
 	transpose (&u1[0], &u[0], nlon, nlat);
 }
+

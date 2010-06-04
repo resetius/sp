@@ -23,8 +23,8 @@ void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 	long nt     = 1;
 	long n      = nlat * nlon;
 
-	array_t a (nlat * nlat);
-	array_t b (nlat * nlat);
+	array_t a (mdab * nlat);
+	array_t b (mdab * nlat);
 
 	array_t dutheta (nlat * nlon);
 	array_t dvtheta (nlat * nlon);
