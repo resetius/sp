@@ -219,8 +219,8 @@ void test_barvortex()
 	conf.sigma1= conf.sigma;
 	conf.mu1   = conf.mu;
 
-	conf.nlat = 48;
-	conf.nlon  = 64;
+	conf.nlat  = 19;
+	conf.nlon  = 36;
 	conf.theta = 0.5;
 
 	conf.alpha  = 1.0;
