@@ -14,6 +14,10 @@
 #undef max
 #endif
 
+#ifdef WIN32
+#define snprintf _snprintf
+#endif
+
 using namespace std;
 using namespace linal;
 
