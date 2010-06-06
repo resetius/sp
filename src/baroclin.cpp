@@ -90,6 +90,8 @@ void SphereBaroclin::build_matrix()
 			i0 += 1;
 		}
 	}
+
+	A.print();
 }
 
 void SphereBaroclin::S_step (double * out, const double * in, double t)
