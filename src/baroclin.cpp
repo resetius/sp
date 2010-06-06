@@ -94,6 +94,17 @@ void SphereBaroclin::build_matrix()
 
 void SphereBaroclin::S_step (double * out, const double * in, double t)
 {
+	long n       = conf.nlat * conf.nlon;
+	const double * u1 = in;
+	const double * u2 = &in[n];
+	double * u11 = out;
+	double * u21 = &out[n];
+
+	S_step(u11, u21, u1, u2, t);
+}
+
+void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, const double * u2, double t)
+{
 	using namespace linal;
 
 	long nlat    = conf.nlat;
@@ -111,11 +122,6 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 	double k1    = conf.k1;
 	double k2    = conf.k2;
 	double alpha = conf.alpha;
-
-	const double * u1 = in;
-	const double * u2 = &in[n];
-	double * u11 = out;
-	double * u21 = &out[n];
 
 	array_t w1 (n);
 	array_t w2 (n);

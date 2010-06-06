@@ -62,6 +62,7 @@ public:
 	// v = &in[nlat * nlon]
 
 	void S_step(double * out, const double * in, double t);
+	void S_step(double * u1_o, double * u2_o, const double * u1, const double * u2, double t);
 
 	void L_step(double * out, const double * in, const double * z);
 	void LT_step(double * out, const double * in, const double * z);
