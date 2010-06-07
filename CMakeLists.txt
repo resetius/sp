@@ -10,12 +10,12 @@ add_definitions(${OpenMP_C_FLAGS})
 add_subdirectory_if_exists(spherepack_c)
 add_subdirectory_if_exists(linal)
 
-if (NOT LINAL_HOME)
-        message(FATAL "linal library not found")
+if (NOT LINAL_INCLUDE)
+        message(FATAL_ERROR "linal library not found")
 endif ()
 
 if (NOT SPHEREPACK_INCLUDE)
-	message(FATAL "linal spherepack library not found")
+	message(FATAL_ERROR "spherepack library not found")
 endif ()
 
 add_subdirectory(src)
