@@ -54,6 +54,7 @@ void SphereBaroclin::build_matrix()
 
 	long nlat = conf.nlat;
 	long mmax = std::min(conf.nlat, conf.nlon/2+1);
+	long n1   = conf.nlat * std::min(conf.nlat, conf.nlon/2+1);
 
 	long i0, j0;
 
@@ -68,24 +69,24 @@ void SphereBaroclin::build_matrix()
 			// w1
 			A.add(i0, i0, 1. / tau + theta * sigma * 0.5 - theta * mu * fnn);
 			// w2
-			A.add(i0, i0 + mmax, -theta * sigma * 0.5);
+			A.add(i0, i0 + n1, -theta * sigma * 0.5);
 
 			// 2
 			// w1
-			A.add(i0 + mmax, i0, theta * sigma * 0.5);
+			A.add(i0 + n1, i0, theta * sigma * 0.5);
 			// w2
-			A.add(i0 + mmax, i0 + mmax, 
+			A.add(i0 + n1, i0 + n1, 
 			      1. / tau + theta * sigma * 0.5 - theta * mu * fnn + 
 			      + alpha * alpha * theta * mu1);
 			// u2
-			A.add(i0 + mmax, i0 + 3 * mmax, -alpha * alpha / tau - alpha * alpha * sigma1);
+			A.add(i0 + n1, i0 + 3 * n1, -alpha * alpha / tau - alpha * alpha * sigma1);
 
 			// 3
 			// u1
-			A.add(i0 + 2 * mmax, i0 + 2 * mmax, fnn);
+			A.add(i0 + 2 * n1, i0 + 2 * n1, fnn);
 
 			// u2
-			A.add(i0 + 2 * mmax, i0 + 3 * mmax, fnn);
+			A.add(i0 + 2 * n1, i0 + 3 * n1, fnn);
 
 			i0 += 1;
 		}
