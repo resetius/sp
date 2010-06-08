@@ -31,8 +31,8 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 	array_t ww(n);
 	array_t vt(n);
 
-	transpose (&vv[0], &v[0], nlat, nlon);
-	transpose (&ww[0], &u[0], nlat, nlon);
+	mat_transpose (&vv[0], &v[0], nlat, nlon);
+	mat_transpose (&ww[0], &u[0], nlat, nlon);
 
 	vhaec_(&nlat, &nlon, &ityp, &nt, &vv[0], &ww[0], &nlat, &nlon,
 		&br[0], &bi[0], &cr[0], &ci[0], &mdc, &nlat,
@@ -51,7 +51,7 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 		exit(1);
 	}
 
-	transpose (&div[0], &vt[0], nlon, nlat);
+	mat_transpose (&div[0], &vt[0], nlon, nlat);
 }
 
 void SphereVorticity::test()

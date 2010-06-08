@@ -25,7 +25,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	array_t b (mdab * nlat);
 	array_t t (nlat * nlon);
 
-	transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
+	mat_transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
 
 	// находим разложение (a, b) по сферическим гармоникам
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon, 
@@ -47,7 +47,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 		exit(1);
 	}
 
-	transpose(out, &t[0], nlon, nlat);
+	mat_transpose(out, &t[0], nlon, nlat);
 }
 
 void SphereLaplace::calc(double * out, const double * in)
@@ -60,7 +60,7 @@ void SphereLaplace::calc(double * out, const double * in)
 	array_t b (mdab * nlat);
 	array_t t (nlat * nlon);
 
-	transpose(&t[0], in, nlat, nlon);
+	mat_transpose(&t[0], in, nlat, nlon);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
@@ -80,7 +80,7 @@ void SphereLaplace::calc(double * out, const double * in)
 		exit(1);
 	}
 
-	transpose(out, &t[0], nlon, nlat);
+	mat_transpose(out, &t[0], nlon, nlat);
 }
 
 void SphereLaplace::make_psi(double * psi, const double * u, const double * v)

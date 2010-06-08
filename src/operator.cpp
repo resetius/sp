@@ -109,7 +109,7 @@ void SphereOperator::func2koef (double * k, const double * f)
 	double * a = &k[0];
 	double * b = &k[mdab * nlat];
 	array_t t (nlat * nlon);
-	transpose (&t[0], f, nlat, nlon);
+	mat_transpose (&t[0], f, nlat, nlon);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon,
 	        &a[0], &b[0], &mdab, &nlat, &swsave[0], &slsave,
@@ -141,6 +141,6 @@ void SphereOperator::koef2func (double * f, const double * k)
 		exit (1);
 	}
 
-	transpose (f, &t[0], nlon, nlat);
+	mat_transpose (f, &t[0], nlon, nlat);
 }
 

@@ -30,7 +30,7 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 	array_t dutheta (nlat * nlon);
 	array_t duphi (nlat * nlon);
 
-	transpose (&u[0], &u1[0], nlat, nlon);
+	mat_transpose (&u[0], &u1[0], nlat, nlon);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &u[0], &nlat, &nlon, 
 		&a[0], &b[0], &mdab, &nlat, &swsave[0],
@@ -48,8 +48,8 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 		exit(1);
 	}
 
-	transpose (&duph[0], &dutheta[0], nlon, nlat);
-	transpose (&dulambda[0], &duphi[0], nlon, nlat);
+	mat_transpose (&duph[0], &dutheta[0], nlon, nlat);
+	mat_transpose (&dulambda[0], &duphi[0], nlon, nlat);
 }
 
 void SphereGrad::solve (double * u1, const double * duph, const double * dulambda)
@@ -67,8 +67,8 @@ void SphereGrad::solve (double * u1, const double * duph, const double * dulambd
 	array_t dutheta (nlat * nlon);
 	array_t duphi (nlat * nlon);
 
-	transpose (&dutheta[0], &duph[0], nlat, nlon);
-	transpose (&duphi[0], &dulambda[0], nlat, nlon);
+	mat_transpose (&dutheta[0], &duph[0], nlat, nlon);
+	mat_transpose (&duphi[0], &dulambda[0], nlat, nlon);
 
 	// vhaec dutheta, duphi -> a, b
 	vhaec_(&nlat, &nlon, &ityp, &nt, &dutheta[0], &duphi[0], &nlat, &nlon,
@@ -87,6 +87,6 @@ void SphereGrad::solve (double * u1, const double * duph, const double * dulambd
 		exit(1);
 	}
 
-	transpose (&u1[0], &u[0], nlon, nlat);
+	mat_transpose (&u1[0], &u[0], nlon, nlat);
 }
 

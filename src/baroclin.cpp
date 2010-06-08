@@ -1,6 +1,7 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "baroclin.h"
 #include "linal.h"
@@ -61,7 +62,7 @@ void SphereBaroclin::build_matrix()
 	i0 = 0; j0 = 0;
 	for (long m = 0; m < mmax; ++m)
 	{
-		for (long n = 0; n < nlat; ++n)
+		for (long n = 1; n <= nlat; ++n)
 		{
 			double fnn = -n * (n + 1);
 
@@ -85,14 +86,15 @@ void SphereBaroclin::build_matrix()
 			// u1
 			A.add(i0 + 2 * n1, i0 + 2 * n1, fnn);
 
+			// 4
 			// u2
-			A.add(i0 + 2 * n1, i0 + 3 * n1, fnn);
+			A.add(i0 + 3 * n1, i0 + 3 * n1, fnn);
 
 			i0 += 1;
 		}
 	}
 
-	A.print();
+//	A.print();
 }
 
 void SphereBaroclin::S_step (double * out, const double * in, double t)
@@ -112,7 +114,7 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
-	long n1      = 2 * conf.nlat * conf.nlat;
+	long n1      = conf.nlat * std::min(conf.nlat, conf.nlon/2+1);
 	long n       = conf.nlat * conf.nlon;
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -262,12 +264,15 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 		op.func2koef(&rp[3*n1], &w2_n[0]);
 
 		// 3. solve equation and find koefs
+
+		//mat_print("rp.txt", &rp[0], rp.size(), 1, "%8.3le ");
+		//exit(1);
 		A.solve(&x[0], &rp[0]);
 		// 4. build functions from koefs
-		op.koef2func(&w1_n[0], &x[0]);
-		op.koef2func(&w2_n[0], &x[n1]);
-		op.koef2func(&u1_n[0], &x[2 * n1]);
-		op.koef2func(&u2_n[0], &x[3 & n1]);
+		op.koef2func(&w1_n[0],  &x[0]);
+		op.koef2func(&w2_n[0],  &x[n1]);
+		op.koef2func(&u1_n1[0], &x[2 * n1]);
+		op.koef2func(&u2_n1[0], &x[3 * n1]);
 
 		double nr1 = dist (&u1_n1[0], &u1_n[0]);
 		double nr2 = dist (&u2_n1[0], &u2_n[0]);
@@ -309,3 +314,4 @@ void SphereBaroclin::u2p (double * p, const double * u)
 {
 	memcpy (p, u, conf.nlat * conf.nlon * sizeof (double) );
 }
+

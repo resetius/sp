@@ -166,17 +166,17 @@ void output_psi(const char * prefix, const char * suffix,
 	snprintf(Vbuf, 1024,   "out/%sorig_v%s.txt", prefix, suffix);
 	snprintf(Psibuf, 1024, "out/%sorig_psi%s.txt", prefix, suffix);
 
-	fprintfwmatrix(ubuf,   &u[0], nlat, nlon, "%23.16lf ");
-	fprintfwmatrix(vbuf,   &v[0], nlat, nlon, "%23.16lf ");
-	fprintfwmatrix(psibuf, &psi[0], nlat, nlon, "%23.16lf ");
+	mat_print(ubuf,   &u[0], nlat, nlon, "%23.16lf ");
+	mat_print(vbuf,   &v[0], nlat, nlon, "%23.16lf ");
+	mat_print(psibuf, &psi[0], nlat, nlon, "%23.16lf ");
 
 	vec_mult_scalar(&u[0], &u[0], U0, nlon * nlat);
 	vec_mult_scalar(&v[0], &v[0], U0, nlon * nlat);
 	vec_mult_scalar(&Psi[0],  &psi[0],  PSI0, nlon * nlat);
 
-	fprintfwmatrix(Ubuf,   &u[0], nlat, nlon, "%23.16le ");
-	fprintfwmatrix(Vbuf,   &v[0], nlat, nlon, "%23.16le ");
-	fprintfwmatrix(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
+	mat_print(Ubuf,   &u[0], nlat, nlon, "%23.16le ");
+	mat_print(Vbuf,   &v[0], nlat, nlon, "%23.16le ");
+	mat_print(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
 }
 
 void run_test(const char * srtm)
@@ -300,11 +300,11 @@ void run_test(const char * srtm)
 
 	Variance < double > var(u.size());
 
-	fprintfwmatrix("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
-	fprintfwmatrix("out/rel.txt", &rel[0], nlat, nlon, "%23.16lf ");
-	fprintfwmatrix("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
-	fprintfwmatrix("out/u0.txt", &u[0], nlat, nlon, "%23.16lf ");
-	fprintfwmatrix("out/v0.txt", &v[0], nlat, nlon, "%23.16lf ");
+	mat_print("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
+	mat_print("out/rel.txt", &rel[0], nlat, nlon, "%23.16lf ");
+	mat_print("out/rp.txt", &f[0], nlat, nlon, "%23.16lf ");
+	mat_print("out/u0.txt", &u[0], nlat, nlon, "%23.16lf ");
+	mat_print("out/v0.txt", &v[0], nlat, nlon, "%23.16lf ");
 
 	//exit(1);
 
