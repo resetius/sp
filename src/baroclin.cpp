@@ -10,7 +10,7 @@ using namespace std;
 
 SphereBaroclin::SphereBaroclin (const SphereBaroclin::Conf & conf) : SphereNorm (conf.nlat, conf.nlon),
 		conf (conf), op (conf.nlat, conf.nlon, 0), lapl (op), jac (op),
-		A (4 * conf.nlat * std::min(conf.nlat, conf.nlon/2+1)),
+		A (4 * 2 * conf.nlat * (std::min (conf.nlat, conf.nlon / 2 + 1) ) ),
 		lh (conf.nlat * conf.nlon)
 {
 	long nlat = conf.nlat;
@@ -48,53 +48,66 @@ void SphereBaroclin::build_matrix()
 	double tau   = conf.tau;
 	double theta = conf.theta;
 	double sigma = conf.sigma;
-	double sigma1= conf.sigma;
+	double sigma1 = conf.sigma;
 	double alpha = conf.alpha;
 	double mu    = conf.mu;
 	double mu1   = conf.mu1;
 
 	long nlat = conf.nlat;
-	long mmax = std::min(conf.nlat, conf.nlon/2+1);
-	long n1   = conf.nlat * std::min(conf.nlat, conf.nlon/2+1);
+	long mmax = std::min (conf.nlat, conf.nlon / 2 + 1);
+	long n1   = 2 * conf.nlat * (std::min (conf.nlat, conf.nlon / 2 + 1) );
 
 	long i0, j0;
 
-	i0 = 0; j0 = 0;
-	for (long m = 0; m < mmax; ++m)
+	i0 = 0;
+	j0 = 0;
+
+	for (int l = 0; l < 2; ++l)
 	{
-		for (long n = 1; n <= nlat; ++n)
+		for (long n = 0; n < nlat; ++n)
+	//	for (long m = 0; m < mmax; ++m)
 		{
-			double fnn = -n * (n + 1);
+			for (long m = 0; m < mmax; ++m)
+	//		for (long n = 0; n < nlat; ++n)
+			{
+				int fnn = -n * (n + 1);
 
-			// 1
-			// w1
-			A.add(i0, i0, 1. / tau + theta * sigma * 0.5 - theta * mu * fnn);
-			// w2
-			A.add(i0, i0 + n1, -theta * sigma * 0.5);
+				// 1
+				// w1
+				A.add (i0, i0, 1. / tau + theta * sigma * 0.5 - theta * mu * fnn);
+				// w2
+				A.add (i0, i0 + n1, -theta * sigma * 0.5);
 
-			// 2
-			// w1
-			A.add(i0 + n1, i0, theta * sigma * 0.5);
-			// w2
-			A.add(i0 + n1, i0 + n1, 
-			      1. / tau + theta * sigma * 0.5 - theta * mu * fnn + 
-			      + alpha * alpha * theta * mu1);
-			// u2
-			A.add(i0 + n1, i0 + 3 * n1, -alpha * alpha / tau - alpha * alpha * sigma1);
+				// 2
+				// w1
+				A.add (i0 + n1, i0, theta * sigma * 0.5);
+				// w2
+				A.add (i0 + n1, i0 + n1,
+				       1. / tau + theta * sigma * 0.5 - theta * mu * fnn +
+				       + alpha * alpha * theta * mu1);
+				// u2
+				A.add (i0 + n1, i0 + 3 * n1, -alpha * alpha / tau - alpha * alpha * sigma1);
 
-			// 3
-			// u1
-			A.add(i0 + 2 * n1, i0 + 2 * n1, fnn);
+				// 3
+				// Delta u1 - w1 = 0
+				// w1
+				A.add (i0 + 2 * n1, i0, -1);
+				// u1
+				A.add (i0 + 2 * n1, i0 + 2 * n1, fnn ? fnn : -1);
 
-			// 4
-			// u2
-			A.add(i0 + 3 * n1, i0 + 3 * n1, fnn);
+				// 4
+				// Delta u2 - w2 = 0
+				// w2
+				A.add (i0 + 3 * n1, i0 + n1, -1);
+				// u2
+				A.add (i0 + 3 * n1, i0 + 3 * n1, fnn ? fnn : -1);
 
-			i0 += 1;
+				i0 += 1;
+			}
 		}
 	}
 
-//	A.print();
+	//A.print(stdout);
 }
 
 void SphereBaroclin::S_step (double * out, const double * in, double t)
@@ -105,7 +118,7 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 	double * u11 = out;
 	double * u21 = &out[n];
 
-	S_step(u11, u21, u1, u2, t);
+	S_step (u11, u21, u1, u2, t);
 }
 
 void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, const double * u2, double t)
@@ -114,7 +127,7 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
-	long n1      = conf.nlat * std::min(conf.nlat, conf.nlon/2+1);
+	long n1      = 2 * conf.nlat * std::min (conf.nlat, conf.nlon / 2 + 1);
 	long n       = conf.nlat * conf.nlon;
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -144,6 +157,8 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 
 	array_t u1_n1 (n);
 	array_t u2_n1 (n);
+	array_t w1_n1 (n);
+	array_t w2_n1 (n);
 
 
 // tmp
@@ -158,8 +173,8 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 	//
 	array_t F (n);
 	array_t G (n);
-	array_t rp(4 * n1);
-	array_t x(4 * n1);
+	array_t rp (4 * n1);
+	array_t x (4 * n1);
 
 	//
 
@@ -257,22 +272,35 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 
 		// 1. build right part [F, G, 0, 0]
 		// 2. build right part koefs
-		memset(&rp[0], 0, 4 * n1);
-		op.func2koef(&rp[0],    &F[0]);
-		op.func2koef(&rp[n1],   &G[0]);
-		op.func2koef(&rp[2*n1], &w1_n[0]);
-		op.func2koef(&rp[3*n1], &w2_n[0]);
+		memset (&rp[0], 0, 4 * n1);
+		op.func2koef (&rp[0],    &F[0]);
+		op.func2koef (&rp[n1],   &G[0]);
+		//op.func2koef (&rp[2*n1], &w1_n[0]);
+		//op.func2koef (&rp[3*n1], &w2_n[0]);
+		// selftest
+		if (0)
+		{
+			op.koef2func (&w1_n1[0], &rp[0]);
+			op.koef2func (&w2_n1[0], &rp[n1]);
+			op.koef2func (&u1_n1[0], &rp[2 * n1]);
+			op.koef2func (&u2_n1[0], &rp[3 * n1]);
+			fprintf (stderr, "1: %le\n", dist (&w1_n1[0], &F[0]) );
+			fprintf (stderr, "2: %le\n", dist (&w2_n1[0], &G[0]) );
+			fprintf (stderr, "3: %le\n", dist (&u1_n1[0], &w1_n[0]) );
+			fprintf (stderr, "4: %le\n", dist (&u2_n1[0], &w2_n[0]) );
+			exit (1);
+		}
 
 		// 3. solve equation and find koefs
 
 		//mat_print("rp.txt", &rp[0], rp.size(), 1, "%8.3le ");
 		//exit(1);
-		A.solve(&x[0], &rp[0]);
+		A.solve (&x[0], &rp[0]);
 		// 4. build functions from koefs
-		op.koef2func(&w1_n[0],  &x[0]);
-		op.koef2func(&w2_n[0],  &x[n1]);
-		op.koef2func(&u1_n1[0], &x[2 * n1]);
-		op.koef2func(&u2_n1[0], &x[3 * n1]);
+		op.koef2func (&w1_n[0],  &x[0]);
+		op.koef2func (&w2_n[0],  &x[n1]);
+		op.koef2func (&u1_n1[0], &x[2 * n1]);
+		op.koef2func (&u2_n1[0], &x[3 * n1]);
 
 		double nr1 = dist (&u1_n1[0], &u1_n[0]);
 		double nr2 = dist (&u2_n1[0], &u2_n[0]);
@@ -292,17 +320,17 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 
 void SphereBaroclin::L_step (double *u1, const double *u, const double * z)
 {
-	assert(0);
+	assert (0);
 }
 
 void SphereBaroclin::LT_step (double *v1, const double *v, const double * z)
 {
-	assert(0);
+	assert (0);
 }
 
 void SphereBaroclin::L_1_step (double *u1, const double *u, const double * z)
 {
-	assert(0);
+	assert (0);
 }
 
 void SphereBaroclin::p2u (double * u, const double * p)

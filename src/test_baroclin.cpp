@@ -249,7 +249,6 @@ void test_barvortex()
 	vector < double > u1r(n);
 	vector < double > u2r(n);
 
-	fprintf(stderr, "#domain:sphere half\n");
 	fprintf(stderr, "#mesh_w:%d\n", conf.nlon);
 	fprintf(stderr, "#mesh_h:%d\n", conf.nlat);
 	fprintf(stderr, "#tau:%.16lf\n", conf.tau);
