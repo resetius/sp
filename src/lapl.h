@@ -30,6 +30,9 @@
 #include "spherepack.h"
 #include "operator.h"
 
+/**
+ * Solve Laplace equation and calculate Laplace operator.
+ */
 class SphereLaplace: public SphereOperator
 {
 public:
@@ -37,12 +40,33 @@ public:
 	~SphereLaplace();
 
 	/**
+	 * Solve the equation.
+	 \f[
+	   m \Delta u + d u = f
+	 \f]
 	 * out[i][j]
 	 * i - latitude  (from the sourth pole to the north pole)
 	 * j - longitude
+	 * @param out  -- result function
+	 * @param in   -- right part
+	 * @param m    -- Laplace multiplier
+	 * @param d    -- coefficient
 	 **/
-	void solve (double * out, const double * in, double mult = 1.0, double diag = 0.0);
+	void solve (double * out, const double * in, double m = 1.0, double d = 0.0);
+
+	/**
+	 * Calculate Laplace operator.
+	 \f[
+	  out = \Delta in
+	 \f]
+	 * @param out -- result function
+	 * @param in  -- input function
+	 */
 	void calc (double * out, const double * in);
+
+	/**
+	 * TODO: describe me!
+	 */
 	void make_psi (double * psi, const double * u, const double * v);
 };
 

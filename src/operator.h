@@ -142,6 +142,10 @@
 #include <vector>
 #include "norm.h"
 
+/**
+ * The base class for all of spherical operators.
+ * It allocates memory for Spherepack and implements some usefull methods.
+ */
 class SphereOperator: public SphereNorm
 {
 	struct Data;
@@ -185,15 +189,28 @@ protected:
 	array_t & work;
 
 public:
+	/**
+	 * Constructor.
+	 * @param nlat - latitude
+	 * @param nlon - longitude
+	 * @param isym - unused yet
+	 */
 	SphereOperator(long nlat, long lon, long isym);
 	SphereOperator(const SphereOperator & op);
 	~SphereOperator();
 
 	/**
-	 * k -- array 2*nlat*nlat
-	 * f -- array nlat*nlon
+	 * Converts function to coefficients.
+	 * @param k -- array 2*nlat*nlat
+	 * @param f -- array nlat*nlon
 	 */
 	void func2koef(double * k, const double * f);
+
+	/**
+	 * Converts coefficients to function.
+	 * @param k -- array 2*nlat*nlat
+	 * @param f -- array nlat*nlon
+	 */
 	void koef2func(double * f, const double * k);
 
 private:

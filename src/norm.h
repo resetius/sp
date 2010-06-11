@@ -28,6 +28,9 @@
 
 #include <vector>
 
+/**
+ * Spherical norm implementation.
+ */
 class SphereNorm
 {
 	long nlat;
@@ -35,10 +38,32 @@ class SphereNorm
 	std::vector < double > cosi;
 
 public:
+	/**
+	 * Constructor.
+	 * @param nlat - latitude
+	 * @param nlon - longitude
+	 * @param isym - unused yet
+	 */
 	SphereNorm(long nlat, long nlon);
 
+	/**
+	 * Scalar product of two functions.
+	 * @param u
+	 * @param v
+	 */
 	double scalar(const double * u, const double * v);
+
+	/**
+	 * the Distance between two functions.
+	 * @param u
+	 * @param v
+	 */
 	double dist(const double * u, const double * v);
+
+	/**
+	 * the norm of functions.
+	 * @param u
+	 */
 	double norm(const double * u);
 };
 
