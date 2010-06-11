@@ -196,7 +196,7 @@ public:
 	 * @param nlon - longitude
 	 * @param isym - unused yet
 	 */
-	SphereOperator(long nlat, long lon, long isym);
+	SphereOperator(long nlat, long nlon, long isym);
 	SphereOperator(const SphereOperator & op);
 	~SphereOperator();
 
