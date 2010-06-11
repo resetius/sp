@@ -54,7 +54,6 @@
     -# @ref test_chafe.cpp "Chafe-Infante equation on the sphere"
   \f{eqnarray*}
   \frac{du}{dt} &=& \mu \Delta u - \sigma u + f (u) \\
-  u(x,y,t)|_{\partial\Omega}&=&a \\
   u(x,y,t)|_{t=0} &=& u_0 \\
   \f}
     -# @ref test_barvortex.cpp "The Barotropic vorticity equation on the sphere"
@@ -113,10 +112,13 @@
   \Delta \psi &=& f(\varphi, \lambda) \\
   \Delta \psi &=& \frac{1}{cos\varphi}\frac{\partial}{\partial\varphi}cos(\varphi)\frac{\partial}{\partial\varphi}\psi+
   \frac{1}{cos^2\varphi}\frac{\partial^2}{\partial\lambda^2}\psi\\
-  \psi|_{\partial\Omega}&=&\psi_0 \\
   \f}
   @example test_chafe.cpp
   Chafe-Infante equation on a sphere
+  \f{eqnarray*}
+  \frac{du}{dt} &=& \mu \Delta u - \sigma u + f (u) \\
+  u(x,y,t)|_{t=0} &=& u_0 \\
+  \f}
   @example test_barvortex.cpp
   the Barotropic vorticity equation
   \f[
