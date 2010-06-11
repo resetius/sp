@@ -30,18 +30,23 @@
 
 typedef double (*rp_t)(double phi, double lambda, double t, double mu, double sigma);
 
+/**
+ * Chafe-Infante equation on sphere.
+ * Configuration.
+ */
 struct SphereChafeConf
 {
-	long nlat;
-	long nlon;
-	double tau;
-	double mu;
-	double sigma;
-	double theta;
-	rp_t rp;
+	long nlat;    ///<latitude
+	long nlon;    ///<longitude
+	double tau;   ///<time step
+	double mu;    ///<\f$\mu\f$
+	double sigma; ///<\f$\sigma\f$
+	double theta; ///<parameter 0-1. 0.5 for Crank–Nicolson, 1.0 for backward Euler
+	rp_t rp;      ///<right part
 };
 
 /**
+ * Chafe-Infante equation on sphere.
  * \f$\frac{du}{dt} = \mu \delta u - \sigma u + f (u)\f$
  */
 class SphereChafe {

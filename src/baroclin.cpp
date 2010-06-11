@@ -344,12 +344,21 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 	memcpy (u21, &u2_n[0], n * sizeof (double) );
 }
 
+void SphereBaroclin::L_step (double *u1_o, double * u2_o,
+                             const double * u1, const double * u2, 
+                             const double * z1, const double * z2)
+{
+	assert (0);
+}
+
 void SphereBaroclin::L_step (double *u1, const double *u, const double * z)
 {
 	assert (0);
 }
 
-void SphereBaroclin::LT_step (double *v1, const double *v, const double * z)
+void SphereBaroclin::L_1_step (double *u1_o, double * u2_o,
+                               const double * u1, const double * u2, 
+                               const double * z1, const double * z2)
 {
 	assert (0);
 }
