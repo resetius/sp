@@ -36,7 +36,7 @@
  * Solve the Barotropic vorticity equation.
  *
  \f[
- \frac{\partial \Delta \varphi}{\partial t} + k_1 J(\psi, \Delta \psi) 
+ \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta \psi) 
     + k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = f(\varphi, \lambda)
  \f]
  * where \f$J(\cdot,\cdot)\f$ is spherical jacobian operator 
@@ -101,7 +101,7 @@ public:
 	/**
 	 * Solve the Barotropic vorticity equation.
  \f[
- \frac{\partial \Delta \varphi}{\partial t} + k_1 J(\psi, \Delta \psi)
+ \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta \psi)
     + k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = f(\varphi, \lambda)
  \f]
  	 * @param out - output value
@@ -113,7 +113,7 @@ public:
 	/**
 	 * Solve the linearized Barotropic vorticity equation in a neibourhood of point (z).
  \f[
- \frac{\partial \Delta \varphi}{\partial t} + k_1 J(\psi, \Delta z)  + k_1 J(z, \Delta \psi)
+ \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta z)  + k_1 J(z, \Delta \psi)
     + k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = 0
  \f]
 	 * @param out - output vector

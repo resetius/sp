@@ -57,7 +57,7 @@
   \f}
     -# @ref test_barvortex.cpp "The Barotropic vorticity equation on the sphere"
   \f{eqnarray*}
-  \frac{\partial \Delta \varphi}{\partial t} + J(\psi, \Delta \psi) 
+  \frac{\partial \Delta \psi}{\partial t} + J(\psi, \Delta \psi) 
     + J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi &=& f(\varphi, \lambda) \\
 	\psi|_{t=0}=\psi_0
   \f}
@@ -121,7 +121,7 @@
   @example test_barvortex.cpp
   the Barotropic vorticity equation
   \f[
-  \frac{\partial \Delta \varphi}{\partial t} + J(\psi, \Delta \psi) 
+  \frac{\partial \Delta \psi}{\partial t} + J(\psi, \Delta \psi) 
     + J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = f(\varphi, \lambda)
   \f]
   @example test_baroclin.cpp
