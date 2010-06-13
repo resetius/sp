@@ -42,7 +42,6 @@ public:
 	 * Constructor.
 	 * @param nlat - latitude
 	 * @param nlon - longitude
-	 * @param isym - unused yet
 	 */
 	SphereNorm(long nlat, long nlon);
 
