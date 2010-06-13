@@ -41,7 +41,7 @@ struct SphereChafeConf
 	double tau;   ///<time step
 	double mu;    ///<\f$\mu\f$
 	double sigma; ///<\f$\sigma\f$
-	double theta; ///<parameter 0-1. 0.5 for Crank–Nicolson, 1.0 for backward Euler
+	double theta; ///<parameter 0-1. 0.5 for Crank-Nicolson, 1.0 for backward Euler
 	rp_t rp;      ///<right part
 };
 
