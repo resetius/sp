@@ -74,7 +74,7 @@ public:
 
 		/**
 		 * Time discretization scheme parameter \f$\theta\f$.
-		 * Use 0.5 for Crank–Nicolson.
+		 * Use 0.5 for Crank-Nicolson.
 		 */
 		double theta;
 		double alpha; ///<\f$\alpha\f$
