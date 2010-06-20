@@ -104,10 +104,12 @@ private:
 	SphereLaplace lapl;
 	SphereJacobian jac;
 	linal::Solver < double > A;
+	linal::Solver < double > A1; //inverted
 
 	array_t lh;
 
 	void build_matrix();
+	void build_inverted_matrix();
 
 public:
 
