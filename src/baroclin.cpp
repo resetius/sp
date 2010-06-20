@@ -344,16 +344,203 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 	memcpy (u21, &u2_n[0], n * sizeof (double) );
 }
 
-void SphereBaroclin::L_step (double *u1_o, double * u2_o,
+void SphereBaroclin::L_step (double *u11, double * u21,
                              const double * u1, const double * u2, 
                              const double * z1, const double * z2)
 {
-	assert (0);
+	using namespace linal;
+
+	long nlat    = conf.nlat;
+	long nlon    = conf.nlon;
+	long n1      = 2 * conf.nlat * std::min (conf.nlat, conf.nlon / 2 + 1);
+	long n       = conf.nlat * conf.nlon;
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+	double tau   = conf.tau;
+	double theta = conf.theta;
+	double mu    = conf.mu;
+	double mu1   = conf.mu1;
+	double sigma = conf.sigma;
+	double sigma1 = conf.sigma1;
+	double k1    = conf.k1;
+	double k2    = conf.k2;
+	double alpha = conf.alpha;
+
+	// правая часть 1:
+	// - J(z1, 0.5(w1+w1)) - J(u1, L(z1)+l+h) -
+	// - J(z2, 0.5(w2+w2)) - J(0.5(u2+u2), L(z2)) +
+	// + w1/tau - 0.5 (1-theta)sigma (w1-w2)+mu(1-theta)(L w1)
+	// правая часть 2:
+	// - J(z1, 0.5(w2+w2)) - J(0.5(u1+u1), L(z2)) -
+	// - J(0.5(u2+u2), L(z1)+l+h) - J(z2, 0.5(w1+w1)) -
+	// - 0.5 (1-theta)sigma (w1 + w2) + (1-theta) mu L w2
+	// + w2/tau - alpha^2 u2/tau +
+	// + alpha^2 J(z1, 0.5(u2+u2)) + alpha^2 J(0.5(u1+u1), z2) -
+	// - alpha^2 (1-theta) mu1 w2 +
+	// + alpha^2 sigma1 (1-theta) u2 
+
+	array_t w1(n);
+	array_t w2(n);
+	array_t dw1(n);
+	array_t dw2(n);
+	array_t dz1(n);
+	array_t dz2(n);
+	array_t FC(n);
+	array_t GC(n);
+
+	// next
+	array_t u1_n(n);
+	array_t u2_n(n);
+	array_t w1_n(n);
+	array_t w2_n(n);
+
+	array_t u1_n1(n);
+	array_t u2_n1(n);
+
+	// tmp
+	array_t tmp1(n);
+	array_t tmp2(n);
+
+	// jac!
+	array_t jac1(n);
+	array_t jac2(n);
+	array_t jac3(n);
+
+	//
+	array_t F(n);
+	array_t G(n);
+
+	array_t rp(4*n1);
+	array_t x(4*n1);
+
+	lapl.calc(&w1[0], &u1[0]);
+	lapl.calc(&w2[0], &u2[0]);
+
+	lapl.calc(&dw1[0], &w1[0]);
+	lapl.calc(&dw2[0], &w2[0]);
+
+	lapl.calc(&dz1[0], &z1[0]);
+	lapl.calc(&dz2[0], &z2[0]);
+
+	// w1/tau - 0.5 (1-theta)sigma(w1-w2) + mu(1-theta)(L w1)
+	vec_sum1(&FC[0], &w1[0], &w2[0], 
+		-0.5 * (1.0 - theta) * sigma, 0.5 * (1.0 - theta) * sigma, n);
+	vec_sum1(&FC[0], &FC[0], &dw1[0], 1.0, mu * (1.0 - theta), n);
+	vec_sum1(&FC[0], &FC[0], &w1[0], 1.0, 1.0 / tau, n);
+
+	// w2/tau - 0.5 (1-theta)sigma (w1 + w2) + (1-theta) mu L w2 -
+	// - alpha^2 u2/tau - alpha^2 (1-theta) mu1 w2 + alpha^2 sigma1 (1-theta) u2
+	vec_sum1(&GC[0], &w1[0], &w2[0],
+			-0.5 * (1.0 - theta) * sigma, -0.5 * (1.0 - theta) * sigma, n);
+	vec_sum1(&GC[0], &GC[0], &dw2[0], 1.0, mu * (1.0 - theta), n);
+	vec_sum1(&GC[0], &GC[0], &w2[0], 1.0, 1.0 / tau, n);
+	vec_sum1(&GC[0], &GC[0], &u2[0], 1.0, -alpha * alpha / tau, n);
+	vec_sum1(&GC[0], &GC[0], &w2[0], 1.0, -alpha * alpha * mu1 * (1-theta), n);
+	vec_sum1(&GC[0], &GC[0], &u2[0], 1.0, alpha * alpha * sigma1 * (1-theta), n);
+
+	memcpy(&u1_n[0], &u1[0], n * sizeof(double));
+	memcpy(&u2_n[0], &u2[0], n * sizeof(double));
+	memcpy(&w1_n[0], &w1[0], n * sizeof(double));
+	memcpy(&w2_n[0], &w2[0], n * sizeof(double));
+
+	for (int it = 0; it < 100; ++it) {
+		// - J(0.5(u1+u1), L(z1)+l+h) - J(z1, 0.5(w1+w1)) -
+		// - J(z2,0.5(w2+w2)) - J(0.5(u2+u2),L(z2))
+
+		// J(0.5(u1+u1), L(z1)+l+h)
+		vec_sum1(&tmp1[0], &u1[0], &u1_n[0], 1.0 - theta, theta, n);
+		vec_sum(&tmp2[0], &dz1[0], &lh[0], n);
+		jac.calc(&jac1[0], &tmp1[0], &tmp2[0]);
+
+		// J(z1, 0.5(w1+w1))
+		vec_sum1(&tmp1[0], &w1[0], &w1_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac2[0], &z1[0], &tmp1[0]);
+		vec_sum1(&F[0], &jac1[0], &jac2[0], -1.0, -1.0, n);
+
+		// J(z2,0.5(w2+w2))
+		vec_sum1(&tmp1[0], &w2[0], &w2_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac1[0], &z2[0], &tmp1[0]);
+		vec_sum1(&F[0], &F[0], &jac1[0], 1.0, -1.0, n);
+
+		// J(0.5(u2+u2),L(z2))
+		vec_sum1(&tmp1[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac1[0], &tmp1[0], &dz2[0]);
+		vec_sum1(&F[0], &F[0], &jac1[0], 1.0, -1.0, n);
+	
+		// - J(z1, 0.5(w2+w2)) - J(0.5(u1+u1), L(z2)) -
+		// - J(0.5(u2+u2), L(z1)+l+h) - J(z2, 0.5(w1+w1)) +
+		// + alpha^2 J(z1, 0.5(u2+u2)) + alpha^2 J(0.5(u1+u1), z2))
+
+		// J(z1, 0.5(w2+w2))
+		vec_sum1(&tmp1[0], &w2[0], &w2_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac1[0], &dz1[0], &tmp1[0]);
+
+		// J(0.5(u1+u1), L(z2))
+		vec_sum1(&tmp1[0], &u1[0], &u1_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac2[0], &dz2[0], &tmp1[0]);
+		vec_sum1(&G[0], &jac1[0], &jac2[0], -1.0, -1.0, n);
+
+		// J(0.5(u2+u2), L(z1)+l+h)
+		vec_sum1(&tmp1[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
+		vec_sum(&tmp2[0], &dz1[0], &lh[0], n);
+		jac.calc(&jac1[0], &tmp1[0], &tmp2[0]);
+		vec_sum1(&G[0], &G[0], &jac1[0], 1.0, -1.0, n);
+
+		// J(z2, 0.5(w1+w1))
+		vec_sum1(&tmp1[0], &w1[0], &w1_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac1[0], &z2[0], &tmp1[0]);
+		vec_sum1(&G[0], &G[0], &jac1[0], 1.0, -1.0, n);
+
+		// alpha^2 J(z1, 0.5(u2+u2))
+		vec_sum1(&tmp1[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac1[0], &z1[0], &tmp1[0]);
+		vec_sum1(&G[0], &G[0], &jac1[0], 1.0, alpha * alpha, n);
+
+		// alpha^2 J(0.5(u1+u1), z2))
+		vec_sum1(&tmp1[0], &u1[0], &u1_n[0], 1.0 - theta, theta, n);
+		jac.calc(&jac1[0], &tmp1[0], &z2[0]);
+		vec_sum1(&G[0], &G[0], &jac1[0], 1.0, alpha * alpha, n);
+
+		vec_sum (&F[0], &F[0], &FC[0], n);
+		vec_sum (&G[0], &G[0], &GC[0], n);
+
+		memset (&rp[0], 0, 4 * n1);
+		op.func2koef (&rp[0],    &F[0]);
+		op.func2koef (&rp[n1],   &G[0]);
+
+		A.solve (&x[0], &rp[0]);
+
+		op.koef2func (&w1_n[0],  &x[0]);
+		op.koef2func (&w2_n[0],  &x[n1]);
+		op.koef2func (&u1_n1[0], &x[2 * n1]);
+		op.koef2func (&u2_n1[0], &x[3 * n1]);
+
+		double nr1 = dist (&u1_n1[0], &u1_n[0]);
+		double nr2 = dist (&u2_n1[0], &u2_n[0]);
+		double nr  = std::max (nr1, nr2);
+		u1_n1.swap (u1_n);
+		u2_n1.swap (u2_n);
+
+		if (nr < 1e-8) {
+			break;
+		}
+	}
+
+	memcpy(u11, &u1_n[0], n * sizeof(double));
+	memcpy(u21, &u2_n[0], n * sizeof(double));
 }
 
-void SphereBaroclin::L_step (double *u1, const double *u, const double * z)
+void SphereBaroclin::L_step (double *out, const double *in, const double * z)
 {
-	assert (0);
+	long n       = conf.nlat * conf.nlon;
+	const double * u1 = in;
+	const double * u2 = &in[n];
+	const double * z1 = z;
+	const double * z2 = &z[n];
+	double * u11 = out;
+	double * u21 = &out[n];
+
+	L_step (u11, u21, u1, u2, z1, z2);
 }
 
 void SphereBaroclin::L_1_step (double *u1_o, double * u2_o,
