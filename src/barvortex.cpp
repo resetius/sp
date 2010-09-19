@@ -273,34 +273,81 @@ void SphereBarvortex::L_1_step(double *u1, const double *u, const double * z)
 	double mu    = conf.mu;
 	double sigma = conf.sigma;
 	double tau   = conf.tau;
+	double k1    = conf.k1;
+	double k2    = conf.k2;
+	double nr, nr0 = norm(u);
 
-	array_t z_lapl(n);
+	array_t tmp1(n);
+	array_t tmp2(n);
 
-	array_t tmp (n);
-	array_t pt1 (n); //лаплас, умноженный на коэф
-	array_t pt2 (n); //лаплас в квадрате, умноженный на коэф
-	array_t pt3 (n); //якобиан, умноженный на коэф
+	array_t dz(n);
+	array_t dw(n);
+	array_t w(n);
 
-	lapl.calc(&z_lapl[0], z);
-	lapl.calc(&pt1[0], u); //первая часть - лаплас, умноженный на коэф,
+	// next
+	array_t u_n (n);
+	array_t w_n (n);
+	array_t u_n1 (n);
 
-	jac.calc(&pt3[0], &u[0], &lh[0]);
-	jac.calc(&tmp[0], z, &pt1[0]);        vec_sum(&pt3[0], &pt3[0], &tmp[0], n);
-	jac.calc(&tmp[0], &u[0], &z_lapl[0]); vec_sum(&pt3[0], &pt3[0], &tmp[0], n);
-	//vec_mult_scalar(&pt3[0], &pt3[0], conf->rho, n); // TODO: k1, k2
+	// jac
+	array_t jac0(n);
+	array_t jac1(n);
+	array_t jac2(n);
 
-	lapl.calc(&pt2[0], &pt1[0]);
-	vec_mult_scalar(&pt2[0], &pt2[0], ( - theta) * mu, n);
+	// rp
+	array_t FC(n);
+	array_t F(n);
 
-	vec_mult_scalar(&pt1[0], &pt1[0], 1 / tau + theta * sigma, n);
+	// dz = L(z)
+	lapl.calc(&dz[0], z);
+	// w = L(u)
+	lapl.calc(&w[0], u);
+	// dw = L(w)
+	lapl.calc(&dw[0], &w[0]);
 
-	memset(u1, 0, n * sizeof(double));
-	vec_sum(u1, u1, &pt1[0], n);
-	vec_sum(u1, u1, &pt2[0], n);
-	vec_sum(u1, u1, &pt3[0], n);
+	// w/dt - mu theta L w
+	vec_sum1 (&FC[0], &w[0], &dw[0], 1.0 / tau,
+	          -mu * theta, n);
+	// w/dt - mu theta L w + \sigma theta w
+	vec_sum1 (&FC[0], &FC[0], &w[0], 1.0,
+	          sigma * theta, n);
 
-	lapl.solve(u1, u1, (1.0 - theta) * mu, 1 / tau - (1.0 - theta) * sigma);
-	lapl.solve(u1, u1);
+	memcpy(&u_n[0], &u[0], n * sizeof(double));
+	memcpy(&w_n[0], &w[0], n * sizeof(double));
+
+	// в FC содержится правая часть, которая не меняется при итерациях!
+
+	for (int it = 0; it < 1000; ++it) {
+		// k1 J(0.5(u+u), dz) + k1 J(z, 0.5(w+w)) + k2 J(0.5(u+u), l + h)
+
+		vec_sum1(&tmp1[0], &w_n[0], &w[0], 1-theta,
+				theta, n);
+		vec_sum1(&tmp2[0], &u_n[0], &u[0], 1-theta,
+				theta, n);
+
+		// J(0.5(u+u), dz)
+		jac.calc(&jac0[0], &tmp2[0],  &dz[0]);
+		// J(z, 0.5(w+w))
+		jac.calc(&jac1[0], &z[0],   &tmp1[0]);
+		// J(0.5(u+u), l + h)
+		jac.calc(&jac2[0], &tmp2[0], &lh[0]);
+
+		vec_sum1(&jac0[0], &jac0[0], &jac1[0], k1,  k1, n);
+		vec_sum1(&jac0[0], &jac0[0], &jac2[0], 1.0, k2, n);
+
+		vec_sum1(&F[0], &FC[0], &jac0[0], 1.0, 1.0, n);
+	
+		lapl.solve(&w_n[0], &F[0], (1-theta) * mu, 1.0 / tau - (1-theta) * sigma);
+		lapl.solve(&u_n1[0], &w_n[0]);
+
+		nr = dist(&u_n1[0], &u_n[0]);
+		u_n1.swap(u_n);
+		if (nr / nr0 < 1e-14 || isnan(nr)) {
+			break;
+		}
+	}
+
+	memcpy(u1, &u_n[0], n * sizeof(double));
 }
 
 void SphereBarvortex::p2u(double * u, const double * p)
