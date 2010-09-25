@@ -82,11 +82,13 @@ public:
 		double * cor2;
 		double * rp2; ///<right part
 
-		Conf(): rp(0), rp2(0), cor(0), cor2(0) {}
+		double * rp3; ///<rp=rp2+rp3
+
+		Conf(): rp(0), cor(0), cor2(0), rp2(0), rp3(0) {}
 	};
 
 private:
-	Conf conf;
+	const Conf & conf;
 	SphereOperator op;
 	SphereLaplace lapl;
 	SphereJacobian jac;

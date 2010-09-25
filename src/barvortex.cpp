@@ -118,11 +118,14 @@ void SphereBarvortex::S_step (double * out, const double * u, double t)
 		for (int j = 0; j < nlon; ++j)
 		{
 			double lambda = j * dlon;
-			if (conf.rp)
-			{
+			if (conf.rp) {
 				FC[i * nlon + j] += conf.rp (phi, lambda, t, &conf);
-			} else if (conf.rp2) {
+			} 
+			if (conf.rp2) {
 				FC[i * nlon + j] += conf.rp2[i * nlon + j];
+			}
+			if (conf.rp3) {
+				FC[i * nlon + j] += conf.rp3[i * nlon + j];
 			}
 		}
 	}
