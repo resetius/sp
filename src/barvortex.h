@@ -152,6 +152,10 @@ public:
 	 * Just copy p to u. Provided for convince.
 	 */
 	void u2p(double * p, const double * u);
+
+	const Conf & config() const {
+		return conf;
+	}
 };
 
 #endif /* BARVORTEX_H */
