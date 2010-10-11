@@ -380,9 +380,9 @@ void run_test(const char * srtm)
 
 int main (int argc, char * argv[])
 {
-	solve();
+	//solve();
 
 	// exe [relief in binary format!]
-	//run_test(argv[1]);
+	run_test(argv[1]);
 }
 
