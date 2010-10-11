@@ -181,15 +181,20 @@ void output_psi(const char * prefix, const char * suffix,
 
 void run_test(const char * srtm)
 {
-	long nlat = 5 * 19;
-	long nlon = 5 * 36;
+//	long nlat = 5 * 19;
+//	long nlon = 5 * 36;
+
+	long nlat = 19;
+	long nlon = 36;
 
 	SphereBarvortex::Conf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
-	conf.mu       = 1.5e-5;
+	//conf.mu       = 1.5e-5;
+
+	conf.mu       = 1e-4;
 	conf.sigma    = 1.14e-2;
-	int part_of_the_day = 48;
+	int part_of_the_day = 128;
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
@@ -200,7 +205,7 @@ void run_test(const char * srtm)
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
 	double t = 0;
-	double T = 2 * M_PI * 1000.0;
+	double T = 2 * M_PI * 365 * 10.0;
 
 	int i, j, it = 0;
 
@@ -278,6 +283,7 @@ void run_test(const char * srtm)
 	vor.calc(&f[0], &u[0], &v[0]);
 	vor.test();
 	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+
 #if 0
 	for (i = 0; i < nlat; ++i)
 	{
@@ -290,7 +296,34 @@ void run_test(const char * srtm)
 		}
 	}
 #endif
+
 	lapl.solve(&r[0], &f[0]);
+
+
+	if (1 /*real_f*/) {
+		vector < double > u;
+		int n1, n2;
+		mat_load("u.txt", u, &n1, &n2);
+		if (n1 != nlat || n2 != nlon)
+		{
+			fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
+			exit(1);
+		}
+
+		vector < double > v;
+		mat_load("v.txt", v, &n1, &n2);
+		if (n1 != nlat || n2 != nlon)
+		{
+			fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
+			exit(1);
+		}
+		vor.calc(&f[0], &u[0], &v[0]);
+		vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+
+		mat_print("out/u0f.txt", &u[0], nlat, nlon, "%23.16lf ");
+		mat_print("out/v0f.txt", &v[0], nlat, nlon, "%23.16lf ");
+	}
+
 	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
 	conf.rp2  = &f[0];
