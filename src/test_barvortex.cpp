@@ -194,7 +194,7 @@ void run_test(const char * srtm)
 
 	conf.mu       = 1e-4;
 	conf.sigma    = 1.14e-2;
-	int part_of_the_day = 128;
+	int part_of_the_day = 256;
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
 	conf.theta    = 0.5;
 	conf.k1       = 1.0;
@@ -267,7 +267,7 @@ void run_test(const char * srtm)
 		//	rel[i * nlon + j] = 0.5 * sign(phi) * cos(2 * lambda) * ipow(sin(2 * phi), 2);
 
 			if (rel[i * nlon + j] > 0) {
-				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
+				rel[i * nlon + j] = 0.4 * rel[i * nlon + j] / rel_max;
 			} else {
 				rel[i * nlon + j] = 0.0;
 			}
@@ -280,9 +280,11 @@ void run_test(const char * srtm)
 	SphereGrad grad(op);
 	SphereVorticity vor(op);
 
-	vor.calc(&f[0], &u[0], &v[0]);
-	vor.test();
-	vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+	//vor.calc(&f[0], &u[0], &v[0]);
+	//vor.test();
+	//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+	//
+	lapl.make_psi(&f[0], &u[0], &v[0]);
 
 #if 0
 	for (i = 0; i < nlat; ++i)
@@ -317,8 +319,12 @@ void run_test(const char * srtm)
 			fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
 			exit(1);
 		}
-		vor.calc(&f[0], &u[0], &v[0]);
-		vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+		//vor.calc(&f[0], &u[0], &v[0]);
+		//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
+		//
+
+		lapl.make_psi(&f[0], &u[0], &v[0]);
+//		vec_mult_scalar(&f[0], &f[0], 0.1, nlat * nlon);
 
 		mat_print("out/u0f.txt", &u[0], nlat, nlon, "%23.16lf ");
 		mat_print("out/v0f.txt", &v[0], nlat, nlon, "%23.16lf ");
