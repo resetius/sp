@@ -9,6 +9,7 @@
 #include "vorticity.h"
 #include "statistics.h"
 #include "linal.h"
+#include "config.h"
 
 #ifdef max
 #undef max
@@ -20,6 +21,8 @@
 
 using namespace std;
 using namespace linal;
+
+void usage(const Config & config, const char * name);
 
 static inline double max (double a, double b)
 {
@@ -179,26 +182,60 @@ void output_psi(const char * prefix, const char * suffix,
 	mat_print(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
 }
 
-void run_test(const char * srtm)
+void run_test(Config & c, int argc, char * argv[])
 {
-//	long nlat = 5 * 19;
-//	long nlon = 5 * 36;
+        string config_name = "sp_test_barvortex.ini";
 
-	long nlat = 19;
-	long nlon = 36;
+        ConfigSkeleton s;
+//        s.data["general"]["T"]    = make_pair(ConfigSkeleton::OPTIONAL, "total time");
+
+        s.data["sp"]["nlat"]   = make_pair(ConfigSkeleton::OPTIONAL, "latitude");
+        s.data["sp"]["nlon"]   = make_pair(ConfigSkeleton::OPTIONAL, "longitude");
+        s.data["sp"]["relief"] = make_pair(ConfigSkeleton::REQUIRED, "relief (text format)");
+
+        c.set_skeleton(s);
+
+	for (int i = 0; i < argc; ++i) {
+                if (!strcmp(argv[i], "-c")) {
+                        if (i == argc - 1) {
+                                usage(c, argv[0]);
+                        }
+                        config_name = argv[i + 1];
+                }
+
+                if (!strcmp(argv[i], "-h")) {
+                        usage(c, argv[0]);
+                }
+        }
+
+        c.open(config_name);
+        c.rewrite(argc, argv);
+        if (!c.validate()) {
+                usage(c, argv[0]);
+        }
+
+	string relief_fn = c.gets("sp", "relief");
+	string rp_u, rp_v;
+	int real_f = c.get("sp", "real_f", 0);
+	if (real_f) {
+		rp_u = c.gets("sp", "rp_u");
+		rp_v = c.gets("sp", "rp_v");
+	}
+	long nlat = c.get("sp", "nlat", 19);
+	long nlon = c.get("sp", "nlon", 36);
 
 	SphereBarvortex::Conf conf;
 	conf.nlat     = nlat;
 	conf.nlon     = nlon;
 	//conf.mu       = 1.5e-5;
 
-	conf.mu       = 7.5e-5;
-	conf.sigma    = 1.14e-2;
-	int part_of_the_day = 256;
+	conf.mu       = c.get("sp", "mu", 7.5e-5);
+	conf.sigma    = c.get("sp", "sigma", 1.14e-2);
+	int part_of_the_day = c.get("sp", "part_of_the_day", 256);
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
-	conf.theta    = 0.5;
-	conf.k1       = 1.0;
-	conf.k2       = 1.0;
+	conf.theta    = c.get("sp", "theta", 0.5);
+	conf.k1       = c.get("sp", "k1", 1.0);
+	conf.k2       = c.get("sp", "k2", 1.0);
 	conf.rp       = 0;
 	conf.cor      = 0;//test_coriolis;
 
@@ -215,7 +252,7 @@ void run_test(const char * srtm)
 	vector < double > r (nlat * nlon);
 	vector < double > f (nlat * nlon);
 	vector < double > cor(nlat * nlon);
-	vector < double > rel(nlat * nlon);
+	vector < double > rel;
 
 	double nr = 0;
 	double omg = 2.*M_PI/24./60./60.; // ?
@@ -223,19 +260,12 @@ void run_test(const char * srtm)
 	double RE  = 6.371e+6;
 	double PSI0 = RE * RE / TE;
 	double U0  = 6.371e+6/TE;
-	const char * fn = srtm ? srtm : "";
 
-	if (fn) {
-		FILE * f = fopen(fn, "rb");
-		if (f) {
-			size_t size = nlat * nlon * sizeof(double);
-			if (fread(&rel[0], 1, size, f) != size) {
-				fprintf(stderr, "bad relief file format ! \n");
-			}
-		} else {
-			fprintf(stderr, "relief file not found ! \n");
-		}
-		fclose(f);
+	int n1, n2;
+	mat_load(relief_fn.c_str(), rel, &n1, &n2);
+	if (n1 != nlat || n2 != nlon) {
+		fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
+		exit(1);
 	}
 
 	double rel_max = 0.0;
@@ -286,27 +316,13 @@ void run_test(const char * srtm)
 	//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 	//
 	lapl.make_psi(&f[0], &u[0], &v[0]);
-
-#if 0
-	for (i = 0; i < nlat; ++i)
-	{
-		for (j = 0; j < nlon; ++j)
-		{
-			double phi    = -0.5 * M_PI + i * dlat;
-			if (phi < 0) {
-				f[i * nlon + j] *= -1.0;
-			}
-		}
-	}
-#endif
-
 	lapl.solve(&r[0], &f[0]);
 
 
-	if (1 /*real_f*/) {
+	if (real_f) {
 		vector < double > u;
 		int n1, n2;
-		mat_load("u.txt", u, &n1, &n2);
+		mat_load(rp_u.c_str(), u, &n1, &n2);
 		if (n1 != nlat || n2 != nlon)
 		{
 			fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
@@ -314,15 +330,12 @@ void run_test(const char * srtm)
 		}
 
 		vector < double > v;
-		mat_load("v.txt", v, &n1, &n2);
+		mat_load(rp_v.c_str(), v, &n1, &n2);
 		if (n1 != nlat || n2 != nlon)
 		{
 			fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
 			exit(1);
 		}
-		//vor.calc(&f[0], &u[0], &v[0]);
-		//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
-		//
 
 		vector < double > psi(nlat * nlon);
 		vector < double > dpsi(nlat * nlon);
@@ -338,13 +351,11 @@ void run_test(const char * srtm)
 		vec_sum(&f[0], &jac1[0], &jac2[0], nlat * nlon);
 		vec_sum2(&f[0], &f[0], &dpsi[0], conf.sigma, nlat * nlon);
 
-//		vec_mult_scalar(&f[0], &f[0], 0.1, nlat * nlon);
-
 		mat_print("out/u0f.txt", &u[0], nlat, nlon, "%23.16lf ");
 		mat_print("out/v0f.txt", &v[0], nlat, nlon, "%23.16lf ");
+	} else {
+		vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 	}
-
-//	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
 	conf.rp2  = &f[0];
 	conf.cor2 = &cor[0];
@@ -397,12 +408,25 @@ void run_test(const char * srtm)
 	}
 }
 
+void usage(const Config & config, const char * name)
+{
+        fprintf(stderr, "%s ...\n"
+                "-c config_file\n", name);
+        config.help();
+        exit(1);
+}
 
 int main (int argc, char * argv[])
 {
 	//solve();
 
 	// exe [relief in binary format!]
-	run_test(argv[1]);
+	Config config;
+        try {  
+                run_test(config, argc, argv);
+        } catch (std::exception & e) {
+                fprintf(stderr, "exception: %s\n", e.what());
+                usage(config, argv[0]);
+        }
 }
 
