@@ -192,7 +192,7 @@ void run_test(const char * srtm)
 	conf.nlon     = nlon;
 	//conf.mu       = 1.5e-5;
 
-	conf.mu       = 1e-4;
+	conf.mu       = 7.5e-5;
 	conf.sigma    = 1.14e-2;
 	int part_of_the_day = 256;
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
@@ -267,7 +267,7 @@ void run_test(const char * srtm)
 		//	rel[i * nlon + j] = 0.5 * sign(phi) * cos(2 * lambda) * ipow(sin(2 * phi), 2);
 
 			if (rel[i * nlon + j] > 0) {
-				rel[i * nlon + j] = 0.4 * rel[i * nlon + j] / rel_max;
+				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
 			} else {
 				rel[i * nlon + j] = 0.0;
 			}
@@ -278,6 +278,7 @@ void run_test(const char * srtm)
 	SphereOperator op(nlat, nlon, 0);
 	SphereLaplace lapl(op);
 	SphereGrad grad(op);
+	SphereJacobian jac(op);
 	SphereVorticity vor(op);
 
 	//vor.calc(&f[0], &u[0], &v[0]);
@@ -323,14 +324,27 @@ void run_test(const char * srtm)
 		//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 		//
 
-		lapl.make_psi(&f[0], &u[0], &v[0]);
+		vector < double > psi(nlat * nlon);
+		vector < double > dpsi(nlat * nlon);
+		vector < double > jac1(nlat * nlon);
+		vector < double > jac2(nlat * nlon);
+
+		lapl.make_psi(&dpsi[0], &u[0], &v[0]);
+		lapl.solve(&psi[0], &dpsi[0]);
+
+		jac.calc(&jac1[0], &psi[0], &dpsi[0]);
+		jac.calc(&jac2[0], &psi[0], &cor[0]);
+
+		vec_sum(&f[0], &jac1[0], &jac2[0], nlat * nlon);
+		vec_sum2(&f[0], &f[0], &dpsi[0], conf.sigma, nlat * nlon);
+
 //		vec_mult_scalar(&f[0], &f[0], 0.1, nlat * nlon);
 
 		mat_print("out/u0f.txt", &u[0], nlat, nlon, "%23.16lf ");
 		mat_print("out/v0f.txt", &v[0], nlat, nlon, "%23.16lf ");
 	}
 
-	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
+//	vec_mult_scalar(&f[0], &f[0], conf.sigma, nlat * nlon);
 
 	conf.rp2  = &f[0];
 	conf.cor2 = &cor[0];
