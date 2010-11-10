@@ -184,35 +184,34 @@ void output_psi(const char * prefix, const char * suffix,
 
 void run_test(Config & c, int argc, char * argv[])
 {
-        string config_name = "sp_test_barvortex.ini";
+	string config_name = "sp_test_barvortex.ini";
 
-        ConfigSkeleton s;
-//        s.data["general"]["T"]    = make_pair(ConfigSkeleton::OPTIONAL, "total time");
+	ConfigSkeleton s;
 
-        s.data["sp"]["nlat"]   = make_pair(ConfigSkeleton::OPTIONAL, "latitude");
-        s.data["sp"]["nlon"]   = make_pair(ConfigSkeleton::OPTIONAL, "longitude");
-        s.data["sp"]["relief"] = make_pair(ConfigSkeleton::REQUIRED, "relief (text format)");
+	s.data["sp"]["nlat"]   = make_pair(ConfigSkeleton::OPTIONAL, "latitude");
+	s.data["sp"]["nlon"]   = make_pair(ConfigSkeleton::OPTIONAL, "longitude");
+	s.data["sp"]["relief"] = make_pair(ConfigSkeleton::REQUIRED, "relief (text format)");
 
-        c.set_skeleton(s);
+	c.set_skeleton(s);
 
 	for (int i = 0; i < argc; ++i) {
-                if (!strcmp(argv[i], "-c")) {
-                        if (i == argc - 1) {
-                                usage(c, argv[0]);
-                        }
-                        config_name = argv[i + 1];
-                }
+		if (!strcmp(argv[i], "-c")) {
+			if (i == argc - 1) {
+				usage(c, argv[0]);
+			}
+			config_name = argv[i + 1];
+		}
 
-                if (!strcmp(argv[i], "-h")) {
-                        usage(c, argv[0]);
-                }
-        }
+		if (!strcmp(argv[i], "-h")) {
+			usage(c, argv[0]);
+		}
+	}
 
-        c.open(config_name);
-        c.rewrite(argc, argv);
-        if (!c.validate()) {
-                usage(c, argv[0]);
-        }
+	c.open(config_name);
+	c.rewrite(argc, argv);
+	if (!c.validate()) {
+		usage(c, argv[0]);
+	}
 
 	string relief_fn = c.gets("sp", "relief");
 	string rp_u, rp_v;
@@ -339,17 +338,21 @@ void run_test(Config & c, int argc, char * argv[])
 
 		vector < double > psi(nlat * nlon);
 		vector < double > dpsi(nlat * nlon);
+		vector < double > ddpsi(nlat * nlon);
 		vector < double > jac1(nlat * nlon);
 		vector < double > jac2(nlat * nlon);
 
 		lapl.make_psi(&dpsi[0], &u[0], &v[0]);
 		lapl.solve(&psi[0], &dpsi[0]);
+		lapl.calc(&ddpsi[0], &dpsi[0]);
 
 		jac.calc(&jac1[0], &psi[0], &dpsi[0]);
 		jac.calc(&jac2[0], &psi[0], &cor[0]);
 
-		vec_sum(&f[0], &jac1[0], &jac2[0], nlat * nlon);
+		memset(&f[0], 0, f.size() * sizeof(double));
+		vec_sum1(&f[0], &jac1[0], &jac2[0], conf.k1, conf.k2, nlat * nlon);
 		vec_sum2(&f[0], &f[0], &dpsi[0], conf.sigma, nlat * nlon);
+		vec_sum2(&f[0], &f[0], &ddpsi[0], -conf.mu, nlat * nlon);
 
 		mat_print("out/u0f.txt", &u[0], nlat, nlon, "%23.16lf ");
 		mat_print("out/v0f.txt", &v[0], nlat, nlon, "%23.16lf ");
@@ -410,10 +413,10 @@ void run_test(Config & c, int argc, char * argv[])
 
 void usage(const Config & config, const char * name)
 {
-        fprintf(stderr, "%s ...\n"
-                "-c config_file\n", name);
-        config.help();
-        exit(1);
+	fprintf(stderr, "%s ...\n"
+		"-c config_file\n", name);
+	config.help();
+	exit(1);
 }
 
 int main (int argc, char * argv[])
@@ -422,11 +425,11 @@ int main (int argc, char * argv[])
 
 	// exe [relief in binary format!]
 	Config config;
-        try {  
-                run_test(config, argc, argv);
-        } catch (std::exception & e) {
-                fprintf(stderr, "exception: %s\n", e.what());
-                usage(config, argv[0]);
-        }
+	try {  
+		run_test(config, argc, argv);
+	} catch (std::exception & e) {
+		fprintf(stderr, "exception: %s\n", e.what());
+		usage(config, argv[0]);
+	}
 }
 
