@@ -153,6 +153,26 @@ public:
 	 */
 	void u2p(double * p, const double * u);
 
+	/**
+	 * Converts function to coefficients.
+	 * @param k -- array 2*nlat*nlat
+	 * @param f -- array nlat*nlon
+	 */
+	void func2koef(double * k, const double * f)
+	{
+		op.func2koef(k, f);
+	}
+
+	/**
+	 * Converts coefficients to function.
+	 * @param k -- array 2*nlat*nlat
+	 * @param f -- array nlat*nlon
+	 */
+	void koef2func(double * f, const double * k)
+	{
+		op.koef2func(f, k);
+	}
+
 	const Conf & config() const {
 		return conf;
 	}

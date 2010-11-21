@@ -78,8 +78,8 @@
  \f}
  * @page Build
  * @section build_sec Build
- * SP uses Linal library method to solve linear equations. 
- * And Spherepack library (my C port!) for Spherical Harmonics method.
+ * SP uses Linal library to solve linear equations. 
+ * And Spherepack library (my C port!) for Spherical Harmonics.
  * So you must put those libraries into SP root directory in the 
  * following way:
  * @verbatim
@@ -213,6 +213,12 @@ public:
 	 * @param f -- array nlat*nlon
 	 */
 	void koef2func(double * f, const double * k);
+
+#undef min
+	size_t koefs_size()
+	{
+		return 2 * nlat * std::min (nlat, nlon / 2 + 1);
+	}
 
 private:
 	SphereOperator & operator = (const SphereOperator & op);
