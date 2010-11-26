@@ -240,6 +240,9 @@ void SphereBarvortex::L_step(double *u1, const double *u, const double * z)
 		lapl.solve(&w_n[0], &F[0], -theta * mu, 1.0 / tau + theta * sigma);
 		lapl.solve(&u_n1[0], &w_n[0]);
 
+		lapl.filter(&w_n[0], &w_n[0]);
+		lapl.filter(&u_n1[0], &u_n1[0]);
+
 		nr = dist(&u_n1[0], &u_n[0]);
 		u_n1.swap(u_n);
 		if (nr / nr0 < 1e-14 || isnan(nr)) {
@@ -371,6 +374,9 @@ void SphereBarvortex::L_1_step(double *u1, const double *u, const double * z)
 	
 		lapl.solve(&w_n[0], &F[0], (1-theta) * mu, 1.0 / tau - (1-theta) * sigma);
 		lapl.solve(&u_n1[0], &w_n[0]);
+
+		lapl.filter(&w_n[0], &w_n[0]);
+		lapl.filter(&u_n1[0], &u_n1[0]);
 
 		nr = dist(&u_n1[0], &u_n[0]);
 		u_n1.swap(u_n);
