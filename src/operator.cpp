@@ -170,3 +170,12 @@ void SphereOperator::koef2func (double * f, const double * k)
 	mat_transpose (f, &t[0], nlon, nlat);
 }
 
+void SphereOperator::filter(double * out, const double * in)
+{
+	array_t k(2 * mdab * nlat);
+	func2koef(&k[0], in);
+	k[0] = 0.0;
+	koef2func(out, &k[0]);
+}
+
+

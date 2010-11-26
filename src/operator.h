@@ -220,6 +220,8 @@ public:
 		return 2 * nlat * std::min (nlat, nlon / 2 + 1);
 	}
 
+	void filter(double * out, const double * in);
+
 private:
 	SphereOperator & operator = (const SphereOperator & op);
 };
