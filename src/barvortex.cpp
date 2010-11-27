@@ -177,6 +177,8 @@ void SphereBarvortex::L_step(double *u1, const double *u, const double * z)
 	double k2    = conf.k2;
 	double nr, nr0 = norm(u);
 
+	if (fabs(nr0) < 1e-10) nr0 = 1.0; // use absolute norm
+
 	array_t tmp1(n);
 	array_t tmp2(n);
 
