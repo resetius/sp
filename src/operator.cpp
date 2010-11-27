@@ -37,6 +37,8 @@
 using namespace std;
 using namespace linal;
 
+#undef min
+
 struct SphereOperator::Data
 {
 	int links;
@@ -56,7 +58,19 @@ struct SphereOperator::Data
 SphereOperator::SphereOperator (const SphereOperator & op) : SphereNorm (op.nlat, op.nlon),
 		d (op.d),
 		isym (op.isym), nlat (op.nlat), nlon (op.nlon),
-		mdab ( (nlon + 2) / 2), mdb ( (nlon + 1) / 2), mdc ( (nlon + 1) / 2 ),
+
+/*     mdab   the first dimension of the arrays a and b as it appears */
+/*            in the program that calls shsec. mdab must be at least */
+/*            min0(nlat,(nlon+2)/2) if nlon is even or at least */ /* четное */
+/*            min0(nlat,(nlon+1)/2) if nlon is odd. */ /* нечетное*/
+
+		// scalar
+		mdab (min(nlat, (nlon + 2) / 2)), 
+
+		// vector
+		mdb (min(nlat, (nlon + 2) / 2)), 
+		mdc (min(nlat, (nlon + 2) / 2)),
+
 		slsave (op.slsave), swsave (op.swsave),
 		sldwork (op.sldwork), sdwork (op.sdwork),
 		vlsave (op.vlsave), vwsave (op.vwsave),
@@ -75,7 +89,14 @@ SphereOperator::SphereOperator (const SphereOperator & op) : SphereNorm (op.nlat
 SphereOperator::SphereOperator (long nlat, long nlon, long isym) : SphereNorm (nlat, nlon),
 		d (new Data),
 		isym (isym), nlat (nlat), nlon (nlon),
-		mdab ( (nlon + 2) / 2), mdb ( (nlon + 1) / 2), mdc ( (nlon + 1) / 2 ),
+
+		// scalar
+		mdab (min(nlat, (nlon + 2) / 2)), 
+
+		// vector
+		mdb (min(nlat, (nlon + 2) / 2)), 
+		mdc (min(nlat, (nlon + 2) / 2)),
+
 		slsave (5*nlat*nlat*nlon), swsave (d->create (slsave) ),
 		sldwork (4*nlat*nlat), sdwork (d->create (sldwork) ),
 		vlsave (5*nlat*nlat*nlon), vwsave (d->create (slsave) ),

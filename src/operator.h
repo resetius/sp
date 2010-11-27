@@ -217,7 +217,7 @@ public:
 #undef min
 	size_t koefs_size()
 	{
-		return 2 * nlat * std::min (nlat, nlon / 2 + 1);
+		return 2 * nlat * mdab;
 	}
 
 	void filter(double * out, const double * in);

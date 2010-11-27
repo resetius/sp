@@ -26,12 +26,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #include "lapl.h"
 #include "vorticity.h"
 #include "linal.h"
 
 using namespace linal;
+using namespace std;
 
 SphereLaplace::SphereLaplace (const SphereOperator & op) : SphereOperator(op)
 {
@@ -60,8 +62,9 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	// чтобы по разложению (a, b) собрать назад функцию надо воспользоваться
 	// функцией shsec_
 	if (ierror != 0) {
-		fprintf(stderr, "shaec_ error %ld\n", ierror);
-		exit(1);
+		char buf[1024];
+		sprintf(buf, "shaec_ error %ld\n", ierror);
+		throw runtime_error(buf);
 	}
 
 	islapec_ (&nlat, &nlon, &isym, &nt, &koef,
@@ -69,8 +72,9 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	          &a[0], &b[0], &mdab, &nlat,
 	          &iswsave[0], &islsave, &work[0], &lwork, &pertrb, &ierror);
 	if (ierror != 0) {
-		fprintf(stderr, "islapec_ error %ld\n", ierror);
-		exit(1);
+		char buf[1024];
+		sprintf(buf, "islapec_ error %ld\n", ierror);
+		throw runtime_error(buf);
 	}
 
 	mat_transpose(out, &t[0], nlon, nlat);
@@ -94,16 +98,18 @@ void SphereLaplace::calc(double * out, const double * in)
 	        &swsave[0], &slsave,
 	        &work[0], &lwork, &ierror);
 	if (ierror != 0) {
-		fprintf(stderr, "shaec_ error %ld\n", ierror);
-		exit(1);
+		char buf[1024];
+		sprintf(buf, "shaec_ error %ld\n", ierror);
+		throw runtime_error(buf);
 	}
 	slapec_ (&nlat, &nlon, &isym, &nt, 
 	          &t[0], &nlat, &nlon,
 	          &a[0], &b[0], &mdab, &nlat,
 	          &iswsave[0], &islsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
-		fprintf(stderr, "slapec_ error %ld\n", ierror);
-		exit(1);
+		char buf[1024];
+		sprintf(buf, "slapec_ error %ld\n", ierror);
+		throw runtime_error(buf);
 	}
 
 	mat_transpose(out, &t[0], nlon, nlat);
