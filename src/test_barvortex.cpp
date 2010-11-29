@@ -263,7 +263,7 @@ void run_test(Config & c, int argc, char * argv[])
 	int n1, n2;
 	mat_load(relief_fn.c_str(), rel, &n1, &n2);
 	if (n1 != nlat || n2 != nlon) {
-		fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
+		fprintf(stderr, "relief: bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
 		exit(1);
 	}
 
