@@ -380,7 +380,10 @@ void run_test(Config & c, int argc, char * argv[])
 		if (it % part_of_the_day == 0) {
 			char buf[1024];
 			nr = bv.norm(&r[0]);
-			if (isnan(nr)) break;
+			if (isnan(nr)) {
+				fprintf(stderr, "NAN !\n");
+				break;
+			}
 			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
 			snprintf(buf, 1024, "_%06d", it);
 			output_psi("", buf, &r[0], nlat, nlon, U0, PSI0, grad);
