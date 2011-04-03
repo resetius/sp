@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include <vector>
 #include <string>
@@ -8,6 +9,7 @@
 #include "linal.h"
 #include "config.h"
 #include "vorticity.h"
+#include "div.h"
 #include "statistics.h"
 #include "barvortex.h"
 
@@ -28,21 +30,51 @@ void usage(const Config & config, const char * name)
 
 struct RealData
 {
-	vector < vector < double > > movthly_u;
+	int months;
+	vector < vector < double > > monthly_u;
 	vector < vector < double > > monthly_v;
+	vector < vector < double > > monthly_omega;
+	vector < vector < double > > monthly_psi;
 
 	vector < double > avg_u;
 	vector < double > avg_v;
+	vector < double > avg_omega;
+	vector < double > avg_psi;
+
+	vector < double > dvomgcl;
 };
 
-void load_real_data(const string & prefix, int nlat, int nlon)
+RealData load_real_data(
+	SphereVorticity & vor,
+	SphereDiv & div,
+	SphereLaplace & lapl,
+	const string & prefix, 
+	int nlat, int nlon)
 {
 	char ubuf[1024];
 	char vbuf[1024];
 	int i = 0;
 
-	vector < double > tmp1;
-	vector < double > tmp2;
+	double omg = 2.*M_PI/24./60./60.; // ?
+	double TE  = 1./omg;
+	double RE  = 6.371e+6;
+	double PSI0 = RE * RE / TE;
+	double U0  = 6.371e+6/TE;
+
+	vector < double > u;
+	vector < double > v;
+	vector < double > omega(nlat * nlon);
+	vector < double > psi(nlat * nlon);
+
+	ExpectedValue < double > avg_u(nlat * nlon);
+	ExpectedValue < double > avg_v(nlat * nlon);
+	ExpectedValue < double > avg_omega(nlat * nlon);
+	ExpectedValue < double > avg_psi(nlat * nlon);
+
+	ExpectedValue < double > uomgcl(nlat * nlon);
+	ExpectedValue < double > vomgcl(nlat * nlon);
+
+	RealData data;
 
 	while (1) {
 		int un1, un2;
@@ -53,24 +85,155 @@ void load_real_data(const string & prefix, int nlat, int nlon)
 		snprintf(vbuf, sizeof(vbuf), "%s/v_%02d.txt", prefix.c_str(), i);
 		vbuf[sizeof(vbuf)-1] = 0;
 
-		tmp1.clear();
-		tmp2.clear();
+		u.clear();
+		v.clear();
 
-		mat_load(ubuf, tmp1, &un1, &un2);
-		mat_load(vbuf, tmp2, &vn1, &vn2);
+		mat_load(ubuf, u, &un1, &un2);
+		mat_load(vbuf, v, &vn1, &vn2);
 
 		if (un1 != nlat || un2 != nlon) {
-			tmp1.clear();
+			u.clear();
 		}
 
 		if (vn1 != nlat || vn2 != nlon) {
-			tmp2.clear();
+			v.clear();
 		}
 
-		if (tmp1.empty() || tmp2.empty()) {
+		if (u.empty() || v.empty()) {
 			break;
 		}
+
+		/* normalize */
+		vec_mult_scalar(&u[0], &u[0], 1.0/U0, nlat * nlon);
+		vec_mult_scalar(&v[0], &u[0], 1.0/U0, nlat * nlon);
+
+		avg_u.accumulate(u);
+		avg_v.accumulate(v);
+
+		vor.calc(&omega[0], &u[0], &v[0]);
+		vec_mult_scalar (&omega[0], &psi[0], -1.0, nlat * nlon);
+
+		avg_omega.accumulate(omega);
+
+		lapl.solve(&psi[0], &omega[0]);
+		avg_psi.accumulate(psi);
+		avg_omega.accumulate(omega);
+
+		data.monthly_u.push_back(u);
+		data.monthly_v.push_back(v);
+		data.monthly_psi.push_back(psi);
+		data.monthly_omega.push_back(omega);
 	}
+
+	assert(data.monthly_u.size() == data.monthly_v.size());
+	assert(data.monthly_v.size() == data.monthly_psi.size());
+	assert(data.monthly_psi.size() == data.monthly_omega.size());
+
+	data.avg_u     = avg_u.current();
+	data.avg_v     = avg_v.current();
+	data.avg_psi   = avg_psi.current();
+	data.avg_omega = avg_omega.current();
+
+	data.months = (int)data.monthly_u.size();
+
+	for (int i = 0; i < data.months; ++i)
+	{
+		vector < double > u1(nlat * nlon);
+		vector < double > v1(nlat * nlon);
+		vector < double > omg1(nlat * nlon);
+
+		vec_diff(&u1[0], &data.avg_u[0], &data.monthly_u[i][0], nlat * nlon);
+		vec_diff(&v1[0], &data.avg_v[0], &data.monthly_v[i][0], nlat * nlon);
+		vec_diff(&omg1[0], &data.avg_omega[0], &data.monthly_omega[i][0], nlat * nlon);
+
+		vec_mult(&u1[0], &u1[0], &omg1[0], nlat * nlon);
+		vec_mult(&v1[0], &v1[0], &omg1[0], nlat * nlon);
+
+		uomgcl.accumulate(u1);
+		vomgcl.accumulate(v1);
+	}
+
+	vector < double > tmp1 = uomgcl.current();
+	vector < double > tmp2 = vomgcl.current();
+	div.calc(&data.dvomgcl[0], &tmp1[0], &tmp2[0]);
+}
+
+void load_relief(double * cor, double *rel, long nlat, long nlon, 
+				 const string & fn)
+{
+	int full   = 1;
+	int offset = 0;
+
+	fprintf(stderr, "loading relief\n");
+
+	FILE * f = fopen(fn.c_str(), "rb");
+	if (f) {
+		vector < double > vec;
+		int n1, n2;
+		mat_load(f, vec, &n1, &n2);
+		if (n1 != nlat || n2 != nlon)
+		{
+			fprintf(stderr, "bad relief file format\n");
+			exit(1);
+		}
+		memcpy(rel, &vec[0], nlat * nlon * sizeof(double));
+		fclose(f);
+	} else {
+		fprintf(stderr, "file not found !\n");
+		exit(1);
+	}
+
+	double rel_max = 0.0;
+	for (int i = 0; i < nlat * nlon; ++i)
+	{
+		if (rel_max < rel[i]) rel_max = rel[i];
+		//if (rel_max < fabs(rel[i])) rel_max = fabs(rel[i]);
+	}
+
+	double dlat, dlon, phi, lambda;
+
+	if (full && !offset) {
+		dlat = M_PI / (nlat - 1);
+		dlon = 2. * M_PI / nlon;
+	} else if (!full && !offset) {
+		dlat = M_PI / (nlat - 1) / 2;
+		dlon = 2. * M_PI / nlon;
+	} else if (full && offset) {
+		dlat = M_PI / (double) nlat;
+		dlon = 2. * M_PI / nlon;
+	} else if (!full && offset) {
+		dlat = M_PI / (double)(2 * (nlat - 1) + 1);
+		dlon = 2. * M_PI / nlon;
+	}
+
+	for (int i = 0; i < nlat; ++i)
+	{
+		for (int j = 0; j < nlon; ++j)
+		{
+			if (!offset) {
+				phi    = -0.5 * M_PI + i * dlat;
+				lambda = j * dlon;
+			} else if (offset && !full) {
+				phi    = i * dlat;
+				lambda = j * dlon;
+			} else if (offset && full) {
+				phi    = (dlat - M_PI) * 0.5 + (double)i * dlat;
+				lambda = j * dlon;
+			}
+
+			if (rel[i * nlon + j] > 0)
+			{
+				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
+			}
+			else
+			{
+				rel[i * nlon + j] = 0.0;
+			}
+			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sin (phi);
+		}
+	}
+
+	fprintf(stderr, "done\n");
 }
 
 void run_test(Config & c, int argc, char * argv[])
@@ -82,6 +245,7 @@ void run_test(Config & c, int argc, char * argv[])
 	s.data["sp"]["nlat"]   = make_pair(ConfigSkeleton::OPTIONAL, "latitude");
 	s.data["sp"]["nlon"]   = make_pair(ConfigSkeleton::OPTIONAL, "longitude");
 	s.data["sp"]["relief"] = make_pair(ConfigSkeleton::REQUIRED, "relief (text format)");
+	s.data["sp"]["real_data"] = make_pair(ConfigSkeleton::REQUIRED, "directory with real data");
 
 	c.set_skeleton(s);
 
@@ -104,6 +268,7 @@ void run_test(Config & c, int argc, char * argv[])
 		usage(c, argv[0]);
 	}
 
+	string real_data = c.gets("sp", "real_data");
 	string relief_fn = c.gets("sp", "relief");
 	string rp_u, rp_v;
 	int real_f = c.get("sp", "real_f", 0);
@@ -129,10 +294,42 @@ void run_test(Config & c, int argc, char * argv[])
 	conf.rp       = 0;
 	conf.cor      = 0;//test_coriolis;
 
-	double dlat = M_PI / (nlat - 1);
-	double dlon = 2. * M_PI / nlon;
-	double t = 0;
-	double T = 2 * M_PI * 365 * 10.0;
+	SphereOperator op(nlat, nlon, 0);
+	SphereLaplace lapl(op);
+	SphereVorticity vor(op);
+	SphereDiv div(op);
+
+	long n = nlat * nlon;
+
+	vector < double > rel(n);
+	vector < double > cor(n);
+	vector < double > force1(n);
+	vector < double > omg(n);
+	vector < double > u(n);
+	vector < double > v(n);
+
+	vector < double > pt1(n);
+	vector < double > pt2(n);
+
+	RealData data = load_real_data(vor, div, lapl, real_data, nlat, nlon);
+	load_relief(&cor[0], &rel[0], nlat, nlon, relief_fn);
+
+	// forcing1
+	// pt1
+	vec_sum(&omg[0], &data.avg_omega[0], &cor[0], n); 
+	vec_mult(&u[0], &data.avg_u[0], &omg[0], n);
+	vec_mult(&v[0], &data.avg_v[0], &omg[0], n);
+	div.calc(&pt1[0], &u[0], &v[0]);
+	// pt2
+	lapl.calc(&pt2[0], &data.avg_omega[0]);
+	vec_sum1(&pt2[0], &data.avg_omega[0], &pt2[0], conf.sigma, conf.mu, n);
+	// pt3 = data.dvomgcl
+	vec_sum(&force1[0], &force1[0], &pt1[0], n);
+	vec_sum(&force1[0], &force1[0], &pt2[0], n);
+	vec_sum(&force1[0], &force1[0], &data.dvomgcl[0], n);
+
+	for (int it = 0; it < 30; ++it) {
+	}
 }
 
 int main (int argc, char * argv[])

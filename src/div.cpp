@@ -26,14 +26,54 @@
 
 #include "div.h"
 #include "spherepack.h"
+#include "linal.h"
 
 using namespace std;
+using namespace linal;
 
 SphereDiv::SphereDiv(const SphereOperator & op): SphereOperator(op)
+{
+}
+
+SphereDiv::~SphereDiv()
 {
 }
 
 void SphereDiv::calc(double * div, const double * u, const double *v)
 {
 	// use divec_ here
+	long ierror = 0;
+	long isym   = 0;
+	long ityp   = 0;
+	long nt     = 1;
+	long n      = nlat * nlon;
+
+	array_t br(mdc * nlat * nt), bi(mdc * nlat * nt);
+	array_t cr(mdc * nlat * nt), ci(mdc * nlat * nt);
+
+	array_t vv(n);
+	array_t ww(n);
+	array_t vt(n);
+
+	mat_transpose (&vv[0], &v[0], nlat, nlon);
+	mat_transpose (&ww[0], &u[0], nlat, nlon);
+
+	vhaec_(&nlat, &nlon, &ityp, &nt, &vv[0], &ww[0], &nlat, &nlon,
+		&br[0], &bi[0], &cr[0], &ci[0], &mdc, &nlat,
+		&ivwsave[0], &ivlsave, &work[0], &lwork, &ierror);
+
+	if (ierror != 0) {
+		fprintf(stderr, "vhaec_ error\n");
+		exit(1);
+	}
+
+	divec_(&nlat, &nlon, &isym, &nt, &vt[0], &nlat, &nlon,
+		&cr[0], &ci[0], &mdc, &nlat,
+		&iswsave[0], &islsave, &work[0], &lwork, &ierror);
+	if (ierror != 0) {
+		fprintf(stderr, "divec_ error\n");
+		exit(1);
+	}
+
+	mat_transpose (&div[0], &vt[0], nlon, nlat);
 }
