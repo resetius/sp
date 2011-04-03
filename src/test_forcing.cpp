@@ -10,6 +10,7 @@
 #include "config.h"
 #include "vorticity.h"
 #include "div.h"
+#include "grad.h"
 #include "statistics.h"
 #include "barvortex.h"
 
@@ -292,18 +293,20 @@ void run_test(Config & c, int argc, char * argv[])
 	conf.k1       = c.get("sp", "k1", 1.0);
 	conf.k2       = c.get("sp", "k2", 1.0);
 	conf.rp       = 0;
-	conf.cor      = 0;//test_coriolis;
+	conf.cor      = 0;
 
 	SphereOperator op(nlat, nlon, 0);
 	SphereLaplace lapl(op);
 	SphereVorticity vor(op);
 	SphereDiv div(op);
+	SphereGrad grad(op);
 
 	long n = nlat * nlon;
 
 	vector < double > rel(n);
 	vector < double > cor(n);
 	vector < double > force1(n);
+	vector < double > forcen(n);
 	vector < double > omg(n);
 	vector < double > u(n);
 	vector < double > v(n);
@@ -313,6 +316,8 @@ void run_test(Config & c, int argc, char * argv[])
 
 	RealData data = load_real_data(vor, div, lapl, real_data, nlat, nlon);
 	load_relief(&cor[0], &rel[0], nlat, nlon, relief_fn);
+
+	conf.cor2 = &cor[0];
 
 	// forcing1
 	// pt1
@@ -329,7 +334,77 @@ void run_test(Config & c, int argc, char * argv[])
 	vec_sum(&force1[0], &force1[0], &data.dvomgcl[0], n);
 
 	for (int it = 0; it < 30; ++it) {
+
+		ExpectedValue < double > avg_total_psi(n);
+		ExpectedValue < double > uomg(n);
+		ExpectedValue < double > vomg(n);
+
+		vector < double > tmp;
+
+		for (int i = 0; i < data.months; ++i) {
+			// 30 days per month
+			double T = 2 * M_PI * 30;
+			double t = 0;
+
+			// load initial here!
+			vector < double > psi(n);
+			ExpectedValue < double > avg_monthly_psi(n);
+
+			conf.rp2 = &force1[0];
+			SphereBarvortex bv(conf);
+
+			avg_monthly_psi.accumulate(psi);
+			avg_total_psi.accumulate(psi);
+
+			while (t < T) {
+				bv.S_step(&psi[0], &psi[0], t /* unused */);
+				t += conf.tau;
+				avg_monthly_psi.accumulate(psi);
+				avg_total_psi.accumulate(psi);
+			}
+
+			vector < double > monthly_u(n);
+			vector < double > monthly_v(n);
+			vector < double > monthly_omega(n);
+			vector < double > monthly_psi(n);
+
+			monthly_psi = avg_monthly_psi.current();
+			lapl.calc(&monthly_omega[0], &monthly_psi[0]);
+			grad.calc(&monthly_u[0], &monthly_v[0], &monthly_psi[0]);
+			vec_mult_scalar(&u[0], &u[0], -1.0, nlat * nlon);
+
+			vector < double > u1(n);
+			vector < double > v1(n);
+			vector < double > omg1(n);
+
+			vec_diff(&u1[0], &data.avg_u[0], &monthly_u[0], n);
+			vec_diff(&v1[0], &data.avg_v[0], &monthly_v[0], n);
+			vec_diff(&omg1[0], &data.avg_omega[0], &monthly_omega[0], n);
+
+			vec_mult(&u1[0], &u1[0], &omg1[0], n);
+			vec_mult(&v1[0], &v1[0], &omg1[0], n);
+
+			uomg.accumulate(u1);
+			vomg.accumulate(v1);
+		}
+
+		vector < double > avg_omega = avg_total_psi.current();
+		lapl.calc(&avg_omega[0], &avg_omega[0]);
+		vec_sum (&forcen[0], &force1[0], &data.avg_omega[0], n);
+		vec_diff(&forcen[0], &forcen[0], &avg_omega[0], n);
+
+		vector < double > tmp1 = uomg.current();
+		vector < double > tmp2 = vomg.current();
+		vector < double > dvomg(n);
+		div.calc(&dvomg[0], &tmp1[0], &tmp2[0]);
+
+		vec_sum (&forcen[0], &forcen[0], &data.dvomgcl[0], n);
+		vec_diff(&forcen[0], &forcen[0], &dvomg[0], n);
+
+		forcen.swap(force1);
 	}
+
+	mat_print("forcing.txt", &force1[0], nlat, nlon, "%23.16lf ");
 }
 
 int main (int argc, char * argv[])
