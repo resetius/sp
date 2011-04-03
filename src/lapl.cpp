@@ -121,5 +121,7 @@ void SphereLaplace::make_psi(double * psi, const double * u, const double * v)
 
 	vor.calc (&psi[0], &u[0], &v[0]);
 	vec_mult_scalar (&psi[0], &psi[0], -1.0, nlat * nlon);
+
+	// TODO: lapl_1 ???
 }
 

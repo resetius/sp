@@ -54,6 +54,9 @@ target_link_libraries(sp_test_chafe sp spherepack ${MATH} ${LINAL_LIBS})
 add_executable(sp_test_barvortex test_barvortex.cpp)
 target_link_libraries(sp_test_barvortex sp spherepack ${MATH} ${LINAL_LIBS})
 
+add_executable(sp_test_forcing test_forcing.cpp)
+target_link_libraries(sp_test_forcing sp spherepack ${MATH} ${LINAL_LIBS})
+
 add_executable(sp_test_baroclin test_baroclin.cpp)
 target_link_libraries(sp_test_baroclin sp spherepack ${MATH} ${LINAL_LIBS})
 
@@ -64,5 +67,6 @@ if (OPENMP_FOUND)
 	set_target_properties(sp_test_jac PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_chafe PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(sp_test_forcing PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_baroclin PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 endif ()
