@@ -101,7 +101,7 @@ void solve()
 		}
 	}
 
-	while (true)
+	while (it < 1000)
 	{
 		bv.S_step (&u[0], &r[0], t);
 		t += conf.tau;
@@ -128,6 +128,12 @@ void solve()
 		r.swap(u);
 
 		it += 1;
+	}
+
+	if (nev1 < 3e-4) {
+		exit(0);
+	} else {
+		exit(-1);
 	}
 }
 
@@ -424,7 +430,9 @@ void usage(const Config & config, const char * name)
 
 int main (int argc, char * argv[])
 {
-	//solve();
+	if (argc == 2 && !strcmp(argv[1], "test")) {
+		solve();
+	}
 
 	// exe [relief in binary format!]
 	Config config;
