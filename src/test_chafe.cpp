@@ -33,7 +33,7 @@ double f (double x, double y, double t,
 	        - 15*mu*sin (y + t) *x + 20*mu*sin (y + t) *x*ipow (cos (x), 2) );		
 }
 
-void solve()
+bool solve()
 {
 	long nlat = 19;
 	long nlon = 36;
@@ -95,15 +95,21 @@ void solve()
 			}
 
 			fprintf (stderr, "nev1=%.16le \n", nev1);
+			break;
 		}
 		r.swap(u);
 
 		it += 1;
 	}
+
+	return nev1 < 1e-3;
 }
 
 int main (int argc, char * argv[])
 {
-	solve();
+	if (solve()) {
+		return 0;
+	}
+	return -1;
 }
 

@@ -76,6 +76,7 @@ if (OPENMP_FOUND)
 endif ()
 
 add_test(sp_test_barvortex ${EXECUTABLE_OUTPUT_PATH}/sp_test_barvortex test)
+add_test(sp_test_chafe ${EXECUTABLE_OUTPUT_PATH}/sp_test_chafe test)
 add_test(sp_test_op ${EXECUTABLE_OUTPUT_PATH}/sp_test_op vorticity)
 add_test(sp_test_lapl ${EXECUTABLE_OUTPUT_PATH}/sp_test_lapl test)
 add_test(sp_test_jac ${EXECUTABLE_OUTPUT_PATH}/sp_test_jac test)
