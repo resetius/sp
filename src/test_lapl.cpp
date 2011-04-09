@@ -20,25 +20,25 @@ static inline double max(double a, double b)
 }
 
 
-double rp(double x, double y) {
+static double rp(double x, double y) {
 	return -6.0 * sin(y) * sin(2.0 * x);
 }
 
-double ans(double x, double y) {
+static double ans(double x, double y) {
 	return sin(y) * sin(2.0 * x);
 }
 
-double ans2(double x, double y, double t)
+static double ans2(double x, double y, double t)
 {
 	return x*sin(y+t)*ipow(cos(x),4);
 }
 
-double rp2(double x, double y, double t, double mu, double sigma)
+static double rp2(double x, double y, double t, double mu, double sigma)
 {
 	return sin(y+t)*ipow(cos(x),2)*(9*mu*sin(x)*cos(x)+20*mu*x*ipow(cos(x),2)+sigma*x*ipow(cos(x),2)-15*mu*x);
 }
 
-bool solve()
+static bool solve()
 {
 	long nlat = 3*19, nlon = 3*36;
 	double dlat = M_PI / (nlat-1);
@@ -97,11 +97,10 @@ bool solve()
 	return ret;
 }
 
-int main(int argc, char * argv[])
+extern "C" int test_lapl(int argc, char * argv[])
 {
 	if (solve()) {
 		return 0;
 	}
 	return -1;
 }
-

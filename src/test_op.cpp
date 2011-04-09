@@ -2,7 +2,7 @@
 
 #include "vorticity.h"
 
-int main(int argc, char ** argv) {
+extern "C" int test_op(int argc, char ** argv) {
 	SphereOperator op(19, 36, 0);
 	SphereVorticity vor(op);
 

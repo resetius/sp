@@ -19,21 +19,21 @@ static inline double max(double a, double b)
 	return (a > b) ? a : b;
 }
 
-double f1(double x, double y) {
+static double f1(double x, double y) {
 	double t = 0.0;
 	return x*sin(y+t)*ipow(cos(x),4);
 }
 
-double f2(double x, double y) {
+static double f2(double x, double y) {
 	return sin(y)*sin(2*x);
 }
 
-double ans(double x, double y) {
+static double ans(double x, double y) {
 	double t = 0.0;
 	return ipow(cos(x),2)*(2*x*cos(y+t)*cos(x)*sin(y)*cos(2*x)-cos(y)*sin(2*x)*sin(y+t)*cos(x)+4*cos(y)*sin(2*x)*x*sin(y+t)*sin(x));
 }
 
-bool solve()
+static bool solve()
 {
 	long nlat = 5 * 19, nlon = 5 * 36;
 	double dlat = M_PI / (nlat-1);
@@ -76,7 +76,7 @@ bool solve()
 	return nev1 < 1e-5;
 }
 
-int main(int argc, char * argv[])
+extern "C" int test_jac(int argc, char * argv[])
 {
 	if (solve()) {
 		return 0;
