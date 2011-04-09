@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "vorticity.h"
 
 int main(int argc, char ** argv) {

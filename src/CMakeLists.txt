@@ -72,6 +72,7 @@ if (OPENMP_FOUND)
 	set_target_properties(sp_test_barvortex PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_forcing PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_baroclin PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
+	set_target_properties(sp_test_op PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 endif ()
 
 add_test(sp_test_barvortex ${EXECUTABLE_OUTPUT_PATH}/sp_test_barvortex test)

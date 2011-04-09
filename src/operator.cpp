@@ -207,7 +207,7 @@ void SphereOperator::geo2math(double * out, const double * in)
 	{
 		for (int j = 0; j < m; ++j)
 		{
-			out[j * n + (n - i)] = in[i * m + j];
+			out[j * n + (n - i - 1)] = in[i * m + j];
 		}
 	}
 }
@@ -220,7 +220,7 @@ void SphereOperator::math2geo(double * out, const double * in)
 	{
 		for (int j = 0; j < m; ++j)
 		{
-			out[(m - j) * n + i] = in[i * m + j];
+			out[(m - j - 1) * n + i] = in[i * m + j];
 		}
 	}
 }
