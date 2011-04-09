@@ -245,7 +245,7 @@ void output_psi(const char * prefix, const char * suffix,
 	mat_print(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
 }
 
-void test_convergence_barvortex()
+bool test_convergence_baroclin()
 {
 	SphereBaroclin::Conf conf;
 	double R   = 6.371e+6;
@@ -278,7 +278,7 @@ void test_convergence_barvortex()
 	int n = conf.nlat * conf.nlon;
 
 	double t = 0;
-	double T = 30 * 2.0 * M_PI;;
+	double T = 0.1; // 30 * 2.0 * M_PI;;
 	double nr1;
 	double nr2;
 	int i = 0;
@@ -325,13 +325,15 @@ void test_convergence_barvortex()
 				vec_find_max(&u11[0], n));
 
 		if (isnan(nr1) || isnan(nr2)) {
-			return;
+			return false;
 		}
 
 		u11.swap(u1);
 		u21.swap(u2);
 		i ++;
 	}
+
+	return nr1 < 1e-5;
 }
 
 void real_calc(const char * srtm)
@@ -531,7 +533,13 @@ int main(int argc, char ** argv)
 	}
 	fprintf(stderr, "\n");
 	//set_fpe_except();
-	//test_convergence_barvortex();
-	real_calc(argv[1]);
+	if (argc > 1) {
+		if (!strcmp(argv[1], "test")) {
+			return test_convergence_baroclin() ? 0 : -1;
+		} else {
+			real_calc(argv[1]);
+		}
+	}
+	return 0;
 }
 
