@@ -34,7 +34,7 @@
 using namespace std;
 using namespace linal;
 
-SphereJacobian::SphereJacobian (const SphereOperator & op) : SphereOperator(op)
+SphereJacobian::SphereJacobian (const SphereOperator & op) : SphereOperator(op), grad(op)
 {
 }
 
@@ -44,63 +44,21 @@ SphereJacobian::~SphereJacobian()
 
 void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 {
-	long ierror = 0;
-
-	long nt     = 1;
 	long n      = nlat * nlon;
 
-	array_t a (mdab * nlat);
-	array_t b (mdab * nlat);
+	array_t dulambda (n);
+	array_t dvlambda (n);
 
-	array_t dutheta (nlat * nlon);
-	array_t dvtheta (nlat * nlon);
+	array_t duphi (n);
+	array_t dvphi (n);
 
-	array_t duphi (nlat * nlon);
-	array_t dvphi (nlat * nlon);
-
-	array_t u (nlat * nlon);
-	array_t v (nlat * nlon);
-	array_t j (nlat * nlon);
-
-	geo2math(&u[0], &u1[0]);
-	geo2math(&v[0], &v1[0]);
-
-	shaec_ (&nlat, &nlon, &isym, &nt, &u[0], &nlat, &nlon, &a[0], &b[0], &mdab, &nlat, &swsave[0],
-	        &slsave, &work[0], &lwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "shaec_ error\n");
-		exit(1);
-	}
-
-	gradec_ (&nlat, &nlon, &isym, &nt, &dutheta[0], &duphi[0], &nlat, &nlon,
-	         &a[0], &b[0], &mdab, &nlat, &vwsave[0],
-	         &vlsave, &work[0], &lwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "gradec_ error\n");
-		exit(1);
-	}
-
-	shaec_ (&nlat, &nlon, &isym, &nt, &v[0], &nlat, &nlon, &a[0], &b[0], &mdab, &nlat, &swsave[0],
-	        &slsave, &work[0], &lwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "shaec_ error\n");
-		exit(1);
-	}
-
-	gradec_ (&nlat, &nlon, &isym, &nt, &dvtheta[0], &dvphi[0], &nlat, &nlon,
-	         &a[0], &b[0], &mdab, &nlat, &vwsave[0],
-	         &vlsave, &work[0], &lwork, &ierror);
-	if (ierror != 0) {
-		fprintf(stderr, "gradec_ error\n");
-		exit(1);
-	}
-
+	grad.calc(&dulambda[0], &duphi[0], u1);
+	grad.calc(&dvlambda[0], &dvphi[0], v1);
+	
 	for (int i = 0; i < n; ++i)
 	{
-		j[i] = duphi[i] * dvtheta[i] - dvphi[i] * dutheta[i];
+		out[i] = dulambda[i] * dvphi[i] - duphi[i] * dvlambda[i];
 	}
-
-	math2geo(out, &j[0]);
 }
 
 void SphereJacobian::calc_t (double * out, const double * u1, const double * v1)

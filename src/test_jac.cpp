@@ -33,7 +33,7 @@ double ans(double x, double y) {
 	return ipow(cos(x),2)*(2*x*cos(y+t)*cos(x)*sin(y)*cos(2*x)-cos(y)*sin(2*x)*sin(y+t)*cos(x)+4*cos(y)*sin(2*x)*x*sin(y+t)*sin(x));
 }
 
-void solve()
+bool solve()
 {
 	long nlat = 5 * 19, nlon = 5 * 36;
 	double dlat = M_PI / (nlat-1);
@@ -73,10 +73,14 @@ void solve()
 	}
 
 	fprintf(stderr, "nev1=%.16le \n", nev1);
+	return nev1 < 1e-5;
 }
 
 int main(int argc, char * argv[])
 {
-	solve();
+	if (solve()) {
+		return 0;
+	}
+	return -1;
 }
 

@@ -38,12 +38,13 @@ double rp2(double x, double y, double t, double mu, double sigma)
 	return sin(y+t)*ipow(cos(x),2)*(9*mu*sin(x)*cos(x)+20*mu*x*ipow(cos(x),2)+sigma*x*ipow(cos(x),2)-15*mu*x);
 }
 
-void solve()
+bool solve()
 {
 	long nlat = 3*19, nlon = 3*36;
 	double dlat = M_PI / (nlat-1);
 	double dlon = 2. * M_PI /nlon;
 	int i, j;
+	bool ret = true;
 
 	double mu    = -0.5;
 	double sigma = 1000;
@@ -78,6 +79,7 @@ void solve()
 	}
 
 	fprintf(stderr, "nev1=%.16le \n", nev1);
+	ret = nev1 < 1e-5;
 
 	lapl.calc(&v[0], &u[0]);
 	nev1 = 0.0;
@@ -92,10 +94,14 @@ void solve()
 	}
 
 	fprintf(stderr, "nev1=%.16le \n", nev1);
+	return ret;
 }
 
 int main(int argc, char * argv[])
 {
-	solve();
+	if (solve()) {
+		return 0;
+	}
+	return -1;
 }
 
