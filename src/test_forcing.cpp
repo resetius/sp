@@ -157,6 +157,8 @@ RealData load_real_data(
 	vector < double > tmp1 = uomgcl.current();
 	vector < double > tmp2 = vomgcl.current();
 	div.calc(&data.dvomgcl[0], &tmp1[0], &tmp2[0]);
+
+	return data;
 }
 
 void load_relief(double * cor, double *rel, long nlat, long nlon, 

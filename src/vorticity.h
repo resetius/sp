@@ -35,7 +35,7 @@ public:
 	SphereVorticity(const SphereOperator & op);
 	~SphereVorticity();
 
-	void calc(double * div, const double * u, const double *v);
+	void calc(double * vrt, const double * u, const double *v);
 	bool test();
 };
 
