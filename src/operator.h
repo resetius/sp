@@ -143,6 +143,8 @@
 #include <vector>
 #include "norm.h"
 
+#undef min
+
 /**
  * The base class for all of spherical operators.
  * It allocates memory for Spherepack and implements some usefull methods.
@@ -214,13 +216,22 @@ public:
 	 */
 	void koef2func(double * f, const double * k);
 
-#undef min
 	size_t koefs_size()
 	{
 		return 2 * nlat * mdab;
 	}
 
 	void filter(double * out, const double * in);
+
+	void geo2math(double * dest, const double * source);
+	void math2geo(double * dest, const double * source);
+
+	void geo2mathv(
+		double * dest_w, double * dest_v, 
+		const double * source_u, const double * source_v);
+	void math2geov(
+		double * dest_u, double * dest_v, 
+		const double * source_w, const double * source_v);
 
 private:
 	SphereOperator & operator = (const SphereOperator & op);

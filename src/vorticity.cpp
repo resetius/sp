@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 Alexey Ozeritsky
+/* Copyright (c) 2010-2011 Alexey Ozeritsky
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +57,7 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 	array_t ww(n);
 	array_t vt(n);
 
-	mat_transpose (&vv[0], &v[0], nlat, nlon);
-	mat_transpose (&ww[0], &u[0], nlat, nlon);
+	math2geov(&ww[0], &vv[0], &u[0], &v[0]);
 
 	vhaec_(&nlat, &nlon, &ityp, &nt, &vv[0], &ww[0], &nlat, &nlon,
 		&br[0], &bi[0], &cr[0], &ci[0], &mdc, &nlat,
@@ -77,10 +76,10 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 		exit(1);
 	}
 
-	mat_transpose (&div[0], &vt[0], nlon, nlat);
+	geo2math (&div[0], &vt[0]);
 }
 
-void SphereVorticity::test()
+bool SphereVorticity::test()
 {
 	long n      = nlat * nlon;
 	int i, j;
@@ -88,6 +87,7 @@ void SphereVorticity::test()
 	array_t v(n);
 	array_t psi(n);
 	array_t psi1(n);
+	double nr = 1e10;
 
 
 	double dlat = M_PI / (nlat - 1);
@@ -109,6 +109,8 @@ void SphereVorticity::test()
 	}
 
 	calc(&psi1[0], &u[0], &v[0]);
-	fprintf(stderr, "vorticity test= %.16lf\n", dist(&psi1[0], &psi[0]));
-}
 
+	nr = dist(&psi1[0], &psi[0]);
+	fprintf(stderr, "vorticity test= %.16lf\n", nr);
+	return nr < 1e-7;
+}

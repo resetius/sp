@@ -199,4 +199,46 @@ void SphereOperator::filter(double * out, const double * in)
 	koef2func(out, &k[0]);
 }
 
+void SphereOperator::geo2math(double * out, const double * in)
+{
+	int n = nlat;
+	int m = nlon;
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < m; ++j)
+		{
+			out[j * n + (n - i)] = in[i * m + j];
+		}
+	}
+}
 
+void SphereOperator::math2geo(double * out, const double * in)
+{
+	int n = nlon;
+	int m = nlat;
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < m; ++j)
+		{
+			out[(m - j) * n + i] = in[i * m + j];
+		}
+	}
+}
+
+void SphereOperator::geo2mathv(
+	double * dest_w, double * dest_v, 
+	const double * source_u, const double * source_v)
+{
+	geo2math(dest_w, source_u);
+	geo2math(dest_v, source_v);
+	vec_mult_scalar(dest_v, dest_v, -1.0, nlat * nlon);
+}
+
+void SphereOperator::math2geov(
+	double * dest_u, double * dest_v, 
+	const double * source_w, const double * source_v)
+{
+	math2geo(dest_u, source_w);
+	math2geo(dest_v, source_v);
+	vec_mult_scalar(dest_v, dest_v, -1.0, nlat * nlon);
+}

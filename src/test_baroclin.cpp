@@ -221,8 +221,6 @@ void output_psi(const char * prefix, const char * suffix,
 
 	grad.calc(&u[0], &v[0], &psi[0]);
 
-	vec_mult_scalar(&u[0], &u[0], -1.0, nlat * nlon);
-
 	char ubuf[1024]; char vbuf[1024]; char psibuf[1024];
 	char Ubuf[1024]; char Vbuf[1024]; char Psibuf[1024];
 

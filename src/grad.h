@@ -35,8 +35,8 @@ public:
 	SphereGrad(const SphereOperator & op);
 	~SphereGrad();
 
-	void calc (double * duphi, double * dulambda, const double * u);
-	void solve (double * u, const double * duphi, const double * dulambda);
+	void calc (double * u, double * v, const double * fun);
+	void solve (double * fun, const double * u, const double * v);
 };
 
 #endif /* GRAD_H */

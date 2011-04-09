@@ -53,7 +53,8 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	array_t b (mdab * nlat);
 	array_t t (nlat * nlon);
 
-	mat_transpose1(&t[0], in, 1.0 / mult, nlat, nlon);
+	geo2math(&t[0], in);
+	vec_mult_scalar(&t[0], &t[0], 1.0 / mult, nlat * nlon);
 
 	// находим разложение (a, b) по сферическим гармоникам
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon, 
@@ -77,7 +78,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 		throw runtime_error(buf);
 	}
 
-	mat_transpose(out, &t[0], nlon, nlat);
+	math2geo(out, &t[0]);
 }
 
 void SphereLaplace::calc(double * out, const double * in)
@@ -90,7 +91,7 @@ void SphereLaplace::calc(double * out, const double * in)
 	array_t b (mdab * nlat);
 	array_t t (nlat * nlon);
 
-	mat_transpose(&t[0], in, nlat, nlon);
+	geo2math(&t[0], in);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0],
 	        &nlat, &nlon, &a[0], &b[0],
@@ -112,7 +113,7 @@ void SphereLaplace::calc(double * out, const double * in)
 		throw runtime_error(buf);
 	}
 
-	mat_transpose(out, &t[0], nlon, nlat);
+	math2geo(out, &t[0]);
 }
 
 void SphereLaplace::make_psi(double * psi, const double * u, const double * v)
@@ -120,8 +121,8 @@ void SphereLaplace::make_psi(double * psi, const double * u, const double * v)
 	SphereVorticity vor (*this);
 
 	vor.calc (&psi[0], &u[0], &v[0]);
-	vec_mult_scalar (&psi[0], &psi[0], -1.0, nlat * nlon);
 
+	// vec_mult_scalar (&psi[0], &psi[0], -1.0, nlat * nlon);
 	// TODO: lapl_1 ???
 }
 

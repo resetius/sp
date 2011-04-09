@@ -62,8 +62,8 @@ void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 	array_t v (nlat * nlon);
 	array_t j (nlat * nlon);
 
-	mat_transpose (&u[0], &u1[0], nlat, nlon);
-	mat_transpose (&v[0], &v1[0], nlat, nlon);
+	geo2math(&u[0], &u1[0]);
+	geo2math(&v[0], &v1[0]);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &u[0], &nlat, &nlon, &a[0], &b[0], &mdab, &nlat, &swsave[0],
 	        &slsave, &work[0], &lwork, &ierror);
@@ -100,7 +100,7 @@ void SphereJacobian::calc (double * out, const double * u1, const double * v1)
 		j[i] = duphi[i] * dvtheta[i] - dvphi[i] * dutheta[i];
 	}
 
-	mat_transpose (out, &j[0], nlon, nlat);
+	math2geo(out, &j[0]);
 }
 
 void SphereJacobian::calc_t (double * out, const double * u1, const double * v1)

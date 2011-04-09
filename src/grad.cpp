@@ -42,7 +42,7 @@ SphereGrad::~SphereGrad()
 {
 }
 
-void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
+void SphereGrad::calc (double * u, double * v, const double * u1)
 {
 	long ierror = 0;
 	long isym   = 0;
@@ -52,13 +52,13 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 	array_t a (mdab * nlat);
 	array_t b (mdab * nlat);
 
-	array_t u (nlat * nlon);
-	array_t dutheta (nlat * nlon);
-	array_t duphi (nlat * nlon);
+	array_t fun (nlat * nlon);
+	array_t vv (nlat * nlon);
+	array_t ww (nlat * nlon);
 
-	mat_transpose (&u[0], &u1[0], nlat, nlon);
+	geo2math (&fun[0], &u1[0]);
 
-	shaec_ (&nlat, &nlon, &isym, &nt, &u[0], &nlat, &nlon, 
+	shaec_ (&nlat, &nlon, &isym, &nt, &fun[0], &nlat, &nlon, 
 		&a[0], &b[0], &mdab, &nlat, &swsave[0],
 	        &slsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
@@ -66,7 +66,7 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 		exit(1);
 	}
 
-	gradec_ (&nlat, &nlon, &isym, &nt, &dutheta[0], &duphi[0], &nlat, &nlon,
+	gradec_ (&nlat, &nlon, &isym, &nt, &vv[0], &ww[0], &nlat, &nlon,
 	         &a[0], &b[0], &mdab, &nlat, &vwsave[0],
 	         &vlsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
@@ -74,11 +74,10 @@ void SphereGrad::calc (double * duph, double * dulambda, const double * u1)
 		exit(1);
 	}
 
-	mat_transpose (&duph[0], &dutheta[0], nlon, nlat);
-	mat_transpose (&dulambda[0], &duphi[0], nlon, nlat);
+	math2geov(&u[0], &v[0], &ww[0], &vv[0]);
 }
 
-void SphereGrad::solve (double * u1, const double * duph, const double * dulambda)
+void SphereGrad::solve (double * u1, const double * u, const double * v)
 {
 	long ierror = 0;
 	long isym   = 0;
@@ -89,15 +88,14 @@ void SphereGrad::solve (double * u1, const double * duph, const double * dulambd
 	array_t br(mdb * nlat * nt), bi(mdb * nlat * nt);
 	array_t cr(mdb * nlat * nt), ci(mdb * nlat * nt);
 
-	array_t u (nlat * nlon);
-	array_t dutheta (nlat * nlon);
-	array_t duphi (nlat * nlon);
+	array_t grad (nlat * nlon);
+	array_t vv (nlat * nlon);
+	array_t ww (nlat * nlon);
 
-	mat_transpose (&dutheta[0], &duph[0], nlat, nlon);
-	mat_transpose (&duphi[0], &dulambda[0], nlat, nlon);
+	geo2mathv(&ww[0], &vv[0], u, v);
 
 	// vhaec dutheta, duphi -> a, b
-	vhaec_(&nlat, &nlon, &ityp, &nt, &dutheta[0], &duphi[0], &nlat, &nlon,
+	vhaec_(&nlat, &nlon, &ityp, &nt, &vv[0], &ww[0], &nlat, &nlon,
 		&br[0], &bi[0], &cr[0], &ci[0], &mdb, &nlat, 
 		&ivwsave[0], &ivlsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
@@ -105,7 +103,7 @@ void SphereGrad::solve (double * u1, const double * duph, const double * dulambd
 		exit(1);
 	}
 
-	igradec_ (&nlat, &nlon, &isym, &nt, &u[0], &nlat, &nlon,
+	igradec_ (&nlat, &nlon, &isym, &nt, &grad[0], &nlat, &nlon,
 		&br[0], &bi[0], &mdb, &nlat, 
 		&iswsave[0], &islsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
@@ -113,6 +111,5 @@ void SphereGrad::solve (double * u1, const double * duph, const double * dulambd
 		exit(1);
 	}
 
-	mat_transpose (&u1[0], &u[0], nlon, nlat);
+	math2geo (&u1[0], &grad[0]);
 }
-

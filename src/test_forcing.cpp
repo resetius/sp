@@ -112,7 +112,7 @@ RealData load_real_data(
 		avg_v.accumulate(v);
 
 		vor.calc(&omega[0], &u[0], &v[0]);
-		vec_mult_scalar (&omega[0], &psi[0], -1.0, nlat * nlon);
+		//vec_mult_scalar (&omega[0], &psi[0], -1.0, nlat * nlon);
 
 		avg_omega.accumulate(omega);
 

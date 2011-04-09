@@ -60,6 +60,9 @@ target_link_libraries(sp_test_forcing sp spherepack ${MATH} ${LINAL_LIBS})
 add_executable(sp_test_baroclin test_baroclin.cpp)
 target_link_libraries(sp_test_baroclin sp spherepack ${MATH} ${LINAL_LIBS})
 
+add_executable(sp_test_op test_op.cpp)
+target_link_libraries(sp_test_op sp spherepack ${MATH} ${LINAL_LIBS})
+
 if (OPENMP_FOUND)
 	set_target_properties(sp_test_helm PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
 	set_target_properties(sp_test_helm2 PROPERTIES LINK_FLAGS ${OpenMP_C_FLAGS})
@@ -72,4 +75,5 @@ if (OPENMP_FOUND)
 endif ()
 
 add_test(sp_test_barvortex ${EXECUTABLE_OUTPUT_PATH}/sp_test_barvortex test)
+add_test(sp_test_op ${EXECUTABLE_OUTPUT_PATH}/sp_test_op vorticity)
 

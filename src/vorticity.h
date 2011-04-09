@@ -1,6 +1,6 @@
 #ifndef VORTICITY_H
 #define VORTICITY_H
-/* Copyright (c) 2010 Alexey Ozeritsky
+/* Copyright (c) 2010-2011 Alexey Ozeritsky
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ public:
 	~SphereVorticity();
 
 	void calc(double * div, const double * u, const double *v);
-	void test();
+	bool test();
 };
 
 #endif /* VORTICITY_H */
