@@ -6,9 +6,11 @@
 
 #include "vorticity.h"
 #include "lapl.h"
+#include "linal.h"
 #include "grad.h"
 
 using namespace std;
+using namespace linal;
 
 typedef vector < double > array_t;
 
@@ -72,8 +74,10 @@ static bool run_test_vorgrad(
 	array_t psi(n);
 	array_t psi1(n);
 
-//	random_array(u);
-//	random_array(v);
+	double nr;
+
+	//random_array(u);
+	//random_array(v);
 
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
@@ -92,10 +96,13 @@ static bool run_test_vorgrad(
 	vor.calc(&omg[0], &u[0], &v[0]);
 	lapl.solve(&psi[0], &omg[0]);
 
-	grad.calc(&u1[0], &v1[0], &psi[0]);
-	grad.solve(&psi1[0], &u1[0], &v1[0]);
+	grad.calc(&v1[0], &u1[0], &psi[0]);
+	vec_mult_scalar(&u1[0], &u1[0], -1.0, n);
 
-	return false;
+	nr = grad.dist(&u1[0], &u[0]);
+	fprintf(stderr, "nr1 = %.16le\n", nr);
+
+	return nr < 1e-12;
 }
 
 extern "C" int test_op(int argc, char ** argv) 
