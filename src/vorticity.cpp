@@ -76,7 +76,7 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 		exit(1);
 	}
 
-	geo2math (&div[0], &vt[0]);
+	math2geo (&div[0], &vt[0]);
 }
 
 bool SphereVorticity::test()
