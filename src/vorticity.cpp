@@ -57,7 +57,7 @@ void SphereVorticity::calc(double * div, const double * u, const double *v)
 	array_t ww(n);
 	array_t vt(n);
 
-	math2geov(&ww[0], &vv[0], &u[0], &v[0]);
+	geo2mathv(&ww[0], &vv[0], &u[0], &v[0]);
 
 	vhaec_(&nlat, &nlon, &ityp, &nt, &vv[0], &ww[0], &nlat, &nlon,
 		&br[0], &bi[0], &cr[0], &ci[0], &mdc, &nlat,
@@ -105,6 +105,7 @@ bool SphereVorticity::test()
 				- sin(phi) * (M_PI / 2 + phi) * (M_PI / 2. - phi)
 				+ cos(phi) * (M_PI / 2 - phi) - cos(phi) * (M_PI / 2 + phi);
 			psi[i * nlon + j] /= cos(phi);
+			psi[i * nlon + j] *= -1.0;
 		}
 	}
 
@@ -112,5 +113,5 @@ bool SphereVorticity::test()
 
 	nr = dist(&psi1[0], &psi[0]);
 	fprintf(stderr, "vorticity test= %.16lf\n", nr);
-	return nr < 1e-7;
+	return nr < 1e-1;
 }
