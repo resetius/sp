@@ -70,7 +70,8 @@ add_test(sp_test_baroclin ${EXECUTABLE_OUTPUT_PATH}/sp_test_baroclin test)
 
 add_test(sp_test_chafe ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_chafe)
 add_test(sp_test_vorticity ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_op vorticity)
-add_test(sp_test_vorticity ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_op grad)
+add_test(sp_test_grad ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_op grad)
+add_test(sp_test_vorgrad ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_op vorgrad)
 add_test(sp_test_lapl ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_lapl)
 add_test(sp_test_jac ${EXECUTABLE_OUTPUT_PATH}/sp_test_all test_jac)
 

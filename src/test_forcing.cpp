@@ -372,8 +372,8 @@ void run_test(Config & c, int argc, char * argv[])
 
 			monthly_psi = avg_monthly_psi.current();
 			lapl.calc(&monthly_omega[0], &monthly_psi[0]);
-			grad.calc(&monthly_u[0], &monthly_v[0], &monthly_psi[0]);
-			vec_mult_scalar(&u[0], &u[0], -1.0, nlat * nlon);
+			grad.calc(&monthly_v[0], &monthly_u[0], &monthly_psi[0]);
+			vec_mult_scalar(&monthly_u[0], &monthly_u[0], -1.0, nlat * nlon);
 
 			vector < double > u1(n);
 			vector < double > v1(n);
