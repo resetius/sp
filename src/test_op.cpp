@@ -59,6 +59,7 @@ static bool run_test_vorgrad(
 	long nlat, long nlon)
 {
 	long n = nlat * nlon;
+	int i, j;
 
 	array_t u(n);
 	array_t v(n);
@@ -70,8 +71,22 @@ static bool run_test_vorgrad(
 	array_t psi(n);
 	array_t psi1(n);
 
-	random_array(u);
-	random_array(v);
+//	random_array(u);
+//	random_array(v);
+
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+
+	for (i = 0; i < nlat; ++i)
+	{
+		double phi    = -0.5 * M_PI + i * dlat;
+
+		for (j = 0; j < nlon; ++j)
+		{
+			double lambda = j * dlon;
+			u[i * nlon + j]   =  (M_PI / 2 + phi) * (M_PI / 2. - phi);
+		}
+	}
 
 	vor.calc(&omg[0], &u[0], &v[0]);
 	lapl.solve(&psi[0], &omg[0]);
