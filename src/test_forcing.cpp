@@ -50,6 +50,9 @@ RealData load_real_data(
 	SphereDiv & div,
 	SphereLaplace & lapl,
 	const string & prefix, 
+	const string & u_pattern,
+	const string & v_pattern,
+	int start_month,
 	int nlat, int nlon)
 {
 	char ubuf[1024];
@@ -77,20 +80,27 @@ RealData load_real_data(
 
 	RealData data;
 
+	i = start_month;
 	while (1) {
 		int un1, un2;
 		int vn1, vn2;
-
-		snprintf(ubuf, sizeof(ubuf), "%s/u_%02d.txt", prefix.c_str(), i);
+		char pattern[1024];
+		snprintf(pattern, sizeof(pattern), "%s/%s", prefix.c_str(), u_pattern.c_str());
+		snprintf(ubuf, sizeof(ubuf), pattern, i);
 		ubuf[sizeof(ubuf)-1] = 0;
-		snprintf(vbuf, sizeof(vbuf), "%s/v_%02d.txt", prefix.c_str(), i);
+		snprintf(pattern, sizeof(pattern), "%s/%s", prefix.c_str(), v_pattern.c_str());
+		snprintf(vbuf, sizeof(vbuf), pattern, i);
 		vbuf[sizeof(vbuf)-1] = 0;
 
 		u.clear();
 		v.clear();
 
-		mat_load(ubuf, u, &un1, &un2);
-		mat_load(vbuf, v, &vn1, &vn2);
+		try {
+			mat_load(ubuf, u, &un1, &un2);
+			mat_load(vbuf, v, &vn1, &vn2);
+		} catch (exception & ) {
+			break;
+		}
 
 		if (un1 != nlat || un2 != nlon) {
 			u.clear();
@@ -124,6 +134,8 @@ RealData load_real_data(
 		data.monthly_v.push_back(v);
 		data.monthly_psi.push_back(psi);
 		data.monthly_omega.push_back(omega);
+
+		fprintf(stderr, "month %d loaded\n", i++);
 	}
 
 	assert(data.monthly_u.size() == data.monthly_v.size());
@@ -137,6 +149,7 @@ RealData load_real_data(
 
 	data.months = (int)data.monthly_u.size();
 
+	fprintf(stderr, "calculate average\n");
 	for (int i = 0; i < data.months; ++i)
 	{
 		vector < double > u1(nlat * nlon);
@@ -153,9 +166,11 @@ RealData load_real_data(
 		uomgcl.accumulate(u1);
 		vomgcl.accumulate(v1);
 	}
+	fprintf(stderr, "done\n");
 
 	vector < double > tmp1 = uomgcl.current();
 	vector < double > tmp2 = vomgcl.current();
+	data.dvomgcl.resize(nlat * nlon);
 	div.calc(&data.dvomgcl[0], &tmp1[0], &tmp2[0]);
 
 	return data;
@@ -249,6 +264,12 @@ void run_test(Config & c, int argc, char * argv[])
 	s.data["sp"]["nlon"]   = make_pair(ConfigSkeleton::OPTIONAL, "longitude");
 	s.data["sp"]["relief"] = make_pair(ConfigSkeleton::REQUIRED, "relief (text format)");
 	s.data["sp"]["real_data"] = make_pair(ConfigSkeleton::REQUIRED, "directory with real data");
+	s.data["sp"]["real_data_u_pattern"] 
+		= make_pair(ConfigSkeleton::REQUIRED, "U pattern");
+	s.data["sp"]["real_data_v_pattern"] 
+		= make_pair(ConfigSkeleton::REQUIRED, "V pattern");
+	s.data["sp"]["real_data_start_month"] 
+		= make_pair(ConfigSkeleton::REQUIRED, "start month number");
 
 	c.set_skeleton(s);
 
@@ -271,7 +292,10 @@ void run_test(Config & c, int argc, char * argv[])
 		usage(c, argv[0]);
 	}
 
-	string real_data = c.gets("sp", "real_data");
+	string real_data_dir = c.gets("sp", "real_data");
+	string real_data_upattern = c.gets("sp", "real_data_u_pattern");
+	string real_data_vpattern = c.gets("sp", "real_data_v_pattern");
+	int real_data_start_month = c.geti("sp", "real_data_start_month");
 	string relief_fn = c.gets("sp", "relief");
 	string rp_u, rp_v;
 	int real_f = c.get("sp", "real_f", 0);
@@ -316,7 +340,12 @@ void run_test(Config & c, int argc, char * argv[])
 	vector < double > pt1(n);
 	vector < double > pt2(n);
 
-	RealData data = load_real_data(vor, div, lapl, real_data, nlat, nlon);
+	RealData data = load_real_data(vor, div, lapl, 
+			real_data_dir, 
+			real_data_upattern, 
+			real_data_vpattern, 
+			real_data_start_month, 
+			nlat, nlon);
 	load_relief(&cor[0], &rel[0], nlat, nlon, relief_fn);
 
 	conf.cor2 = &cor[0];
@@ -342,6 +371,8 @@ void run_test(Config & c, int argc, char * argv[])
 		ExpectedValue < double > vomg(n);
 
 		vector < double > tmp;
+
+		fprintf(stderr, "iteration %d of 30\n", it);
 
 		for (int i = 0; i < data.months; ++i) {
 			// 30 days per month
@@ -388,6 +419,7 @@ void run_test(Config & c, int argc, char * argv[])
 
 			uomg.accumulate(u1);
 			vomg.accumulate(v1);
+			fprintf(stderr ,"  month %d of %d done\n", i+1, data.months);
 		}
 
 		vector < double > avg_omega = avg_total_psi.current();
