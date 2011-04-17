@@ -292,8 +292,8 @@ bool test_convergence_baroclin()
 	vector < double > u1r(n);
 	vector < double > u2r(n);
 
-	fprintf(stderr, "#mesh_w:%d\n", conf.nlon);
-	fprintf(stderr, "#mesh_h:%d\n", conf.nlat);
+	fprintf(stderr, "#mesh_w:%ld\n", conf.nlon);
+	fprintf(stderr, "#mesh_h:%ld\n", conf.nlat);
 	fprintf(stderr, "#tau:%.16lf\n", conf.tau);
 	fprintf(stderr, "#sigma:%.16lf\n", conf.sigma);
 	fprintf(stderr, "#mu:%.16lf\n", conf.mu);
