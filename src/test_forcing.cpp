@@ -311,7 +311,7 @@ void run_test(Config & c, int argc, char * argv[])
 	conf.nlon     = nlon;
 	//conf.mu       = 1.5e-5;
 
-	conf.mu       = c.get("sp", "mu", 7.5e-5);
+	conf.mu       = c.get("sp", "mu", 1.5e-3);
 	conf.sigma    = c.get("sp", "sigma", 1.14e-2);
 	int part_of_the_day = c.get("sp", "part_of_the_day", 256);
 	conf.tau      = 2 * M_PI / (double) part_of_the_day;
@@ -364,8 +364,11 @@ void run_test(Config & c, int argc, char * argv[])
 	vec_sum(&force1[0], &force1[0], &pt2[0], n);
 	vec_sum(&force1[0], &force1[0], &data.dvomgcl[0], n);
 
-	for (int it = 0; it < 30; ++it) {
+	mat_print("forcing.txt", &force1[0], nlat, nlon, "%23.16lf ");
 
+	for (int it = 0; it < 1 /*30*/; ++it) {
+
+		double dist = 0;
 		ExpectedValue < double > avg_total_psi(n);
 		ExpectedValue < double > uomg(n);
 		ExpectedValue < double > vomg(n);
@@ -390,10 +393,17 @@ void run_test(Config & c, int argc, char * argv[])
 			avg_total_psi.accumulate(psi);
 
 			while (t < T) {
+				double nr;
 				bv.S_step(&psi[0], &psi[0], t /* unused */);
 				t += conf.tau;
 				avg_monthly_psi.accumulate(psi);
 				avg_total_psi.accumulate(psi);
+
+				nr = bv.norm(&psi[0]);
+				if (isnan(nr)) {
+					fprintf(stderr, "NAN t=%lf of %lf\n", t, T);
+					exit(1);
+				}
 			}
 
 			vector < double > monthly_u(n);
@@ -435,7 +445,12 @@ void run_test(Config & c, int argc, char * argv[])
 		vec_sum (&forcen[0], &forcen[0], &data.dvomgcl[0], n);
 		vec_diff(&forcen[0], &forcen[0], &dvomg[0], n);
 
+		dist = op.dist(&forcen[0], &force1[0]);
 		forcen.swap(force1);
+
+		if (dist < 1e-7) {
+			fprintf(stderr, "dist = %lf\n", dist);
+		}
 	}
 
 	mat_print("forcing.txt", &force1[0], nlat, nlon, "%23.16lf ");
