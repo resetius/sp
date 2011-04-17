@@ -366,7 +366,7 @@ void run_test(Config & c, int argc, char * argv[])
 
 	mat_print("forcing.txt", &force1[0], nlat, nlon, "%23.16lf ");
 
-	for (int it = 0; it < 1 /*30*/; ++it) {
+	for (int it = 0; it < 30; ++it) {
 
 		double dist = 0;
 		ExpectedValue < double > avg_total_psi(n);
