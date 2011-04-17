@@ -116,17 +116,27 @@ RealData load_real_data(
 
 		/* normalize */
 		vec_mult_scalar(&u[0], &u[0], 1.0/U0, nlat * nlon);
-		vec_mult_scalar(&v[0], &u[0], 1.0/U0, nlat * nlon);
+		vec_mult_scalar(&v[0], &v[0], 1.0/U0, nlat * nlon);
+//		snprintf(ubuf, sizeof(ubuf)-1, "out-ff/u_%04d.txt", i);
+//		mat_print(ubuf, &u[0], nlat, nlon, "%23.16lf ");
+//		snprintf(vbuf, sizeof(vbuf)-1, "out-ff/v_%04d.txt", i);
+//		mat_print(vbuf, &v[0], nlat, nlon, "%23.16lf ");
 
 		avg_u.accumulate(u);
 		avg_v.accumulate(v);
 
 		vor.calc(&omega[0], &u[0], &v[0]);
+
+//		snprintf(ubuf, sizeof(ubuf)-1, "out-ff/omg_%04d.txt", i);
+//		mat_print(ubuf, &omega[0], nlat, nlon, "%23.16lf ");
+
 		//vec_mult_scalar (&omega[0], &psi[0], -1.0, nlat * nlon);
 
-		avg_omega.accumulate(omega);
-
 		lapl.solve(&psi[0], &omega[0]);
+
+//		snprintf(ubuf, sizeof(ubuf)-1, "out-ff/psi_%04d.txt", i);
+//		mat_print(ubuf, &psi[0], nlat, nlon, "%23.16lf ");
+
 		avg_psi.accumulate(psi);
 		avg_omega.accumulate(omega);
 
@@ -148,6 +158,16 @@ RealData load_real_data(
 	data.avg_omega = avg_omega.current();
 
 	data.months = (int)data.monthly_u.size();
+
+//	snprintf(ubuf, sizeof(ubuf)-1, "out-ff/avg_u_%04d.txt", i);
+//	mat_print(ubuf, &data.avg_u[0], nlat, nlon, "%23.16lf ");
+//	snprintf(ubuf, sizeof(ubuf)-1, "out-ff/avg_v_%04d.txt", i);
+//	mat_print(ubuf, &data.avg_v[0], nlat, nlon, "%23.16lf ");
+//	snprintf(ubuf, sizeof(ubuf)-1, "out-ff/avg_psi_%04d.txt", i);
+//	mat_print(ubuf, &data.avg_psi[0], nlat, nlon, "%23.16lf ");
+//	snprintf(ubuf, sizeof(ubuf)-1, "out-ff/avg_omega_%04d.txt", i);
+//	mat_print(ubuf, &data.avg_omega[0], nlat, nlon, "%23.16lf ");
+
 
 	fprintf(stderr, "calculate average\n");
 	for (int i = 0; i < data.months; ++i)
@@ -172,6 +192,9 @@ RealData load_real_data(
 	vector < double > tmp2 = vomgcl.current();
 	data.dvomgcl.resize(nlat * nlon);
 	div.calc(&data.dvomgcl[0], &tmp1[0], &tmp2[0]);
+
+//	snprintf(ubuf, sizeof(ubuf)-1, "out-ff/dvomgcl_%04d.txt", i);
+//	mat_print(ubuf, &data.dvomgcl[0], nlat, nlon, "%23.16lf ");
 
 	return data;
 }
@@ -364,7 +387,7 @@ void run_test(Config & c, int argc, char * argv[])
 	vec_sum(&force1[0], &force1[0], &pt2[0], n);
 	vec_sum(&force1[0], &force1[0], &data.dvomgcl[0], n);
 
-	mat_print("forcing.txt", &force1[0], nlat, nlon, "%23.16lf ");
+	mat_print("forcing_0.txt", &force1[0], nlat, nlon, "%23.16lf ");
 
 	for (int it = 0; it < 30; ++it) {
 
@@ -376,6 +399,8 @@ void run_test(Config & c, int argc, char * argv[])
 		vector < double > tmp;
 
 		fprintf(stderr, "iteration %d of 30\n", it);
+
+		mat_print("forcing.txt", &force1[0], nlat, nlon, "%23.16lf ");
 
 		for (int i = 0; i < data.months; ++i) {
 			// 30 days per month
@@ -404,6 +429,7 @@ void run_test(Config & c, int argc, char * argv[])
 					fprintf(stderr, "NAN t=%lf of %lf\n", t, T);
 					exit(1);
 				}
+//				fprintf(stderr, " t=%le nr=%le\n", t, nr);
 			}
 
 			vector < double > monthly_u(n);
@@ -433,9 +459,16 @@ void run_test(Config & c, int argc, char * argv[])
 		}
 
 		vector < double > avg_omega = avg_total_psi.current();
+		
+//		mat_print("avg_psi_calc.txt", &avg_omega[0], nlat, nlon, "%23.16lf ");
+
 		lapl.calc(&avg_omega[0], &avg_omega[0]);
 		vec_sum (&forcen[0], &force1[0], &data.avg_omega[0], n);
 		vec_diff(&forcen[0], &forcen[0], &avg_omega[0], n);
+
+//		mat_print("avg_omega_real.txt", &data.avg_omega[0], nlat, nlon, "%23.16lf ");
+//		mat_print("avg_omega_calc.txt", &avg_omega[0], nlat, nlon, "%23.16lf ");
+//		mat_print("forcing_1.txt", &forcen[0], nlat, nlon, "%23.16lf ");
 
 		vector < double > tmp1 = uomg.current();
 		vector < double > tmp2 = vomg.current();

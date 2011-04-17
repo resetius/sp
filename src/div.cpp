@@ -69,7 +69,7 @@ void SphereDiv::calc(double * div, const double * u, const double *v)
 	}
 
 	divec_(&nlat, &nlon, &isym, &nt, &vt[0], &nlat, &nlon,
-		&cr[0], &ci[0], &mdc, &nlat,
+		&br[0], &bi[0], &mdc, &nlat,
 		&iswsave[0], &islsave, &work[0], &lwork, &ierror);
 	if (ierror != 0) {
 		fprintf(stderr, "divec_ error\n");
