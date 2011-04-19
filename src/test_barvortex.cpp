@@ -174,8 +174,8 @@ void output_psi(const char * prefix, const char * suffix,
 	snprintf(Vbuf, 1024,   "out/%sorig_v%s.txt", prefix, suffix);
 	snprintf(Psibuf, 1024, "out/%sorig_psi%s.txt", prefix, suffix);
 
-	mat_print(ubuf,   &u[0], nlat, nlon, "%23.16lf ");
-	mat_print(vbuf,   &v[0], nlat, nlon, "%23.16lf ");
+//	mat_print(ubuf,   &u[0], nlat, nlon, "%23.16lf ");
+//	mat_print(vbuf,   &v[0], nlat, nlon, "%23.16lf ");
 	mat_print(psibuf, &psi[0], nlat, nlon, "%23.16lf ");
 
 	vec_mult_scalar(&u[0], &u[0], U0, nlon * nlat);
@@ -184,7 +184,7 @@ void output_psi(const char * prefix, const char * suffix,
 
 	mat_print(Ubuf,   &u[0], nlat, nlon, "%23.16le ");
 	mat_print(Vbuf,   &v[0], nlat, nlon, "%23.16le ");
-	mat_print(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
+//	mat_print(Psibuf, &Psi[0], nlat, nlon, "%23.16le ");
 }
 
 void run_test(Config & c, int argc, char * argv[])
@@ -246,7 +246,7 @@ void run_test(Config & c, int argc, char * argv[])
 	double dlat = M_PI / (nlat - 1);
 	double dlon = 2. * M_PI / nlon;
 	double t = 0;
-	double T = 2 * M_PI * 365 * 10.0;
+	double T = 2 * M_PI * 30;
 
 	int i, j, it = 0;
 
@@ -264,6 +264,7 @@ void run_test(Config & c, int argc, char * argv[])
 	double RE  = 6.371e+6;
 	double PSI0 = RE * RE / TE;
 	double U0  = 6.371e+6/TE;
+	double K0 = TE/RE;
 
 	int n1, n2;
 	mat_load(relief_fn.c_str(), rel, &n1, &n2);
@@ -290,7 +291,7 @@ void run_test(Config & c, int argc, char * argv[])
 			if (phi > 0) {
 				u[i * nlon + j] = (phi * (M_PI / 2. - phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			} else {
-				u[i * nlon + j] = (-phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
+				u[i * nlon + j] = (-1.)*(-phi * (M_PI / 2. + phi) * 16 / M_PI / M_PI * 30.0 / U0);
 			}
 			v[i * nlon + j] = 0;
 			//cor[i * nlon + j] = conf.coriolis(phi, lambda);
@@ -301,11 +302,49 @@ void run_test(Config & c, int argc, char * argv[])
 		//	rel[i * nlon + j] = 0.5 * sign(phi) * cos(2 * lambda) * ipow(sin(2 * phi), 2);
 
 			if (rel[i * nlon + j] > 0) {
-				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max;
+				rel[i * nlon + j] = 1.0 * rel[i * nlon + j] / rel_max*0.88*0.2;
 			} else {
 				rel[i * nlon + j] = 0.0;
 			}
 			cor[i * nlon + j] = rel[i * nlon + j] + 2 * sin(phi);
+		}
+	}
+
+	if(1==0){
+		mat_load("./u0.txt", u, &n1,&n2);
+		if(n1!=nlat || n2!=nlon)
+		fprintf(stderr, "bad file format! u0.txt\n");
+	
+		mat_load("./v0.txt", v, &n1,&n2);
+		if(n1!=nlat || n2!=nlon)
+		fprintf(stderr, "bad file format! v0.txt\n");
+	}
+
+	if(1==0){
+		mat_load(rp_u.c_str(), u, &n1,&n2);
+		if(n1!=nlat || n2!=nlon)
+		fprintf(stderr, "bad file format! u0.txt\n");
+	
+		mat_load(rp_v.c_str(), v, &n1,&n2);
+		if(n1!=nlat || n2!=nlon)
+		fprintf(stderr, "bad file format! v0.txt\n");
+	}
+
+	if(10 == 0){
+		for (i = 0; i < nlat; ++i)
+	       	for (j = 0; j < nlon; ++j)
+		{
+	        	 u[i * nlon + j] = u[i * nlon + j] * K0 * 1.;
+		       	 v[i * nlon + j] = v[i * nlon + j] * K0 * 1.;
+		}
+	}
+
+	if(1 == 0){
+		for (i = 0; i < nlat; ++i)
+       		for (j = 0; j < nlon; ++j)
+		{
+        		 u[i * nlon + j] = 0.;
+	        	 v[i * nlon + j] = 0.;
 		}
 	}
 
@@ -340,6 +379,20 @@ void run_test(Config & c, int argc, char * argv[])
 			fprintf(stderr, "bad file format! %d!=%d %d!=%d\n", n1, nlat, n2, nlon);
 			exit(1);
 		}
+
+
+		if(real_f == 2)
+		{
+			for (i = 0; i < nlat; ++i)
+	       		for (j = 0; j < nlon; ++j)
+			{
+	        		 u[i * nlon + j] = u[i * nlon + j] * K0 * 1.;
+		        	 v[i * nlon + j] = v[i * nlon + j] * K0 * 1.;
+			}
+		}
+
+
+
 
 		vector < double > psi(nlat * nlon);
 		vector < double > dpsi(nlat * nlon);
@@ -379,10 +432,11 @@ void run_test(Config & c, int argc, char * argv[])
 	mat_print("out/v0.txt", &v[0], nlat, nlon, "%23.16lf ");
 
 	//exit(1);
+	it=0;
 
 	while (t < T)
 	{
-		if (it % part_of_the_day == 0) {
+		if (it % (part_of_the_day*1) == 0) {
 			char buf[1024];
 			nr = bv.norm(&r[0]);
 			if (isnan(nr)) {
@@ -390,7 +444,8 @@ void run_test(Config & c, int argc, char * argv[])
 				break;
 			}
 			fprintf(stderr, "nr=%.16lf, t=%.16lf of %.16lf\n", nr, t, T);
-			snprintf(buf, 1024, "_%06d", it);
+			snprintf(buf, 1024, "_it%08d_Days%.2lf", it,
+			(double)it/(double)part_of_the_day);
 			output_psi("", buf, &r[0], nlat, nlon, U0, PSI0, grad);
 
 			vector < double > m = var.m_current();

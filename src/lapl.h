@@ -55,6 +55,22 @@ public:
 	void solve (double * out, const double * in, double m = 1.0, double d = 0.0);
 
 	/**
+	 * Solve the equation.
+	 \f[
+	 mu_2 \Delta^3 + mu \Delta u + d u = f
+	 \f]
+	 * out[i][j]
+	 * i - latitude  (from the sourth pole to the north pole)
+	 * j - longitude
+	 * @param out  -- result function
+	 * @param in   -- right part
+	 * @param m    -- Laplace multiplier
+	 * @param d    -- coefficient
+	 **/
+	void solve_l3 (double * out, const double * in, double mu2, double mu, double d);
+
+
+	/**
 	 * Calculate Laplace operator.
 	 \f[
 	  out = \Delta in
