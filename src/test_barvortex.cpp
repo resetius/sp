@@ -240,6 +240,13 @@ void run_test(Config & c, int argc, char * argv[])
 	conf.theta    = c.get("sp", "theta", 0.5);
 	conf.k1       = c.get("sp", "k1", 1.0);
 	conf.k2       = c.get("sp", "k2", 1.0);
+
+	//new options
+	conf.use_bvl  = c.get("sp", "use_bvl", 1);
+	conf.debug    = c.get("sp", "debug", 0);
+	conf.max_it   = c.get("sp", "max_it", 1000);
+	conf.prn_it   = c.get("sp", "prn_it", 100);
+
 	conf.rp       = 0;
 	conf.cor      = 0;//test_coriolis;
 
@@ -310,7 +317,7 @@ void run_test(Config & c, int argc, char * argv[])
 		}
 	}
 
-	if(1==0){
+	if (1==0){
 		mat_load("./u0.txt", u, &n1,&n2);
 		if(n1!=nlat || n2!=nlon)
 		fprintf(stderr, "bad file format! u0.txt\n");
@@ -320,32 +327,24 @@ void run_test(Config & c, int argc, char * argv[])
 		fprintf(stderr, "bad file format! v0.txt\n");
 	}
 
-	if(1==0){
+	if (1==0) {
 		mat_load(rp_u.c_str(), u, &n1,&n2);
-		if(n1!=nlat || n2!=nlon)
+		if (n1!=nlat || n2!=nlon)
 		fprintf(stderr, "bad file format! u0.txt\n");
 	
 		mat_load(rp_v.c_str(), v, &n1,&n2);
-		if(n1!=nlat || n2!=nlon)
+		if (n1!=nlat || n2!=nlon)
 		fprintf(stderr, "bad file format! v0.txt\n");
 	}
 
-	if(10 == 0){
-		for (i = 0; i < nlat; ++i)
-	       	for (j = 0; j < nlon; ++j)
-		{
-	        	 u[i * nlon + j] = u[i * nlon + j] * K0 * 1.;
-		       	 v[i * nlon + j] = v[i * nlon + j] * K0 * 1.;
-		}
+	if (10 == 0){
+		vec_mult_scalar(&u[0], &u[0], K0, nlat * nlon * sizeof(double));
+		vec_mult_scalar(&v[0], &v[0], K0, nlat * nlon * sizeof(double));
 	}
 
-	if(1 == 0){
-		for (i = 0; i < nlat; ++i)
-       		for (j = 0; j < nlon; ++j)
-		{
-        		 u[i * nlon + j] = 0.;
-	        	 v[i * nlon + j] = 0.;
-		}
+	if (1 == 0){
+		memset(&u[0], 0, nlat * nlon * sizeof(double));
+		memset(&v[0], 0, nlat * nlon * sizeof(double));
 	}
 
 	SphereOperator op(nlat, nlon, 0);
@@ -358,7 +357,8 @@ void run_test(Config & c, int argc, char * argv[])
 	//vor.test();
 	//vec_mult_scalar(&f[0], &f[0], -1.0, nlat * nlon);
 	//
-	lapl.make_psi(&f[0], &u[0], &v[0]);
+
+	vor.calc(&f[0], &u[0], &v[0]);
 	lapl.solve(&r[0], &f[0]);
 
 
@@ -400,7 +400,8 @@ void run_test(Config & c, int argc, char * argv[])
 		vector < double > jac1(nlat * nlon);
 		vector < double > jac2(nlat * nlon);
 
-		lapl.make_psi(&dpsi[0], &u[0], &v[0]);
+		vor.calc(&dpsi[0], &u[0], &v[0]);
+
 		lapl.solve(&psi[0], &dpsi[0]);
 		lapl.calc(&ddpsi[0], &dpsi[0]);
 
@@ -423,7 +424,7 @@ void run_test(Config & c, int argc, char * argv[])
 
 	SphereBarvortex bv (conf);
 
-	Variance < double > var(u.size());
+	Variance < double > var((int)u.size());
 
 	mat_print("out/cor.txt", &cor[0], nlat, nlon, "%23.16lf ");
 	mat_print("out/rel.txt", &rel[0], nlat, nlon, "%23.16lf ");

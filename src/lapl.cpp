@@ -82,7 +82,7 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 }
 
 void SphereLaplace::solve_l3 (double * out, const double * in, 
-		double mu2, double mu, double diag)
+                              double mu2, double mu, double diag)
 {
 	long ierror = 0;
 	long nt   = 1;
@@ -94,7 +94,6 @@ void SphereLaplace::solve_l3 (double * out, const double * in,
 	array_t t (nlat * nlon);
 
 	geo2math(&t[0], in);
-//	mat_transpose1(&t[0], in, 1.0 , nlat, nlon);
 
 	// находим разложение (a, b) по сферическим гармоникам
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon, 
@@ -119,9 +118,7 @@ void SphereLaplace::solve_l3 (double * out, const double * in,
 	}
 
 	math2geo(out, &t[0]);
-//	mat_transpose(out, &t[0], nlon, nlat);
 }
-
 
 void SphereLaplace::calc(double * out, const double * in)
 {
@@ -156,15 +153,5 @@ void SphereLaplace::calc(double * out, const double * in)
 	}
 
 	math2geo(out, &t[0]);
-}
-
-void SphereLaplace::make_psi(double * psi, const double * u, const double * v)
-{
-	SphereVorticity vor (*this);
-
-	vor.calc (&psi[0], &u[0], &v[0]);
-
-	// vec_mult_scalar (&psi[0], &psi[0], -1.0, nlat * nlon);
-	// TODO: lapl_1 ???
 }
 

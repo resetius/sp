@@ -79,11 +79,6 @@ public:
 	 * @param in  -- input function
 	 */
 	void calc (double * out, const double * in);
-
-	/**
-	 * TODO: describe me!
-	 */
-	void make_psi (double * psi, const double * u, const double * v);
 };
 
 #endif /* LAPL_H */

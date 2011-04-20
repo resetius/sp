@@ -64,15 +64,12 @@ SphereBarvortex::~SphereBarvortex()
 
 void SphereBarvortex::S_step (double * out, const double * u, double t)
 {
-       if(1==0)
-            S_step_AVO_KN (out,u,t);
-       else 
-            S_step_BVL_KN (out,u,t);
+	if (conf.use_bvl) {
+		S_step_BVL_KN (out,u,t);
+	} else {
+		S_step_AVO_KN (out,u,t);
+	}
 }
-
-
-
-
 
 void SphereBarvortex::S_step_AVO_KN (double * out, const double * u, double t)
 {
@@ -414,9 +411,7 @@ void SphereBarvortex::u2p(double * p, const double * u)
 
 
 
-//------------------------------------------BVL
-//
-//
+/*_______________  BVL  __________________________________________*/
 
 void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 {
@@ -437,12 +432,6 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 
 	double mu2   = conf.mu*conf.mu/50.; // Evristic formula
 
-	const int CHECK = 1;   // 0,1,2,3
-	const int PRESTEP = 1; // 0,1
-	const int MAX_IT = 1000; // 0,1
-	const int PRN_IT = 300; // 0,1
-	
-	
 	array_t omg (n);  // omg = Dleta(psi)
 	array_t domg (n); // domg = Delta(omg)
 	array_t Domg (n); // domg = Delta^3(omg)
@@ -476,41 +465,39 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 	// - k2 J( th*psn + (1-th)*psi), l + h) 
 	// + f(x, y)
 
-
 	lapl.calc (&omg[0], &psi[0]);
 
 	lapl.calc (&domg[0], &omg[0]);
 	lapl.calc (&tmp1[0], &domg[0]);
 	lapl.calc (&Domg[0], &tmp1[0]);
 
+#if 0
+	const int CHECK = 1;   // 0,1,2,3
+
+	/*TODO: move to test()*/
 /*	if(CHECK){
-	lapl.solve_3(&tmp1[0], &Domg[0], 1.0, 0. );
-	vec_sum1 (&tmp1[0], &tmp1[0], &omg[0], 1.0 , - 1.0, n);
-	lapl.filter(&tmp1[0], &tmp1[0]);
-	nr = norm (&tmp1[0]);
-	fprintf(stderr, "err_solve_3=%g \n", nr);
-	if(CHECK==2) exit(1);
+		lapl.solve_3(&tmp1[0], &Domg[0], 1.0, 0. );
+		vec_sum1 (&tmp1[0], &tmp1[0], &omg[0], 1.0 , - 1.0, n);
+		lapl.filter(&tmp1[0], &tmp1[0]);
+		nr = norm (&tmp1[0]);
+		fprintf(stderr, "err_solve_3=%g \n", nr);
+		if(CHECK==2) exit(1);
 	}
 */	
 	if(CHECK){
-	double mu2=10.0, mu = 20.,  sigma = 10.;
-	vec_sum1 (&tmp1[0], &Domg[0], &domg[0], mu2 , mu, n);
-	vec_sum1 (&tmp1[0], &tmp1[0], &omg[0], 1.0 , -sigma, n);
+		double mu2=10.0, mu = 20.,  sigma = 10.;
+		vec_sum1 (&tmp1[0], &Domg[0], &domg[0], mu2 , mu, n);
+		vec_sum1 (&tmp1[0], &tmp1[0], &omg[0], 1.0 , -sigma, n);
 
-	lapl.solve_l3(&F[0], &tmp1[0], mu2, mu, sigma);
-	vec_sum1 (&tmp1[0], &F[0], &omg[0], 1.0 , - 1.0, n);
-	lapl.filter(&tmp1[0], &tmp1[0]);
-	nr = norm (&tmp1[0]);
-	if(CHECK>1)fprintf(stderr, "%s: err_solve_l3=%g \n", __FUNCTION__, nr);
-	if(CHECK>2) exit(1);
+		lapl.solve_l3(&F[0], &tmp1[0], mu2, mu, sigma);
+		vec_sum1 (&tmp1[0], &F[0], &omg[0], 1.0 , - 1.0, n);
+		lapl.filter(&tmp1[0], &tmp1[0]);
+		nr = norm (&tmp1[0]);
+		if(CHECK>1)fprintf(stderr, "%s: err_solve_l3=%g \n", __FUNCTION__, nr);
+		if(CHECK>2) exit(1);
 	}
-	
-	
-	
-	
-	
-	
-	
+#endif
+
 	vec_sum1 (&FC[0], &omg[0], &Domg[0], 1.0 / tau,
 	          mu2 * (1.0 - theta), n);
 	vec_sum1 (&FC[0], &FC[0], &domg[0], 1.0,
@@ -537,40 +524,34 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 		}
 	}
 
-
 	vec_sum1 (&FC[0], &FC[0], &F[0], 1.0, 1.0, n);
 
+#if 1
+	// wtf ?
+	// PRESTEP
+	vec_sum1(&tmp1[0], &omg[0], &lh[0], k1, k2, n);
+	jac.calc(&jac2[0], &psi[0], &tmp1[0]);
+	vec_sum1(&tmp1[0], &domg[0], &omg[0], mu, -sigma, n);
+	vec_sum1(&tmp1[0], &tmp1[0], &Domg[0], 1.0, mu2, n);
+	vec_sum1(&tmp1[0], &tmp1[0], &jac2[0], 1.0, -1.0, n);
+	vec_sum1(&tmp1[0], &tmp1[0], &F[0], 1.0, 1.0, n);
+	vec_sum1(&omn[0] , &omg[0], &tmp1[0], 1.0, tau, n);
 
-
-
-	if(PRESTEP){
-
-		vec_sum1(&tmp1[0], &omg[0], &lh[0], k1, k2, n);
-		jac.calc(&jac2[0], &psi[0], &tmp1[0]);
-		vec_sum1(&tmp1[0], &domg[0], &omg[0], mu, -sigma, n);
-		vec_sum1(&tmp1[0], &tmp1[0], &Domg[0], 1.0, mu2, n);
-		vec_sum1(&tmp1[0], &tmp1[0], &jac2[0], 1.0, -1.0, n);
-		vec_sum1(&tmp1[0], &tmp1[0], &F[0], 1.0, 1.0, n);
-		vec_sum1(&omn[0] , &omg[0], &tmp1[0], 1.0, tau, n);
-
-		lapl.solve(&psn[0], &omn[0]);
-		lapl.calc(&omn[0], &psn[0]);
-		lapl.calc (&domn[0], &omn[0]);
-		lapl.calc (&tmp1[0], &domn[0]);
-		lapl.calc (&Domn[0], &tmp1[0]);
-
-
-		}else
-		{
-		memcpy(&psn[0], &psi[0], n * sizeof(double));
-		memcpy(&omn[0], &omg[0], n * sizeof(double));
-		memcpy(&domn[0], &domg[0], n * sizeof(double));
-		memcpy(&Domn[0], &Domg[0], n * sizeof(double));
-		}
+	lapl.solve(&psn[0], &omn[0]);
+	lapl.calc (&omn[0], &psn[0]);
+	lapl.calc (&domn[0], &omn[0]);
+	lapl.calc (&tmp1[0], &domn[0]);
+	lapl.calc (&Domn[0], &tmp1[0]);
+#else
+	memcpy(&psn[0],  &psi[0], n * sizeof(double));
+	memcpy(&omn[0],  &omg[0], n * sizeof(double));
+	memcpy(&domn[0], &domg[0], n * sizeof(double));
+	memcpy(&Domn[0], &Domg[0], n * sizeof(double));
+#endif
 	
 	// Solve nonlinear equation by the simple iteration method
 
-	for (it = 0; it < MAX_IT; ++it) {
+	for (it = 0; it < conf.max_it; ++it) {
 		vec_sum1(&om2[0], &omn[0], &omg[0], theta,
 				(1.0 - theta), n);
 		vec_sum1(&tmp1[0], &om2[0], &lh[0], k1, k2, n);
@@ -579,7 +560,6 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 		jac.calc(&jac2[0], &ps2[0], &tmp1[0]);
 		vec_sum1(&tmp2[0], &FC[0], &jac2[0], 1.0, -1.0, n);
 
-		{
 		vec_sum1(&tmp1[0], &tmp2[0], &omn[0], 1.0, - theta*sigma, n);
 		vec_sum1(&tmp1[0], &tmp1[0], &domn[0], 1.0, theta*mu, n);
 		vec_sum1(&tmp1[0], &tmp1[0], &Domn[0], 1.0, theta*mu2, n);
@@ -591,16 +571,18 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 		nr1 = norm(&omg[0]);
 
 		if (nr/nr1 < 1e-10 || isnan(nr) || isnan(nr1)) {
-				break;
-				}
+			break;
+		}
 
-		if( (it+1)%PRN_IT==0) 
-			fprintf(stderr, "%s :nr=%g nr1=%g it=%d \n", __FUNCTION__,nr,nr1,it);
+		if (conf.debug) {
+			if ((it+1) % conf.prn_it == 0) {
+				fprintf(stderr, "%s :nr=%g nr1=%g it=%d \n", __FUNCTION__,nr,nr1,it);
+			}
 		}
 
 		lapl.solve_l3(&omn[0], &tmp2[0],-theta*mu2, 
-				-theta * mu, - 1.0 / tau - theta * sigma);
-		
+			-theta * mu, -1.0 / tau - theta * sigma);
+
 
 		lapl.solve(&tmp1[0], &omn[0]);
 
@@ -614,15 +596,14 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 		}
 
 
-	lapl.calc (&domn[0], &omn[0]);
-	lapl.calc (&tmp1[0], &domn[0]);
-	lapl.calc (&Domn[0], &tmp1[0]);
-
+		lapl.calc (&domn[0], &omn[0]);
+		lapl.calc (&tmp1[0], &domn[0]);
+		lapl.calc (&Domn[0], &tmp1[0]);
 	}
 
-	if(CHECK){
-
-
+#if 0
+	// TODO: move to test
+	if (CHECK) {
 		for (int i = 0; i < nlat; ++i)
 		{
 			double phi    = -0.5 * M_PI + i * dlat;
@@ -641,17 +622,14 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 			}
 		}
 
-
-
 		lapl.calc (&omn[0], &psn[0]);
 		vec_sum1(&om2[0], &omn[0], &omg[0], theta,
-				(1.0 - theta), n);
+		         (1.0 - theta), n);
 		vec_sum1(&tmp1[0], &om2[0], &lh[0], k1, k2, n);
 		vec_sum1(&ps2[0], &psn[0], &psi[0], theta,
-				1.0 - theta, n);
+		          1.0 - theta, n);
 		jac.calc(&jac2[0], &ps2[0], &tmp1[0]);
 		vec_sum1(&tmp2[0], &F[0], &jac2[0], 1.0, -1.0, n);
-
 
 		lapl.calc (&domn[0], &om2[0]);
 		lapl.calc (&tmp1[0], &domn[0]);
@@ -667,13 +645,9 @@ void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
 
 		nr = norm(&tmp1[0]);
 
-		if( nr>1.e-5 ) fprintf(stderr, "%s :::nr=%g it=%d \n", __FUNCTION__,nr,it);
-
-
-
-		}
-
-		
+		if (nr > 1.e-5) fprintf(stderr, "%s :::nr=%g it=%d \n", __FUNCTION__,nr,it);
+	}
+#endif
 }		
 
 

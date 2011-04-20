@@ -84,7 +84,18 @@ public:
 
 		double * rp3; ///<rp=rp2+rp3
 
-		Conf(): rp(0), cor(0), cor2(0), rp2(0), rp3(0) {}
+		bool use_bvl;
+
+		bool debug;
+		int max_it;
+		int prn_it;
+
+		Conf(): 
+			rp(0), cor(0), cor2(0), 
+			rp2(0), rp3(0), 
+			use_bvl(false), 
+			debug(false),
+			max_it(1000), prn_it(100) {}
 	};
 
 private:
@@ -94,6 +105,32 @@ private:
 	SphereJacobian jac;
 
 	array_t lh;
+
+	/**
+	 * Solve the Barotropic vorticity equation.
+	 \f[
+	 \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta \psi)
+		+ k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = f(\varphi, \lambda)
+	 \f]
+ 	 * @param out - output value
+	 * @param in - input vector (previous time step)
+	 * @param t   - time
+     */
+	void S_step_AVO_KN (double * out, const double * u, double t);
+
+	/**
+	 * Solve the Barotropic vorticity equation.
+	 \f[
+	 \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta \psi)
+		+ k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi -mu2 \Delta^6 \psi = f(\varphi, \lambda)
+	 \f]
+ 	 * @param out - output value
+	 * @param in - input vector (previous time step)
+	 * @param t   - time
+	 * mu2 - internal parameter, \mu2:=0.1 \mu
+     */
+
+	void S_step_BVL_KN (double * psn, const double * psi, double t);
 
 public:
 
@@ -105,41 +142,15 @@ public:
  	 * @param out - output value
 	 * @param in - input vector (previous time step)
 	 * @param t   - time
-     */
+	 */
 	void S_step(double * out, const double * in, double t);
 
 	/**
-	 * Solve the Barotropic vorticity equation.
- \f[
- \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta \psi)
-    + k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = f(\varphi, \lambda)
- \f]
- 	 * @param out - output value
-	 * @param in - input vector (previous time step)
-	 * @param t   - time
-     */
-	void S_step_AVO_KN (double * out, const double * u, double t);
-
-	/**
-	 * Solve the Barotropic vorticity equation.
- \f[
- \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta \psi)
-    + k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi -mu2 \Delta^6 \psi = f(\varphi, \lambda)
- \f]
- 	 * @param out - output value
-	 * @param in - input vector (previous time step)
-	 * @param t   - time
-	 * mu2 - internal parameter, \mu2:=0.1 \mu
-     */
-
-	void S_step_BVL_KN (double * psn, const double * psi, double t);
-
-	/**
 	 * Solve the linearized Barotropic vorticity equation in a neibourhood of point (z).
- \f[
- \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta z)  + k_1 J(z, \Delta \psi)
-    + k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = 0
- \f]
+	 \f[
+	 \frac{\partial \Delta \psi}{\partial t} + k_1 J(\psi, \Delta z)  + k_1 J(z, \Delta \psi)
+		+ k_2 J(\psi, l + h) + \sigma \Delta \psi - \mu \Delta^2 \psi = 0
+	 \f]
 	 * @param out - output vector
 	 * @param in - input vector (previous time step)
 	 * @param z - vector z
