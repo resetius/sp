@@ -64,6 +64,18 @@ SphereBarvortex::~SphereBarvortex()
 
 void SphereBarvortex::S_step (double * out, const double * u, double t)
 {
+       if(1==0)
+            S_step_AVO_KN (out,u,t);
+       else 
+            S_step_BVL_KN (out,u,t);
+}
+
+
+
+
+
+void SphereBarvortex::S_step_AVO_KN (double * out, const double * u, double t)
+{
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
 	long n       = conf.nlat * conf.nlon;
@@ -399,3 +411,270 @@ void SphereBarvortex::u2p(double * p, const double * u)
 {
 	memcpy(p, u, conf.nlat * conf.nlon * sizeof(double));
 }
+
+
+
+//------------------------------------------BVL
+//
+//
+
+void SphereBarvortex::S_step_BVL_KN (double * psn, const double * psi, double t)
+{
+	long nlat    = conf.nlat;
+	long nlon    = conf.nlon;
+	long n       = conf.nlat * conf.nlon;
+	double dlat = M_PI / (nlat - 1);
+	double dlon = 2. * M_PI / nlon;
+	double tau   = conf.tau;
+	double theta = conf.theta;
+	double mu    = conf.mu;
+	double sigma = conf.sigma;
+	double k1    = conf.k1;
+	double k2    = conf.k2;
+	double nr,nr1,nr0=norm(psi);
+	int it;
+
+
+	double mu2   = conf.mu*conf.mu/50.; // Evristic formula
+
+	const int CHECK = 1;   // 0,1,2,3
+	const int PRESTEP = 1; // 0,1
+	const int MAX_IT = 1000; // 0,1
+	const int PRN_IT = 300; // 0,1
+	
+	
+	array_t omg (n);  // omg = Dleta(psi)
+	array_t domg (n); // domg = Delta(omg)
+	array_t Domg (n); // domg = Delta^3(omg)
+
+	// next
+	array_t omn (n);
+	array_t domn (n);
+	array_t Domn (n);
+
+	// mean 
+	array_t om2 (n); // om2 = th*omn+(1-th)omg
+	array_t ps2 (n); // ps2 = Delta(om2)
+	
+	// jac
+	array_t jac2(n);
+
+	// tmp
+	array_t tmp1(n);
+	array_t tmp2(n);
+
+	//
+	array_t FC (n);
+	array_t F (n);
+
+	// Equation are
+	// Delta psi = omg;
+	// (omn - omg)/tau =       mu D (th psn + (1-th)psi) + 
+	//			mu2 D^3 (th psn + (1-th)psi) 
+	// 			- \sigma D (th psn - (1-th)psi)
+	// - k1 J( th*psn + (1-th)*psi), th*omn+(1-th)omg)  
+	// - k2 J( th*psn + (1-th)*psi), l + h) 
+	// + f(x, y)
+
+
+	lapl.calc (&omg[0], &psi[0]);
+
+	lapl.calc (&domg[0], &omg[0]);
+	lapl.calc (&tmp1[0], &domg[0]);
+	lapl.calc (&Domg[0], &tmp1[0]);
+
+/*	if(CHECK){
+	lapl.solve_3(&tmp1[0], &Domg[0], 1.0, 0. );
+	vec_sum1 (&tmp1[0], &tmp1[0], &omg[0], 1.0 , - 1.0, n);
+	lapl.filter(&tmp1[0], &tmp1[0]);
+	nr = norm (&tmp1[0]);
+	fprintf(stderr, "err_solve_3=%g \n", nr);
+	if(CHECK==2) exit(1);
+	}
+*/	
+	if(CHECK){
+	double mu2=10.0, mu = 20.,  sigma = 10.;
+	vec_sum1 (&tmp1[0], &Domg[0], &domg[0], mu2 , mu, n);
+	vec_sum1 (&tmp1[0], &tmp1[0], &omg[0], 1.0 , -sigma, n);
+
+	lapl.solve_l3(&F[0], &tmp1[0], mu2, mu, sigma);
+	vec_sum1 (&tmp1[0], &F[0], &omg[0], 1.0 , - 1.0, n);
+	lapl.filter(&tmp1[0], &tmp1[0]);
+	nr = norm (&tmp1[0]);
+	if(CHECK>1)fprintf(stderr, "%s: err_solve_l3=%g \n", __FUNCTION__, nr);
+	if(CHECK>2) exit(1);
+	}
+	
+	
+	
+	
+	
+	
+	
+	vec_sum1 (&FC[0], &omg[0], &Domg[0], 1.0 / tau,
+	          mu2 * (1.0 - theta), n);
+	vec_sum1 (&FC[0], &FC[0], &domg[0], 1.0,
+	          mu * (1.0 - theta), n);
+	vec_sum1 (&FC[0], &FC[0], &omg[0], 1.0,
+	          -sigma * (1.0 - theta), n);
+
+
+	for (int i = 0; i < nlat; ++i)
+	{
+		double phi    = -0.5 * M_PI + i * dlat;
+		for (int j = 0; j < nlon; ++j)
+		{
+			double lambda = j * dlon;
+			if (conf.rp) {
+				F[i * nlon + j] = conf.rp (phi, lambda, t, &conf);
+			} 
+			if (conf.rp2) {
+				F[i * nlon + j] = conf.rp2[i * nlon + j];
+			}
+			if (conf.rp3) {
+				F[i * nlon + j] = conf.rp3[i * nlon + j];
+			}
+		}
+	}
+
+
+	vec_sum1 (&FC[0], &FC[0], &F[0], 1.0, 1.0, n);
+
+
+
+
+	if(PRESTEP){
+
+		vec_sum1(&tmp1[0], &omg[0], &lh[0], k1, k2, n);
+		jac.calc(&jac2[0], &psi[0], &tmp1[0]);
+		vec_sum1(&tmp1[0], &domg[0], &omg[0], mu, -sigma, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &Domg[0], 1.0, mu2, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &jac2[0], 1.0, -1.0, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &F[0], 1.0, 1.0, n);
+		vec_sum1(&omn[0] , &omg[0], &tmp1[0], 1.0, tau, n);
+
+		lapl.solve(&psn[0], &omn[0]);
+		lapl.calc(&omn[0], &psn[0]);
+		lapl.calc (&domn[0], &omn[0]);
+		lapl.calc (&tmp1[0], &domn[0]);
+		lapl.calc (&Domn[0], &tmp1[0]);
+
+
+		}else
+		{
+		memcpy(&psn[0], &psi[0], n * sizeof(double));
+		memcpy(&omn[0], &omg[0], n * sizeof(double));
+		memcpy(&domn[0], &domg[0], n * sizeof(double));
+		memcpy(&Domn[0], &Domg[0], n * sizeof(double));
+		}
+	
+	// Solve nonlinear equation by the simple iteration method
+
+	for (it = 0; it < MAX_IT; ++it) {
+		vec_sum1(&om2[0], &omn[0], &omg[0], theta,
+				(1.0 - theta), n);
+		vec_sum1(&tmp1[0], &om2[0], &lh[0], k1, k2, n);
+		vec_sum1(&ps2[0], &psn[0], &psi[0], theta,
+				1.0 - theta, n);
+		jac.calc(&jac2[0], &ps2[0], &tmp1[0]);
+		vec_sum1(&tmp2[0], &FC[0], &jac2[0], 1.0, -1.0, n);
+
+		{
+		vec_sum1(&tmp1[0], &tmp2[0], &omn[0], 1.0, - theta*sigma, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &domn[0], 1.0, theta*mu, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &Domn[0], 1.0, theta*mu2, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &omn[0], 1.0, -1.0/tau , n);
+
+		lapl.filter(&tmp1[0], &tmp1[0]);
+
+		nr = norm(&tmp1[0]);
+		nr1 = norm(&omg[0]);
+
+		if (nr/nr1 < 1e-10 || isnan(nr) || isnan(nr1)) {
+				break;
+				}
+
+		if( (it+1)%PRN_IT==0) 
+			fprintf(stderr, "%s :nr=%g nr1=%g it=%d \n", __FUNCTION__,nr,nr1,it);
+		}
+
+		lapl.solve_l3(&omn[0], &tmp2[0],-theta*mu2, 
+				-theta * mu, - 1.0 / tau - theta * sigma);
+		
+
+		lapl.solve(&tmp1[0], &omn[0]);
+
+		lapl.filter(&omn[0], &omn[0]);
+		lapl.filter(&tmp1[0], &tmp1[0]);
+
+		nr = dist(&tmp1[0], &psn[0]);
+		memcpy(psn, &tmp1[0], n * sizeof(double));
+		if (nr / nr0 < 1e-14 || isnan(nr)) {
+			break;
+		}
+
+
+	lapl.calc (&domn[0], &omn[0]);
+	lapl.calc (&tmp1[0], &domn[0]);
+	lapl.calc (&Domn[0], &tmp1[0]);
+
+	}
+
+	if(CHECK){
+
+
+		for (int i = 0; i < nlat; ++i)
+		{
+			double phi    = -0.5 * M_PI + i * dlat;
+			for (int j = 0; j < nlon; ++j)
+			{
+				double lambda = j * dlon;
+				if (conf.rp) {
+					F[i * nlon + j] = conf.rp (phi, lambda, t, &conf);
+				} 
+				if (conf.rp2) {
+					F[i * nlon + j] = conf.rp2[i * nlon + j];
+				}
+				if (conf.rp3) {
+					F[i * nlon + j] = conf.rp3[i * nlon + j];
+				}
+			}
+		}
+
+
+
+		lapl.calc (&omn[0], &psn[0]);
+		vec_sum1(&om2[0], &omn[0], &omg[0], theta,
+				(1.0 - theta), n);
+		vec_sum1(&tmp1[0], &om2[0], &lh[0], k1, k2, n);
+		vec_sum1(&ps2[0], &psn[0], &psi[0], theta,
+				1.0 - theta, n);
+		jac.calc(&jac2[0], &ps2[0], &tmp1[0]);
+		vec_sum1(&tmp2[0], &F[0], &jac2[0], 1.0, -1.0, n);
+
+
+		lapl.calc (&domn[0], &om2[0]);
+		lapl.calc (&tmp1[0], &domn[0]);
+		lapl.calc (&Domn[0], &tmp1[0]);
+
+		vec_sum1(&tmp1[0], &tmp2[0], &om2[0], 1.0, - sigma, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &domn[0], 1.0, mu, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &Domn[0], 1.0, mu2, n);
+		vec_sum1(&tmp1[0], &tmp1[0], &omg[0], 1.0, 1.0/tau , n);
+		vec_sum1(&tmp1[0], &tmp1[0], &omn[0], 1.0, -1.0/tau , n);
+
+		lapl.filter(&tmp1[0], &tmp1[0]);
+
+		nr = norm(&tmp1[0]);
+
+		if( nr>1.e-5 ) fprintf(stderr, "%s :::nr=%g it=%d \n", __FUNCTION__,nr,it);
+
+
+
+		}
+
+		
+}		
+
+
+

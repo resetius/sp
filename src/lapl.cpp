@@ -81,6 +81,48 @@ void SphereLaplace::solve (double * out, const double * in, double mult, double 
 	math2geo(out, &t[0]);
 }
 
+void SphereLaplace::solve_l3 (double * out, const double * in, 
+		double mu2, double mu, double diag)
+{
+	long ierror = 0;
+	long nt   = 1;
+
+	double pertrb = 0;
+
+	array_t a (mdab * nlat);
+	array_t b (mdab * nlat);
+	array_t t (nlat * nlon);
+
+	geo2math(&t[0], in);
+//	mat_transpose1(&t[0], in, 1.0 , nlat, nlon);
+
+	// находим разложение (a, b) по сферическим гармоникам
+	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon, 
+	        &a[0], &b[0], &mdab, &nlat, &swsave[0], &slsave,
+	        &work[0], &lwork, &ierror);
+	// чтобы по разложению (a, b) собрать назад функцию надо воспользоваться
+	// функцией shsec_
+	if (ierror != 0) {
+		char buf[1024];
+		sprintf(buf, "shaec_ error %ld\n", ierror);
+		throw runtime_error(buf);
+	}
+
+	islapec_l3_ (&nlat, &nlon, &isym, &nt, &mu2, &mu, &diag,
+	          &t[0], &nlat, &nlon,
+	          &a[0], &b[0], &mdab, &nlat,
+	          &iswsave[0], &islsave, &work[0], &lwork, &pertrb, &ierror);
+	if (ierror != 0) {
+		char buf[1024];
+		sprintf(buf, "islapec_ error %ld\n", ierror);
+		throw runtime_error(buf);
+	}
+
+	math2geo(out, &t[0]);
+//	mat_transpose(out, &t[0], nlon, nlat);
+}
+
+
 void SphereLaplace::calc(double * out, const double * in)
 {
 	long ierror = 0;
