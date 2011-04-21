@@ -361,7 +361,6 @@ void run_test(Config & c, int argc, char * argv[])
 	vor.calc(&f[0], &u[0], &v[0]);
 	lapl.solve(&r[0], &f[0]);
 
-
 	if (real_f) {
 		vector < double > u;
 		int n1, n2;
@@ -380,19 +379,11 @@ void run_test(Config & c, int argc, char * argv[])
 			exit(1);
 		}
 
-
 		if(real_f == 2)
 		{
-			for (i = 0; i < nlat; ++i)
-	       		for (j = 0; j < nlon; ++j)
-			{
-	        		 u[i * nlon + j] = u[i * nlon + j] * K0 * 1.;
-		        	 v[i * nlon + j] = v[i * nlon + j] * K0 * 1.;
-			}
+			vec_mult_scalar(&u[0], &u[0], K0, nlat * nlon);
+			vec_mult_scalar(&v[0], &v[0], K0, nlat * nlon);
 		}
-
-
-
 
 		vector < double > psi(nlat * nlon);
 		vector < double > dpsi(nlat * nlon);
