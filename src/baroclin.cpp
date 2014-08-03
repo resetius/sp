@@ -29,6 +29,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 #include "baroclin.h"
 #include "linal.h"
 

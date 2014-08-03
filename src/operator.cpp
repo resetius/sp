@@ -29,6 +29,7 @@
 #include <math.h>
 
 #include <list>
+#include <algorithm>
 
 #include "linal.h"
 #include "spherepack.h"
