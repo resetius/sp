@@ -157,7 +157,9 @@ void SphereOperator::func2koef (double * k, const double * f)
 	double * a = &k[0];
 	double * b = &k[mdab * nlat];
 	array_t t (nlat * nlon);
-	mat_transpose (&t[0], f, nlat, nlon);
+	//why ?
+	//mat_transpose (&t[0], f, nlat, nlon);
+	geo2math(&t[0], f);
 
 	shaec_ (&nlat, &nlon, &isym, &nt, &t[0], &nlat, &nlon,
 	        &a[0], &b[0], &mdab, &nlat, &swsave[0], &slsave,
@@ -189,7 +191,10 @@ void SphereOperator::koef2func (double * f, const double * k)
 		exit (1);
 	}
 
-	mat_transpose (f, &t[0], nlon, nlat);
+	math2geo(f, &t[0]);
+
+	// why?
+	// mat_transpose (f, &t[0], nlon, nlat);
 }
 
 void SphereOperator::filter(double * out, const double * in)
@@ -272,4 +277,16 @@ void sp_math2geov(
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	op.math2geov(dest_u, dest_v, source_w, source_v);
+}
+
+void sp_koef2func(double *f, const double *k, long long *nlat, long long *nlon)
+{
+	SphereOperator op(*nlat, *nlon, 0);
+	op.koef2func(f, k);
+}
+
+void sp_func2koef(double *k, const double *f, long long *nlat, long long *nlon)
+{
+	SphereOperator op(*nlat, *nlon, 0);
+	op.func2koef(k, f);
 }

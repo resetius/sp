@@ -247,6 +247,8 @@ extern "C" {
 		double * dest_u, double * dest_v,
 		const double * source_w, const double * source_v,
 		long long * nlat, long long * nlon);
+	void SPAPI sp_koef2func(double *f, const double *k, long long *nlat, long long *nlon);
+	void SPAPI sp_func2koef(double *k, const double *f, long long *nlat, long long *nlon);
 }
 
 #endif /* SPHERE_OP_H */
