@@ -32,9 +32,9 @@
 
 #ifdef WIN32
 #if defined(SPLIBRARY_EXPORT)
-#define SPAPI   __declspec( dllexport )
+#define SPAPI   __declspec( dllexport ) 
 #else
-#define SPAPI   __declspec( dllimport )
+#define SPAPI   __declspec( dllimport ) 
 #endif
 #endif
 

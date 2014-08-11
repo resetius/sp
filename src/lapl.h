@@ -82,7 +82,7 @@ public:
 };
 
 extern "C" {
-	void SPAPI sp_lapl(double * out, const double * in, int nlat, int nlon);
+	void SPAPI sp_lapl(double * out, const double * in, long long * nlat, long long * nlon);
 }
 
 #endif /* LAPL_H */
