@@ -1,6 +1,6 @@
 #ifndef LAPL_H
 #define LAPL_H
-/* Copyright (c) 2010 Alexey Ozeritsky
+/* Copyright (c) 2010-2014 Alexey Ozeritsky
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 /**
  * Solve Laplace equation and calculate Laplace operator.
  */
-class SphereLaplace: public SphereOperator
+class SPAPI SphereLaplace : public SphereOperator
 {
 public:
 	SphereLaplace (const SphereOperator & op);
@@ -80,6 +80,10 @@ public:
 	 */
 	void calc (double * out, const double * in);
 };
+
+extern "C" {
+	void SPAPI sp_lapl(double * out, const double * in, int nlat, int nlon);
+}
 
 #endif /* LAPL_H */
 

@@ -29,7 +29,7 @@
 #include <vector>
 #include "operator.h"
 
-class SphereGrad: public SphereOperator
+class SPAPI SphereGrad : public SphereOperator
 {
 public:
 	SphereGrad(const SphereOperator & op);

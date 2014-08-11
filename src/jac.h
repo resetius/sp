@@ -30,7 +30,7 @@
 #include "operator.h"
 #include "grad.h"
 
-class SphereJacobian: public SphereOperator
+class SPAPI SphereJacobian : public SphereOperator
 {
 	SphereGrad grad;
 

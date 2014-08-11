@@ -51,7 +51,7 @@
  * Laplace operator.
  * @see SphereJacobian, SphereLaplace
  */
-class SphereBaroclin: public SphereNorm
+class SPAPI SphereBaroclin : public SphereNorm
 {
 public:
 	typedef std::vector < double > array_t;

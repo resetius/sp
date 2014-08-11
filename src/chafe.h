@@ -49,7 +49,7 @@ struct SphereChafeConf
  * Chafe-Infante equation on sphere.
  * \f$\frac{du}{dt} = \mu \delta u - \sigma u + f (u)\f$
  */
-class SphereChafe {
+class SPAPI SphereChafe {
 	typedef std::vector < double > array_t;
 	SphereChafeConf conf;
 	SphereOperator op;

@@ -28,10 +28,20 @@
 
 #include <vector>
 
+#undef min
+
+#ifdef WIN32
+#if defined(SPLIBRARY_EXPORT)
+#define SPAPI   __declspec( dllexport )
+#else
+#define SPAPI   __declspec( dllimport )
+#endif
+#endif
+
 /**
  * Spherical norm implementation.
  */
-class SphereNorm
+class SPAPI SphereNorm
 {
 	long nlat;
 	long nlon;

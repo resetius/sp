@@ -10,7 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 
 add_definitions(-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -DYY_NO_UNISTD_H ${LINAL_DEFINES})
-add_library(sp 
+set(sp_source 
 	statistics.h 
 
 	operator.cpp
@@ -33,8 +33,15 @@ add_library(sp
 	barvortex.cpp 
 	barvortex.h
 	baroclin.cpp
-	baroclin.h
-	)
+	baroclin.h)
+add_library(sp SHARED ${sp_source})
+if (MSVC)
+	set_source_files_properties(${sp_source} PROPERTIES
+		COMPILE_FLAGS "/DSPLIBRARY_EXPORT")
+endif()
+
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+target_link_libraries(sp linal spherepack)
 
 #add_executable(sp_test_helm helm.c)
 #target_link_libraries(sp_test_helm spherepack ${MATH} ${LINAL_LIBS})

@@ -29,7 +29,7 @@
 #include <vector>
 #include "operator.h"
 
-class SphereVorticity: public SphereOperator
+class SPAPI SphereVorticity: public SphereOperator
 {
 public:
 	SphereVorticity(const SphereOperator & op);

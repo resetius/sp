@@ -43,7 +43,7 @@
  * and \f$\Delta\f$ is spherical Laplace operator.
  * @see SphereJacobian, SphereLaplace
  */
-class SphereBarvortex: public SphereNorm
+class SPAPI SphereBarvortex : public SphereNorm
 {
 public:
 	typedef std::vector < double > array_t;

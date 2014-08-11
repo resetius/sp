@@ -144,13 +144,11 @@
 #include <vector>
 #include "norm.h"
 
-#undef min
-
 /**
  * The base class for all of spherical operators.
  * It allocates memory for Spherepack and implements some usefull methods.
  */
-class SphereOperator: public SphereNorm
+class SPAPI SphereOperator : public SphereNorm
 {
 	struct Data;
 	Data * d;
