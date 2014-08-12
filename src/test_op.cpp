@@ -10,6 +10,7 @@
 #include "lapl.h"
 #include "linal.h"
 #include "grad.h"
+#include "div.h"
 
 using namespace std;
 using namespace linal;
@@ -126,6 +127,57 @@ static bool run_test_conv()
 	return nr < 1e-12;
 }
 
+static bool run_test_lapl()
+{
+//	long nlat = 5;
+//	long nlon = 9;
+	long nlat = 6;
+	long nlon = 9;
+	SphereOperator op(nlat, nlon, 0);
+	SphereLaplace lapl(op);
+	SphereDiv div(op);
+	SphereGrad grad(op);
+
+	array_t t(nlat*nlon);
+	array_t t1(nlat*nlon);
+	array_t u(nlat*nlon);
+	array_t v(nlat*nlon);
+	array_t t2(nlat*nlon);
+	for (int i = 0; i < nlat; ++i) {
+		for (int j = 0; j < nlon; ++j) {
+			t[i*nlon+j] = sin(i*M_PI /( nlat-1));
+		}
+	}
+	lapl.calc(&t1[0], &t[0]);
+	/*tests nothing yet*/
+
+	grad.calc(&u[0], &v[0], &t[0]);
+	div.calc(&t2[0], &u[0], &v[0]);
+	double nr = op.dist(&t1[0], &t2[0]);
+	return true;
+}
+
+static bool run_test_div()
+{
+	long nlat = 5;
+	long nlon = 9;
+	SphereOperator op(nlat, nlon, 0);
+	SphereDiv div(op);
+
+	array_t u(nlat*nlon);
+	array_t v(nlat*nlon);
+	array_t t1(nlat*nlon);
+	for (int i = 0; i < nlat; ++i) {
+		for (int j = 0; j < nlon; ++j) {
+			u[i*nlon + j] = sin(i*M_PI / (nlat - 1));
+			v[i*nlon + j] = sin(i*2*M_PI / (nlat - 1));
+		}
+	}
+	div.calc(&t1[0], &u[0], &v[0]);
+	/*tests nothing yet*/
+	return true;
+}
+
 extern "C" int test_op(int argc, char ** argv) 
 {
 	long nlat = 19;
@@ -140,6 +192,8 @@ extern "C" int test_op(int argc, char ** argv)
 	bool test_vorgrad = false;
 	bool test_grad    = false;
 	bool test_conv = false;
+	bool test_lapl = false;
+	bool test_div = false;
 	bool res = true;
 
 	if (argc == 0) {
@@ -157,6 +211,10 @@ extern "C" int test_op(int argc, char ** argv)
 				test_vorgrad = true;
 			} else if (!strcmp(argv[i], "conv")) {
 				test_conv = true;
+			} else if (!strcmp(argv[i], "lapl")) {
+				test_lapl = true;
+			} else if (!strcmp(argv[i], "div")) {
+				test_div = true;
 			}
 		}
 	}
@@ -172,6 +230,12 @@ extern "C" int test_op(int argc, char ** argv)
 	}
 	if (test_conv) {
 		res &= run_test_conv();
+	}
+	if (test_lapl) {
+		res &= run_test_lapl();
+	}
+	if (test_div) {
+		res &= run_test_div();
 	}
 
 	if (res) {
