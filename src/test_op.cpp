@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include <vector>
+#include <algorithm>
 
 #include "vorticity.h"
 #include "lapl.h"
@@ -106,6 +107,25 @@ static bool run_test_vorgrad(
 	return nr < 1e-12;
 }
 
+static bool run_test_conv()
+{
+	int nlat = 5, nlon = 5;
+	SphereOperator op(5, 5, 0);
+	int mdab = (std::min(nlat, (nlon + 2) / 2));
+	array_t t(nlat * nlon);
+	array_t t1(nlat * nlon);
+	array_t k(2 * mdab * nlat);
+	for (int i = 0; i < nlat * nlon; ++i) {
+		t[i] = 1.0;
+	}
+
+	op.func2koef(&k[0], &t[0]);
+	op.koef2func(&t1[0], &k[0]);
+	double nr = op.dist(&t1[0], &t[0]);
+	fprintf(stderr, "nr = %.16le", nr);
+	return nr < 1e-12;
+}
+
 extern "C" int test_op(int argc, char ** argv) 
 {
 	long nlat = 19;
@@ -119,12 +139,14 @@ extern "C" int test_op(int argc, char ** argv)
 	bool test_vor     = false;
 	bool test_vorgrad = false;
 	bool test_grad    = false;
+	bool test_conv = false;
 	bool res = true;
 
 	if (argc == 0) {
 		test_vor     = true;
 		test_vorgrad = true;
 		test_grad    = true;
+		test_conv = true;
 	} else {
 		for (int i = 0; i < argc; ++i) {
 			if (!strcmp(argv[i], "vorticity")) {
@@ -133,6 +155,8 @@ extern "C" int test_op(int argc, char ** argv)
 				test_grad    = true;
 			} else if (!strcmp(argv[i], "vorgrad")) {
 				test_vorgrad = true;
+			} else if (!strcmp(argv[i], "conv")) {
+				test_conv = true;
 			}
 		}
 	}
@@ -145,6 +169,9 @@ extern "C" int test_op(int argc, char ** argv)
 	}
 	if (test_grad) {
 		res &= run_test_grad(lapl, vor, grad, nlat, nlon);
+	}
+	if (test_conv) {
+		res &= run_test_conv();
 	}
 
 	if (res) {
