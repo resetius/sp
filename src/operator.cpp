@@ -89,14 +89,15 @@ SphereOperator::SphereOperator (const SphereOperator & op) : SphereNorm (op.nlat
 
 SphereOperator::SphereOperator (long nlat, long nlon, long isym) : SphereNorm (nlat, nlon),
 		d (new Data),
+		even(nlon % 2 == 0), // четное?
 		isym (isym), nlat (nlat), nlon (nlon),
 
 		// scalar
-		mdab (min(nlat, (nlon + 2) / 2)), 
+		mdab(even ? min(nlat, (nlon + 2) / 2) : min(nlat, (nlon + 1) / 2)),
 
 		// vector
-		mdb (min(nlat, (nlon + 2) / 2)), 
-		mdc (min(nlat, (nlon + 2) / 2)),
+		mdb(even ? min(nlat, (nlon + 2) / 2) : min(nlat, (nlon + 1) / 2)),
+		mdc(even ? min(nlat, (nlon + 2) / 2) : min(nlat, (nlon + 1) / 2)),
 
 		slsave (5*nlat*nlat*nlon), swsave (d->create (slsave) ),
 		sldwork (4*nlat*nlat), sdwork (d->create (sldwork) ),

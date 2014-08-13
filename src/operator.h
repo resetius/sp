@@ -156,6 +156,7 @@ class SPAPI SphereOperator : public SphereNorm
 protected:
 	typedef std::vector < double > array_t;
 
+	bool even;
 	long isym;
 	long nlat;
 	long nlon;
@@ -215,9 +216,14 @@ public:
 	 */
 	void koef2func(double * f, const double * k);
 
-	size_t koefs_size()
+	size_t koefs_size() const
 	{
 		return 2 * nlat * mdab;
+	}
+
+	size_t size() const
+	{
+		return nlat*nlon;
 	}
 
 	void filter(double * out, const double * in);
