@@ -36,6 +36,8 @@
 #else
 #define SPAPI   __declspec( dllimport ) 
 #endif
+#else
+#define SPAPI
 #endif
 
 /**
