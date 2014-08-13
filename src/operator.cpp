@@ -283,11 +283,13 @@ void sp_math2geov(
 void sp_koef2func(double *f, const double *k, long long *nlat, long long *nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
+	memset(f, 0, op.size() * sizeof(double));
 	op.koef2func(f, k);
 }
 
 void sp_func2koef(double *k, const double *f, long long *nlat, long long *nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
+	memset(k, 0, op.koefs_size() * sizeof(double));
 	op.func2koef(k, f);
 }

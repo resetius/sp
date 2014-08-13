@@ -45,7 +45,7 @@ class SPAPI SphereNorm
 {
 	long nlat;
 	long nlon;
-	std::vector < double > cosi;
+	double * cosi;
 
 public:
 	/**
@@ -54,6 +54,7 @@ public:
 	 * @param nlon - longitude
 	 */
 	SphereNorm(long nlat, long nlon);
+	virtual ~SphereNorm();
 
 	/**
 	 * Scalar product of two functions.

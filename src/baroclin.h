@@ -56,7 +56,7 @@ class SPAPI SphereBaroclin : public SphereNorm
 public:
 	typedef std::vector < double > array_t;
 
-	struct Conf
+	struct SPAPI Conf
 	{
 		typedef double (*rp_t ) (double phi, double lambda, 
 			double t, const Conf * conf );
@@ -99,17 +99,8 @@ public:
 	};
 
 private:
-	Conf conf;
-	SphereOperator op;
-	SphereLaplace lapl;
-	SphereJacobian jac;
-	linal::Solver < double > A;
-	linal::Solver < double > A1; //inverted
-
-	array_t lh;
-
-	void build_matrix();
-	void build_inverted_matrix();
+	class Private;
+	Private *d;
 
 public:
 

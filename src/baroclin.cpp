@@ -36,44 +36,65 @@
 
 using namespace std;
 
-SphereBaroclin::SphereBaroclin (const SphereBaroclin::Conf & conf) : SphereNorm (conf.nlat, conf.nlon),
-		conf (conf), op (conf.nlat, conf.nlon, 0), lapl (op), jac (op),
-		A (4 * 2 * conf.nlat * (std::min (conf.nlat, conf.nlon / 2 + 1) ) ),
-		A1 (4 * 2 * conf.nlat * (std::min (conf.nlat, conf.nlon / 2 + 1) ) ),
-		lh (conf.nlat * conf.nlon)
-{
-	long nlat = conf.nlat;
-	long nlon = conf.nlon;
-	double dlat = M_PI / (nlat - 1);
-	double dlon = 2. * M_PI / nlon;
+class SphereBaroclin::Private {
+public:
+	Conf conf;
+	SphereOperator op;
+	SphereLaplace lapl;
+	SphereJacobian jac;
+	linal::Solver < double > A;
+	linal::Solver < double > A1; //inverted
 
+	array_t lh;
 
-	for (int i = 0; i < nlat; ++i)
+	void build_matrix();
+	void build_inverted_matrix();
+
+	Private::Private(const Conf & conf) :
+		conf(conf), op(conf.nlat, conf.nlon, 0), lapl(op), jac(op),
+		A(4 * 2 * conf.nlat * (std::min(conf.nlat, conf.nlon / 2 + 1))),
+		A1(4 * 2 * conf.nlat * (std::min(conf.nlat, conf.nlon / 2 + 1))),
+		lh(conf.nlat * conf.nlon)
 	{
-		double phi    = -0.5 * M_PI + i * dlat;
-		for (int j = 0; j < nlon; ++j)
+		long nlat = conf.nlat;
+		long nlon = conf.nlon;
+		double dlat = M_PI / (nlat - 1);
+		double dlon = 2. * M_PI / nlon;
+
+
+		for (int i = 0; i < nlat; ++i)
 		{
-			double lambda = j * dlon;
-			if (conf.cor)
+			double phi = -0.5 * M_PI + i * dlat;
+			for (int j = 0; j < nlon; ++j)
 			{
-				lh[i * nlon + j] = conf.cor (phi, lambda, 0, &conf);
-			}
-			else if (conf.cor2)
-			{
-				lh[i * nlon + j] = conf.cor2[i * nlon + j];
+				double lambda = j * dlon;
+				if (conf.cor)
+				{
+					lh[i * nlon + j] = conf.cor(phi, lambda, 0, &conf);
+				}
+				else if (conf.cor2)
+				{
+					lh[i * nlon + j] = conf.cor2[i * nlon + j];
+				}
 			}
 		}
-	}
 
-	build_matrix();
-	build_inverted_matrix();
+		build_matrix();
+		build_inverted_matrix();
+	}
+};
+
+SphereBaroclin::SphereBaroclin (const SphereBaroclin::Conf & conf) : 
+	SphereNorm (conf.nlat, conf.nlon),
+	d(new Private(conf))
+{
 }
 
 SphereBaroclin::~SphereBaroclin()
 {
 }
 
-void SphereBaroclin::build_matrix()
+void SphereBaroclin::Private::build_matrix()
 {
 	double tau   = conf.tau;
 	double theta = conf.theta;
@@ -140,7 +161,7 @@ void SphereBaroclin::build_matrix()
 	//A.print(stdout);
 }
 
-void SphereBaroclin::build_inverted_matrix()
+void SphereBaroclin::Private::build_inverted_matrix()
 {
 	double tau   = conf.tau;
 	double theta = conf.theta;
@@ -205,6 +226,7 @@ void SphereBaroclin::build_inverted_matrix()
 
 void SphereBaroclin::S_step (double * out, const double * in, double t)
 {
+	const Conf & conf = d->conf;
 	long n       = conf.nlat * conf.nlon;
 	const double * u1 = in;
 	const double * u2 = &in[n];
@@ -217,6 +239,10 @@ void SphereBaroclin::S_step (double * out, const double * in, double t)
 void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, const double * u2, double t)
 {
 	using namespace linal;
+	const Conf & conf = d->conf;
+	SphereOperator & op = d->op;
+	SphereLaplace & lapl = d->lapl;
+	SphereJacobian & jac = d->jac;
 
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
@@ -336,7 +362,7 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 		// J(0.5(u1+u1), 0.5(w1+w1)+l+h)
 		vec_sum1 (&tmp1[0], &u1[0], &u1_n[0], 1.0 - theta, theta, n);
 		vec_sum1 (&tmp2[0], &w1[0], &w1_n[0], 1.0 - theta, theta, n);
-		vec_sum (&tmp2[0], &tmp2[0], &lh[0], n);
+		vec_sum (&tmp2[0], &tmp2[0], &d->lh[0], n);
 		jac.calc (&jac1[0], &tmp1[0], &tmp2[0]);
 		// J(0.5(u2+u2),w2+w2)
 		vec_sum1 (&tmp1[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
@@ -352,7 +378,7 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 		jac.calc (&jac1[0], &tmp1[0], &tmp2[0]);
 		vec_sum1 (&tmp1[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
 		vec_sum1 (&tmp2[0], &w1[0], &w1_n[0], 1.0 - theta, theta, n);
-		vec_sum (&tmp2[0], &tmp2[0], &lh[0], n);
+		vec_sum (&tmp2[0], &tmp2[0], &d->lh[0], n);
 		jac.calc (&jac2[0], &tmp1[0], &tmp2[0]);
 		vec_sum1 (&tmp1[0], &u1[0], &u1_n[0], 1.0 - theta, theta, n);
 		vec_sum1 (&tmp2[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
@@ -388,7 +414,7 @@ void SphereBaroclin::S_step (double * u11, double * u21, const double * u1, cons
 
 		//mat_print("rp.txt", &rp[0], rp.size(), 1, "%8.3le ");
 		//exit(1);
-		A.solve (&x[0], &rp[0]);
+		d->A.solve (&x[0], &rp[0]);
 		// 4. build functions from koefs
 		op.koef2func (&w1_n[0],  &x[0]);
 		op.koef2func (&w2_n[0],  &x[n1]);
@@ -416,6 +442,11 @@ void SphereBaroclin::L_step (double *u11, double * u21,
                              const double * z1, const double * z2)
 {
 	using namespace linal;
+	const Conf & conf = d->conf;
+	SphereOperator & op = d->op;
+	SphereLaplace & lapl = d->lapl;
+	SphereJacobian & jac = d->jac;
+
 
 	long nlat    = conf.nlat;
 	long nlon    = conf.nlon;
@@ -516,7 +547,7 @@ void SphereBaroclin::L_step (double *u11, double * u21,
 
 		// J(0.5(u1+u1), L(z1)+l+h)
 		vec_sum1(&tmp1[0], &u1[0], &u1_n[0], 1.0 - theta, theta, n);
-		vec_sum(&tmp2[0], &dz1[0], &lh[0], n);
+		vec_sum(&tmp2[0], &dz1[0], &d->lh[0], n);
 		jac.calc(&jac1[0], &tmp1[0], &tmp2[0]);
 
 		// J(z1, 0.5(w1+w1))
@@ -549,7 +580,7 @@ void SphereBaroclin::L_step (double *u11, double * u21,
 
 		// J(0.5(u2+u2), L(z1)+l+h)
 		vec_sum1(&tmp1[0], &u2[0], &u2_n[0], 1.0 - theta, theta, n);
-		vec_sum(&tmp2[0], &dz1[0], &lh[0], n);
+		vec_sum(&tmp2[0], &dz1[0], &d->lh[0], n);
 		jac.calc(&jac1[0], &tmp1[0], &tmp2[0]);
 		vec_sum1(&G[0], &G[0], &jac1[0], 1.0, -1.0, n);
 
@@ -575,7 +606,7 @@ void SphereBaroclin::L_step (double *u11, double * u21,
 		op.func2koef (&rp[0],    &F[0]);
 		op.func2koef (&rp[n1],   &G[0]);
 
-		A.solve (&x[0], &rp[0]);
+		d->A.solve (&x[0], &rp[0]);
 
 		op.koef2func (&w1_n[0],  &x[0]);
 		op.koef2func (&w2_n[0],  &x[n1]);
@@ -599,6 +630,11 @@ void SphereBaroclin::L_step (double *u11, double * u21,
 
 void SphereBaroclin::L_step (double *out, const double *in, const double * z)
 {
+	const Conf & conf = d->conf;
+	SphereOperator & op = d->op;
+	SphereLaplace & lapl = d->lapl;
+	SphereJacobian & jac = d->jac;
+
 	long n       = conf.nlat * conf.nlon;
 	const double * u1 = in;
 	const double * u2 = &in[n];
@@ -614,6 +650,11 @@ void SphereBaroclin::L_1_step (double *u11, double * u21,
                                const double * u1, const double * u2, 
                                const double * z1, const double * z2)
 {
+	const Conf & conf = d->conf;
+	SphereOperator & op = d->op;
+	SphereLaplace & lapl = d->lapl;
+	SphereJacobian & jac = d->jac;
+
 	using namespace linal;
 
 	long nlat    = conf.nlat;
@@ -715,7 +756,7 @@ void SphereBaroclin::L_1_step (double *u11, double * u21,
 
 		// J(0.5(u1+u1), L(z1)+l+h)
 		vec_sum1(&tmp1[0], &u1[0], &u1_n[0], theta, 1.0 - theta, n);
-		vec_sum(&tmp2[0], &dz1[0], &lh[0], n);
+		vec_sum(&tmp2[0], &dz1[0], &d->lh[0], n);
 		jac.calc(&jac1[0], &tmp1[0], &tmp2[0]);
 
 		// J(z1, 0.5(w1+w1))
@@ -748,7 +789,7 @@ void SphereBaroclin::L_1_step (double *u11, double * u21,
 
 		// J(0.5(u2+u2), L(z1)+l+h)
 		vec_sum1(&tmp1[0], &u2[0], &u2_n[0], theta, 1.0 - theta, n);
-		vec_sum(&tmp2[0], &dz1[0], &lh[0], n);
+		vec_sum(&tmp2[0], &dz1[0], &d->lh[0], n);
 		jac.calc(&jac1[0], &tmp1[0], &tmp2[0]);
 		vec_sum(&G[0], &G[0], &jac1[0], n);
 
@@ -774,7 +815,7 @@ void SphereBaroclin::L_1_step (double *u11, double * u21,
 		op.func2koef (&rp[0],    &F[0]);
 		op.func2koef (&rp[n1],   &G[0]);
 
-		A1.solve (&x[0], &rp[0]);
+		d->A1.solve (&x[0], &rp[0]);
 
 		op.koef2func (&w1_n[0],  &x[0]);
 		op.koef2func (&w2_n[0],  &x[n1]);
@@ -798,6 +839,11 @@ void SphereBaroclin::L_1_step (double *u11, double * u21,
 
 void SphereBaroclin::L_1_step (double *out, const double *in, const double * z)
 {
+	const Conf & conf = d->conf;
+	SphereOperator & op = d->op;
+	SphereLaplace & lapl = d->lapl;
+	SphereJacobian & jac = d->jac;
+
 	long n       = conf.nlat * conf.nlon;
 	const double * u1 = in;
 	const double * u2 = &in[n];
@@ -811,11 +857,15 @@ void SphereBaroclin::L_1_step (double *out, const double *in, const double * z)
 
 void SphereBaroclin::p2u (double * u, const double * p)
 {
+	const Conf & conf = d->conf;
+
 	memcpy (u, p, conf.nlat * conf.nlon * sizeof (double) );
 }
 
 void SphereBaroclin::u2p (double * p, const double * u)
 {
+	const Conf & conf = d->conf;
+
 	memcpy (p, u, conf.nlat * conf.nlon * sizeof (double) );
 }
 

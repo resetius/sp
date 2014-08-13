@@ -110,7 +110,7 @@ static bool run_test_vorgrad(
 
 static bool run_test_conv()
 {
-	int nlat = 5, nlon = 5;
+	int nlat = 6, nlon = 10;
 	SphereOperator op(5, 5, 0);
 	int mdab = (std::min(nlat, (nlon + 2) / 2));
 	array_t t(nlat * nlon);
