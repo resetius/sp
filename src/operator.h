@@ -243,18 +243,18 @@ private:
 };
 
 extern "C" {
-	void SPAPI sp_geo2math(double * dest, const double * source, long long * nlat, long long * nlon);
-	void SPAPI sp_math2geo(double * dest, const double * source, long long * nlat, long long * nlon);
+	void SPAPI sp_geo2math(double * dest, const double * source, long * nlat, long * nlon);
+	void SPAPI sp_math2geo(double * dest, const double * source, long * nlat, long * nlon);
 	void SPAPI sp_geo2mathv(
 		double * dest_w, double * dest_v,
 		const double * source_u, const double * source_v,
-		long long * nlat, long long * nlon);
+		long * nlat, long * nlon);
 	void SPAPI sp_math2geov(
 		double * dest_u, double * dest_v,
 		const double * source_w, const double * source_v,
-		long long * nlat, long long * nlon);
-	void SPAPI sp_koef2func(double *f, const double *k, long long *nlat, long long *nlon);
-	void SPAPI sp_func2koef(double *k, const double *f, long long *nlat, long long *nlon);
+		long * nlat, long * nlon);
+	void SPAPI sp_koef2func(double *f, const double *k, long *nlat, long *nlon);
+	void SPAPI sp_func2koef(double *k, const double *f, long *nlat, long *nlon);
 }
 
 #endif /* SPHERE_OP_H */

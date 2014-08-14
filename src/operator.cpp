@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 Alexey Ozeritsky
+/* Copyright (c) 2010, 2014 Alexey Ozeritsky
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -250,13 +250,13 @@ void SphereOperator::math2geov(
 	vec_mult_scalar(dest_v, dest_v, -1.0, nlat * nlon);
 }
 
-void sp_geo2math(double * dest, const double * source, long long * nlat, long long * nlon)
+void sp_geo2math(double * dest, const double * source, long * nlat, long * nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	op.geo2math(dest, source);
 }
 
-void sp_math2geo(double * dest, const double * source, long long * nlat, long long * nlon)
+void sp_math2geo(double * dest, const double * source, long * nlat, long * nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	op.math2geo(dest, source);
@@ -265,7 +265,7 @@ void sp_math2geo(double * dest, const double * source, long long * nlat, long lo
 void sp_geo2mathv(
 	double * dest_w, double * dest_v,
 	const double * source_u, const double * source_v,
-	long long * nlat, long long * nlon)
+	long * nlat, long * nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	op.geo2mathv(dest_w, dest_v, source_u, source_v);
@@ -274,20 +274,20 @@ void sp_geo2mathv(
 void sp_math2geov(
 	double * dest_u, double * dest_v,
 	const double * source_w, const double * source_v,
-	long long * nlat, long long * nlon)
+	long * nlat, long * nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	op.math2geov(dest_u, dest_v, source_w, source_v);
 }
 
-void sp_koef2func(double *f, const double *k, long long *nlat, long long *nlon)
+void sp_koef2func(double *f, const double *k, long *nlat, long *nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	memset(f, 0, op.size() * sizeof(double));
 	op.koef2func(f, k);
 }
 
-void sp_func2koef(double *k, const double *f, long long *nlat, long long *nlon)
+void sp_func2koef(double *k, const double *f, long *nlat, long *nlon)
 {
 	SphereOperator op(*nlat, *nlon, 0);
 	memset(k, 0, op.koefs_size() * sizeof(double));

@@ -155,7 +155,7 @@ void SphereLaplace::calc(double * out, const double * in)
 	math2geo(out, &t[0]);
 }
 
-void sp_lapl(double * out, const double * in, long long * nlat, long long * nlon) {
+void sp_lapl(double * out, const double * in, long * nlat, long * nlon) {
 	SphereLaplace lapl(SphereOperator(*nlat, *nlon, 0));
 	lapl.calc(out, in);
 }
